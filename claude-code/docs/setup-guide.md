@@ -1,91 +1,163 @@
 # 🔧 Claude Code 에이전트 설정 가이드
 
-> 심볼릭 링크를 활용한 효율적인 에이전트 관리 방법
+> 팩 기반 시스템으로 단계별 에이전트 관리
 
 ## 📋 목차
 
-1. [설정 방식 선택](#설정-방식-선택)
-2. [사용자 레벨 설정 (추천)](#사용자-레벨-설정-추천)
-3. [프로젝트별 설정](#프로젝트별-설정)
-4. [선택적 설정](#선택적-설정)
-5. [자동화 스크립트](#자동화-스크립트)
-6. [문제 해결](#문제-해결)
+1. [팩 기반 설정 시스템](#팩-기반-설정-시스템)
+2. [자동 설정 (추천)](#자동-설정-추천)
+3. [수동 설정](#수동-설정)
+4. [프로젝트별 설정](#프로젝트별-설정)
+5. [문제 해결](#문제-해결)
+6. [고급 사용법](#고급-사용법)
 
 ---
 
-## 설정 방식 선택
+## 팩 기반 설정 시스템
 
-### 🌟 사용자 레벨 설정 (추천)
-- **위치**: `~/.claude/agents/`
-- **범위**: 모든 프로젝트에서 사용 가능
-- **장점**: 한 번 설정으로 어디서든 사용
-- **적합한 경우**: 개인 개발 환경
+### 🎯 설정 철학
+- **점진적 학습**: 작은 것부터 시작해서 단계별 확장
+- **사용자 친화**: 첫 사용자도 부담 없이 시작
+- **전문가 지원**: 필요에 따라 전문 기능까지
 
-### 🎯 프로젝트별 설정
-- **위치**: `[프로젝트]/.claude/agents/`
-- **범위**: 해당 프로젝트에서만 사용
-- **장점**: 프로젝트 특화 에이전트 가능
-- **적합한 경우**: 팀 프로젝트, 특별한 요구사항
+### 📦 팩 구성
+
+#### 🚀 Starter Pack (2개)
+```
+agents/starter/
+├── code-reviewer.json      # 코드 품질/보안/성능 검토
+└── test-generator.json     # TDD 기반 테스트 케이스 생성
+```
+**대상**: Claude Code 에이전트를 처음 사용하는 모든 개발자
+
+#### 🎨 Essential Pack (4개)
+```
+agents/starter/             # Starter Pack 포함
+agents/essential/
+├── korean-docs.json        # 한국어 기술 문서 작성
+└── debug-expert.json       # 체계적인 문제 해결
+```
+**대상**: 한국어 문서화와 체계적인 개발 프로세스를 중요시하는 개발자
+
+#### ⚡ Professional Pack (7개)
+```
+agents/starter/             # Starter Pack 포함
+agents/essential/           # Essential Pack 포함
+agents/professional/
+├── api-architect.json      # REST API 설계 및 구현
+├── performance-optimizer.json  # 성능 분석 및 최적화
+└── security-auditor.json  # 보안 취약점 분석
+```
+**대상**: 전문적인 웹 개발, API 개발, 성능/보안이 중요한 프로젝트
 
 ---
 
-## 사용자 레벨 설정 (추천)
+## 자동 설정 (추천)
 
-### 1. 디렉토리 생성
+### 🤖 설정 스크립트 실행
 ```bash
-mkdir -p ~/.claude/agents
+~/molidae/ai/claude-code/scripts/setup.sh
 ```
 
-### 2. 전체 에이전트 링크
-```bash
-# 모든 에이전트를 한 번에 링크
-ln -sf ~/molidae/ai/claude-code/agents/*/* ~/.claude/agents/
-```
+### 📋 스크립트 옵션
+설정 시 다음 중 선택:
 
-### 3. 설정 확인
-```bash
-# 링크된 에이전트 확인
-ls -la ~/.claude/agents/
+1. **🚀 Starter Pack (2개)** - 첫 경험용
+   - 부담 없이 핵심 기능만 체험
+   - 코드 리뷰와 테스트 생성에 집중
 
-# 예상 결과:
-# code-reviewer.json -> ~/molidae/ai/claude-code/agents/core/code-reviewer.json
-# test-generator.json -> ~/molidae/ai/claude-code/agents/core/test-generator.json
-# tdd-coach.json -> ~/molidae/ai/claude-code/agents/personal/tdd-coach.json
-# ...
-```
+2. **🎨 Essential Pack (4개)** - 일반 사용자 추천
+   - 개인 개발 스타일 완전 반영
+   - 한국어 문서화 + 체계적 디버깅
 
-### 4. Claude Code에서 확인
+3. **⚡ Professional Pack (7개)** - 전문가용
+   - 모든 전문 기능 포함
+   - API 개발, 성능 최적화, 보안 감사
+
+4. **🛠️ Custom** - 개별 선택 (고급 사용자)
+
+### ✅ 설정 확인
 ```bash
-# Claude Code 실행 후
+# Claude Code에서 확인
 /agents
+
+# 파일 시스템에서 확인
+ls -la ~/.claude/agents/
+```
+
+---
+
+## 수동 설정
+
+### 🚀 Starter Pack 설정
+```bash
+# 디렉토리 생성
+mkdir -p ~/.claude/agents
+
+# Starter Pack 링크
+ln -sf ~/molidae/ai/claude-code/agents/starter/*.json ~/.claude/agents/
+
+# 설정 확인
+ls -la ~/.claude/agents/
+```
+
+### 🎨 Essential Pack 설정
+```bash
+# Starter Pack + Essential Pack
+ln -sf ~/molidae/ai/claude-code/agents/starter/*.json ~/.claude/agents/
+ln -sf ~/molidae/ai/claude-code/agents/essential/*.json ~/.claude/agents/
+```
+
+### ⚡ Professional Pack 설정
+```bash
+# 모든 팩 포함
+ln -sf ~/molidae/ai/claude-code/agents/starter/*.json ~/.claude/agents/
+ln -sf ~/molidae/ai/claude-code/agents/essential/*.json ~/.claude/agents/
+ln -sf ~/molidae/ai/claude-code/agents/professional/*.json ~/.claude/agents/
+```
+
+### 🎯 개별 에이전트 선택
+```bash
+# 특정 에이전트만 설치
+ln -sf ~/molidae/ai/claude-code/agents/starter/code-reviewer.json ~/.claude/agents/
+ln -sf ~/molidae/ai/claude-code/agents/essential/korean-docs.json ~/.claude/agents/
+ln -sf ~/molidae/ai/claude-code/agents/professional/api-architect.json ~/.claude/agents/
 ```
 
 ---
 
 ## 프로젝트별 설정
 
-### 1. 프로젝트 디렉토리에서 실행
+### 1. 프로젝트 디렉토리 설정
 ```bash
 # 프로젝트 루트에서
 mkdir -p .claude/agents
 ```
 
-### 2. 필요한 에이전트만 선택적 링크
+### 2. 팩별 프로젝트 설정
+
+#### 🚀 Starter Pack for Project
 ```bash
-# Core 에이전트 (기본)
-ln -sf ~/molidae/ai/claude-code/agents/core/*.json ./.claude/agents/
-
-# Personal 에이전트 (개인화)
-ln -sf ~/molidae/ai/claude-code/agents/personal/*.json ./.claude/agents/
-
-# 특정 Specialized 에이전트만
-ln -sf ~/molidae/ai/claude-code/agents/specialized/api-architect.json ./.claude/agents/
+ln -sf ~/molidae/ai/claude-code/agents/starter/*.json ./.claude/agents/
 ```
 
-### 3. 프로젝트별 커스터마이징
+#### 🎨 Essential Pack for Project
 ```bash
-# 프로젝트 특화 에이전트 생성
-cp ~/molidae/ai/claude-code/agents/core/code-reviewer.json ./.claude/agents/project-reviewer.json
+ln -sf ~/molidae/ai/claude-code/agents/starter/*.json ./.claude/agents/
+ln -sf ~/molidae/ai/claude-code/agents/essential/*.json ./.claude/agents/
+```
+
+#### ⚡ Professional Pack for Project
+```bash
+ln -sf ~/molidae/ai/claude-code/agents/starter/*.json ./.claude/agents/
+ln -sf ~/molidae/ai/claude-code/agents/essential/*.json ./.claude/agents/
+ln -sf ~/molidae/ai/claude-code/agents/professional/*.json ./.claude/agents/
+```
+
+### 3. 프로젝트 특화 커스터마이징
+```bash
+# 기본 에이전트를 프로젝트용으로 복사
+cp ~/molidae/ai/claude-code/agents/starter/code-reviewer.json ./.claude/agents/project-reviewer.json
 
 # 프로젝트에 맞게 수정
 vim ./.claude/agents/project-reviewer.json
@@ -93,104 +165,40 @@ vim ./.claude/agents/project-reviewer.json
 
 ---
 
-## 선택적 설정
+## 고급 사용법
 
-### 카테고리별 설정
+### 🔄 팩 업그레이드
+언제든지 설정 스크립트를 다시 실행하여 더 큰 팩으로 업그레이드할 수 있습니다.
 
-#### Core 에이전트만 (최소 구성)
 ```bash
-ln -sf ~/molidae/ai/claude-code/agents/core/*.json ~/.claude/agents/
-```
-
-#### Core + Personal 에이전트 (개인 개발)
-```bash
-ln -sf ~/molidae/ai/claude-code/agents/core/*.json ~/.claude/agents/
-ln -sf ~/molidae/ai/claude-code/agents/personal/*.json ~/.claude/agents/
-```
-
-#### 전체 에이전트 (완전 구성)
-```bash
-ln -sf ~/molidae/ai/claude-code/agents/*/*.json ~/.claude/agents/
-```
-
-### 개별 에이전트 설정
-```bash
-# 특정 에이전트만 선택
-ln -sf ~/molidae/ai/claude-code/agents/personal/tdd-coach.json ~/.claude/agents/
-ln -sf ~/molidae/ai/claude-code/agents/core/test-generator.json ~/.claude/agents/
-ln -sf ~/molidae/ai/claude-code/agents/specialized/api-architect.json ~/.claude/agents/
-```
-
----
-
-## 자동화 스크립트
-
-### setup.sh 스크립트 생성
-```bash
-#!/bin/bash
-# ~/molidae/ai/claude-code/scripts/setup.sh
-
-echo "🤖 Claude Code 에이전트 설정을 시작합니다..."
-
-# 사용자 레벨 디렉토리 생성
-mkdir -p ~/.claude/agents
-
-# 기존 링크 제거 (선택사항)
-read -p "기존 에이전트를 모두 제거하시겠습니까? (y/N): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    rm -f ~/.claude/agents/*
-    echo "✅ 기존 에이전트를 제거했습니다."
-fi
-
-# 설정 방식 선택
-echo "설정 방식을 선택하세요:"
-echo "1) 전체 에이전트 (추천)"
-echo "2) Core 에이전트만"
-echo "3) Core + Personal 에이전트"
-echo "4) 개별 선택"
-
-read -p "선택 (1-4): " -n 1 -r
-echo
-
-case $REPLY in
-    1)
-        ln -sf ~/molidae/ai/claude-code/agents/*/*.json ~/.claude/agents/
-        echo "✅ 전체 에이전트를 설정했습니다."
-        ;;
-    2)
-        ln -sf ~/molidae/ai/claude-code/agents/core/*.json ~/.claude/agents/
-        echo "✅ Core 에이전트를 설정했습니다."
-        ;;
-    3)
-        ln -sf ~/molidae/ai/claude-code/agents/core/*.json ~/.claude/agents/
-        ln -sf ~/molidae/ai/claude-code/agents/personal/*.json ~/.claude/agents/
-        echo "✅ Core + Personal 에이전트를 설정했습니다."
-        ;;
-    4)
-        echo "개별 선택 모드는 수동으로 설정해주세요."
-        echo "예시: ln -sf ~/molidae/ai/claude-code/agents/core/code-reviewer.json ~/.claude/agents/"
-        ;;
-    *)
-        echo "❌ 잘못된 선택입니다."
-        exit 1
-        ;;
-esac
-
-# 설정 확인
-echo ""
-echo "📋 설정된 에이전트 목록:"
-ls -la ~/.claude/agents/
-
-echo ""
-echo "🎉 설정이 완료되었습니다!"
-echo "Claude Code에서 '/agents' 명령으로 확인하세요."
-```
-
-### 스크립트 실행 권한 부여 및 실행
-```bash
-chmod +x ~/molidae/ai/claude-code/scripts/setup.sh
+# 기존 Starter Pack에서 Essential Pack으로 업그레이드
 ~/molidae/ai/claude-code/scripts/setup.sh
+
+# 선택: 🎨 Essential Pack (4개)
+```
+
+### 🎯 선택적 에이전트 추가
+```bash
+# Starter Pack 사용 중 특정 Professional 에이전트만 추가
+ln -sf ~/molidae/ai/claude-code/agents/professional/api-architect.json ~/.claude/agents/
+
+# Essential Pack 사용 중 성능 최적화 에이전트만 추가
+ln -sf ~/molidae/ai/claude-code/agents/professional/performance-optimizer.json ~/.claude/agents/
+```
+
+### 📊 현재 설정 확인
+```bash
+# 설치된 에이전트 개수 확인
+ls -1 ~/.claude/agents/*.json | wc -l
+
+# 어떤 팩이 설치되었는지 확인
+if [ -f ~/.claude/agents/api-architect.json ]; then
+    echo "⚡ Professional Pack 설치됨"
+elif [ -f ~/.claude/agents/korean-docs.json ]; then
+    echo "🎨 Essential Pack 설치됨"
+elif [ -f ~/.claude/agents/code-reviewer.json ]; then
+    echo "🚀 Starter Pack 설치됨"
+fi
 ```
 
 ---
@@ -210,8 +218,8 @@ ls -la ~/.claude/agents/
 # 깨진 링크 제거
 find ~/.claude/agents/ -type l ! -exec test -e {} \; -delete
 
-# 다시 링크 생성
-ln -sf ~/molidae/ai/claude-code/agents/*/*.json ~/.claude/agents/
+# 설정 스크립트로 다시 설정
+~/molidae/ai/claude-code/scripts/setup.sh
 ```
 
 #### 2. 권한 문제
@@ -232,22 +240,44 @@ chmod 755 ~/.claude/agents/
 # 절대 경로 사용 확인
 realpath ~/molidae/ai/claude-code/agents/
 
-# 정확한 절대 경로로 재설정
-ln -sf $(realpath ~/molidae/ai/claude-code/agents)/*/*.json ~/.claude/agents/
+# 정확한 절대 경로로 재설정 (Starter Pack 예시)
+ln -sf $(realpath ~/molidae/ai/claude-code/agents)/starter/*.json ~/.claude/agents/
 ```
 
-### 에이전트 업데이트
+#### 4. 팩 혼동 문제
+**원인**: 여러 팩을 수동으로 설치하다가 혼동
 
-#### 에이전트 파일 수정 후 반영
+**해결책**:
 ```bash
-# 심볼릭 링크는 자동으로 최신 내용을 반영
-# Claude Code 재시작만 하면 됨
+# 기존 에이전트 모두 제거
+rm -f ~/.claude/agents/*
+
+# 설정 스크립트로 깔끔하게 재설정
+~/molidae/ai/claude-code/scripts/setup.sh
 ```
 
-#### 새로운 에이전트 추가 후 반영
+### 팩 관련 문제 해결
+
+#### 현재 팩 상태 확인
 ```bash
-# 새 에이전트 링크 추가
-ln -sf ~/molidae/ai/claude-code/agents/새카테고리/새에이전트.json ~/.claude/agents/
+# 설치된 에이전트로 팩 확인
+if [ -f ~/.claude/agents/security-auditor.json ]; then
+    echo "⚡ Professional Pack (7개) 설치됨"
+elif [ -f ~/.claude/agents/debug-expert.json ]; then
+    echo "🎨 Essential Pack (4개) 설치됨"
+elif [ -f ~/.claude/agents/test-generator.json ]; then
+    echo "🚀 Starter Pack (2개) 설치됨"
+else
+    echo "❌ 에이전트가 설치되지 않음"
+fi
+```
+
+#### 팩 불완전 설치 해결
+```bash
+# 현재 팩을 완전히 재설치
+~/molidae/ai/claude-code/scripts/setup.sh
+# 기존 에이전트 제거: y
+# 원하는 팩 선택
 ```
 
 ### 디버깅 명령어
@@ -257,48 +287,109 @@ ln -sf ~/molidae/ai/claude-code/agents/새카테고리/새에이전트.json ~/.c
 # 에이전트 디렉토리 확인
 ls -la ~/.claude/agents/
 
-# 심볼릭 링크 대상 확인
-readlink ~/.claude/agents/*
+# 각 팩별 파일 존재 확인
+echo "🚀 Starter Pack:"
+ls ~/.claude/agents/{code-reviewer,test-generator}.json 2>/dev/null
 
-# Claude Code 설정 디렉토리 확인
-ls -la ~/.claude/
+echo "🎨 Essential Pack:"
+ls ~/.claude/agents/{korean-docs,debug-expert}.json 2>/dev/null
+
+echo "⚡ Professional Pack:"
+ls ~/.claude/agents/{api-architect,performance-optimizer,security-auditor}.json 2>/dev/null
 ```
 
-#### 에이전트 JSON 유효성 검사
+#### 심볼릭 링크 유효성 검사
 ```bash
-# JSON 문법 검사
-for file in ~/molidae/ai/claude-code/agents/*/*.json; do
-    echo "Checking $file"
-    jq empty "$file" && echo "✅ Valid" || echo "❌ Invalid"
+# 모든 링크가 유효한지 확인
+for link in ~/.claude/agents/*.json; do
+    if [ -L "$link" ] && [ ! -e "$link" ]; then
+        echo "❌ 깨진 링크: $link"
+    elif [ -L "$link" ] && [ -e "$link" ]; then
+        echo "✅ 정상 링크: $link"
+    fi
 done
+```
+
+#### JSON 유효성 검사
+```bash
+# 팩별 JSON 검사
+echo "🔍 JSON 유효성 검사:"
+for pack in starter essential professional; do
+    echo "📦 $pack pack:"
+    for file in ~/molidae/ai/claude-code/agents/$pack/*.json; do
+        if [ -f "$file" ]; then
+            agent_name=$(basename "$file" .json)
+            if command -v jq &> /dev/null; then
+                if jq empty "$file" 2>/dev/null; then
+                    echo "  ✅ $agent_name"
+                else
+                    echo "  ❌ $agent_name (JSON 오류)"
+                fi
+            else
+                echo "  ⚠️ $agent_name (jq 없음)"
+            fi
+        fi
+    done
+done
+```
+
+### 성능 최적화
+
+#### 불필요한 에이전트 제거
+```bash
+# 사용하지 않는 Professional 에이전트만 제거 (Essential Pack 유지)
+rm -f ~/.claude/agents/{api-architect,performance-optimizer,security-auditor}.json
+
+# 특정 에이전트만 제거
+rm -f ~/.claude/agents/security-auditor.json
+```
+
+#### 팩 다운그레이드
+```bash
+# Professional에서 Essential로 다운그레이드
+rm -f ~/.claude/agents/{api-architect,performance-optimizer,security-auditor}.json
+
+# Essential에서 Starter로 다운그레이드
+rm -f ~/.claude/agents/{korean-docs,debug-expert}.json
+```
+
+### 프로젝트별 설정 문제
+
+#### 프로젝트 에이전트가 작동하지 않음
+```bash
+# 프로젝트 루트에서 실행
+pwd  # 프로젝트 루트인지 확인
+
+# .claude/agents 디렉토리 확인
+ls -la .claude/agents/
+
+# 프로젝트별 에이전트 재설정
+rm -rf .claude/agents/
+mkdir -p .claude/agents/
+ln -sf ~/.claude/agents/* .claude/agents/
 ```
 
 ---
 
-## 추가 팁
+## 🎯 빠른 해결 가이드
 
-### 백업 생성
+### 🚨 문제별 즉시 해결법
+
+| 문제 | 즉시 해결 명령어 |
+|------|------------------|
+| 에이전트 안 보임 | `~/molidae/ai/claude-code/scripts/setup.sh` |
+| 팩 혼동됨 | `rm -f ~/.claude/agents/* && ~/molidae/ai/claude-code/scripts/setup.sh` |
+| 깨진 링크 | `find ~/.claude/agents/ -type l ! -exec test -e {} \\; -delete` |
+| 권한 오류 | `chmod 644 ~/molidae/ai/claude-code/agents/*/*.json` |
+
+### 💡 유지보수 명령어
 ```bash
-# 현재 설정 백업
+# 월간 정리: 깨진 링크 제거 + 재설정
+find ~/.claude/agents/ -type l ! -exec test -e {} \; -delete
+~/molidae/ai/claude-code/scripts/setup.sh
+
+# 백업 생성
 cp -r ~/.claude/agents/ ~/.claude/agents.backup.$(date +%Y%m%d)
-```
-
-### 프로젝트별 에이전트 관리
-```bash
-# 프로젝트별 설정 스크립트
-echo '#!/bin/bash
-mkdir -p .claude/agents
-ln -sf ~/molidae/ai/claude-code/agents/core/*.json ./.claude/agents/
-ln -sf ~/molidae/ai/claude-code/agents/personal/tdd-coach.json ./.claude/agents/
-echo "프로젝트 에이전트 설정 완료"' > setup-project-agents.sh
-
-chmod +x setup-project-agents.sh
-```
-
-### 성능 최적화
-```bash
-# 사용하지 않는 에이전트 제거로 성능 향상
-rm ~/.claude/agents/불필요한에이전트.json
 ```
 
 ---
