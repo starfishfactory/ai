@@ -66,11 +66,21 @@ fi
 
 # 설정 방식 선택
 echo ""
-log_info "설정 방식을 선택하세요:"
-echo "1) 🎯 전체 에이전트 (추천 - Core + Personal + Specialized)"
-echo "2) 🛠️  Core 에이전트만 (기본 - 코드리뷰, 테스트, 디버그, 문서화)"
-echo "3) 🎨 Core + Personal 에이전트 (개인화 - TDD, 한국어, 깃모지 포함)"
-echo "4) 📋 개별 선택 (고급 사용자용)"
+log_info "에이전트 팩을 선택하세요:"
+echo ""
+echo "🚀 1) Starter Pack (2개) - 처음 사용자 추천"
+echo "   • code-reviewer: 코드 품질/보안/성능 검토"
+echo "   • test-generator: TDD 기반 테스트 케이스 생성"
+echo ""
+echo "🎨 2) Essential Pack (4개) - 일반 사용자 추천"
+echo "   • Starter Pack + korean-docs + debug-expert"
+echo "   • 개인 스타일(한국어, TDD) 완전 반영"
+echo ""
+echo "⚡ 3) Professional Pack (7개) - 전문가용"
+echo "   • Essential Pack + api-architect + performance-optimizer + security-auditor"
+echo "   • 모든 전문 기능 포함"
+echo ""
+echo "🛠️  4) Custom - 개별 선택 (고급 사용자용)"
 echo ""
 
 read -p "선택 (1-4): " -n 1 -r
@@ -78,51 +88,42 @@ echo ""
 
 case $REPLY in
     1)
-        log_info "전체 에이전트를 설정합니다..."
+        log_info "🚀 Starter Pack을 설정합니다..."
+        log_info "가장 핵심적인 2개 에이전트로 Claude Code를 경험해보세요!"
 
-        # Core 에이전트
-        log_info "Core 에이전트 설정 중..."
-        ln -sf "$AGENTS_DIR"/core/*.json "$USER_AGENTS_DIR"/
-
-        # Personal 에이전트
-        log_info "Personal 에이전트 설정 중..."
-        ln -sf "$AGENTS_DIR"/personal/*.json "$USER_AGENTS_DIR"/
-
-        # Specialized 에이전트
-        log_info "Specialized 에이전트 설정 중..."
-        ln -sf "$AGENTS_DIR"/specialized/*.json "$USER_AGENTS_DIR"/
-
-        log_success "전체 에이전트를 설정했습니다."
+        ln -sf "$AGENTS_DIR"/starter/*.json "$USER_AGENTS_DIR"/
+        log_success "Starter Pack 설정 완료 (2개 에이전트)"
         ;;
 
     2)
-        log_info "Core 에이전트를 설정합니다..."
-        ln -sf "$AGENTS_DIR"/core/*.json "$USER_AGENTS_DIR"/
-        log_success "Core 에이전트를 설정했습니다."
+        log_info "🎨 Essential Pack을 설정합니다..."
+        log_info "일상 개발에 필요한 모든 기능을 포함합니다!"
+
+        # Starter + Essential
+        ln -sf "$AGENTS_DIR"/starter/*.json "$USER_AGENTS_DIR"/
+        ln -sf "$AGENTS_DIR"/essential/*.json "$USER_AGENTS_DIR"/
+        log_success "Essential Pack 설정 완료 (4개 에이전트)"
         ;;
 
     3)
-        log_info "Core + Personal 에이전트를 설정합니다..."
+        log_info "⚡ Professional Pack을 설정합니다..."
+        log_info "전문가 수준의 모든 도구를 사용할 수 있습니다!"
 
-        # Core 에이전트
-        log_info "Core 에이전트 설정 중..."
-        ln -sf "$AGENTS_DIR"/core/*.json "$USER_AGENTS_DIR"/
-
-        # Personal 에이전트
-        log_info "Personal 에이전트 설정 중..."
-        ln -sf "$AGENTS_DIR"/personal/*.json "$USER_AGENTS_DIR"/
-
-        log_success "Core + Personal 에이전트를 설정했습니다."
+        # Starter + Essential + Professional
+        ln -sf "$AGENTS_DIR"/starter/*.json "$USER_AGENTS_DIR"/
+        ln -sf "$AGENTS_DIR"/essential/*.json "$USER_AGENTS_DIR"/
+        ln -sf "$AGENTS_DIR"/professional/*.json "$USER_AGENTS_DIR"/
+        log_success "Professional Pack 설정 완료 (7개 에이전트)"
         ;;
 
     4)
-        log_info "개별 선택 모드입니다."
+        log_info "🛠️  Custom 설정 모드입니다."
 
-        # Core 에이전트 선택
+        # Starter 에이전트 선택
         echo ""
-        log_info "🛠️  Core 에이전트를 선택하세요:"
+        log_info "🚀 Starter 에이전트를 선택하세요 (추천: 모두 선택):"
 
-        for agent in "$AGENTS_DIR"/core/*.json; do
+        for agent in "$AGENTS_DIR"/starter/*.json; do
             agent_name=$(basename "$agent" .json)
             read -p "  - $agent_name (y/N): " -n 1 -r
             echo ""
@@ -132,11 +133,11 @@ case $REPLY in
             fi
         done
 
-        # Personal 에이전트 선택
+        # Essential 에이전트 선택
         echo ""
-        log_info "🎨 Personal 에이전트를 선택하세요:"
+        log_info "🎨 Essential 에이전트를 선택하세요:"
 
-        for agent in "$AGENTS_DIR"/personal/*.json; do
+        for agent in "$AGENTS_DIR"/essential/*.json; do
             agent_name=$(basename "$agent" .json)
             read -p "  - $agent_name (y/N): " -n 1 -r
             echo ""
@@ -146,11 +147,11 @@ case $REPLY in
             fi
         done
 
-        # Specialized 에이전트 선택
+        # Professional 에이전트 선택
         echo ""
-        log_info "🚀 Specialized 에이전트를 선택하세요:"
+        log_info "⚡ Professional 에이전트를 선택하세요:"
 
-        for agent in "$AGENTS_DIR"/specialized/*.json; do
+        for agent in "$AGENTS_DIR"/professional/*.json; do
             agent_name=$(basename "$agent" .json)
             read -p "  - $agent_name (y/N): " -n 1 -r
             echo ""
@@ -160,7 +161,7 @@ case $REPLY in
             fi
         done
 
-        log_success "개별 선택 설정이 완료되었습니다."
+        log_success "Custom 설정이 완료되었습니다."
         ;;
 
     *)
@@ -209,18 +210,22 @@ log_success "총 $agent_count 개의 에이전트가 설정되었습니다."
 echo ""
 log_info "🎉 설정이 완료되었습니다!"
 echo ""
-echo "다음 단계:"
+echo "🎉 다음 단계:"
 echo "1. Claude Code를 실행하세요"
 echo "2. '/agents' 명령으로 설정된 에이전트를 확인하세요"
 echo "3. 개발 작업 시 에이전트가 자동으로 선택되거나 직접 호출하세요"
 echo ""
-echo "주요 에이전트 활용법:"
-echo "  • 코드 리뷰: '이 코드를 검토해주세요'"
-echo "  • TDD 개발: '새 기능을 TDD로 개발하고 싶어요'"
-echo "  • 문서 작성: 'API 가이드를 작성해주세요'"
-echo "  • PR 작성: '이 변경사항의 PR을 작성해주세요'"
+echo "💡 주요 에이전트 활용법:"
+echo "  🔍 코드 리뷰: '이 코드를 검토해주세요'"
+echo "  🧪 TDD 개발: '새 기능을 테스트부터 작성해주세요'"
+echo "  📚 문서 작성: 'API 가이드를 작성해주세요'"
+echo "  🐛 디버깅: '이 에러를 분석해주세요'"
 echo ""
-echo "자세한 사용법은 README.md를 참조하세요!"
+echo "📖 더 많은 에이전트가 필요하다면:"
+echo "  • 이 스크립트를 다시 실행하여 더 큰 팩으로 업그레이드"
+echo "  • Custom 모드로 필요한 에이전트만 추가"
+echo ""
+echo "📚 자세한 사용법은 README.md를 참조하세요!"
 
 # 프로젝트별 설정 안내
 echo ""
