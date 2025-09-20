@@ -1,0 +1,13 @@
+{
+  "name": "template-agent",
+  "description": "새로운 에이전트 설명을 여기에 작성하세요. PROACTIVELY 키워드를 포함하면 자동 선택 확률이 높아집니다. 한국어로 상세하고 친절하게 설명하며, 구체적인 역할과 전문성을 명시하세요.",
+  "tools": [
+    "Read",
+    "Write",
+    "Edit",
+    "Bash",
+    "Grep",
+    "Glob"
+  ],
+  "model": "sonnet"
+}
