@@ -51,8 +51,17 @@ LAST_PROMPT=$(jq -r '[.transcript[] | select(.speaker == "user")] | last | .cont
 LAST_RESPONSE=$(jq -r '[.transcript[] | select(.speaker == "assistant")] | last | .content' "$TRANSCRIPT_PATH" 2>/dev/null || echo "")
 
 # 텍스트 자르기 (200자)
-PROMPT_SHORT="${LAST_PROMPT:0:200}"
-RESPONSE_SHORT="${LAST_RESPONSE:0:200}"
+if [ ${#LAST_PROMPT} -gt 200 ]; then
+    PROMPT_SHORT="${LAST_PROMPT:0:200}..."
+else
+    PROMPT_SHORT="$LAST_PROMPT"
+fi
+
+if [ ${#LAST_RESPONSE} -gt 200 ]; then
+    RESPONSE_SHORT="${LAST_RESPONSE:0:200}..."
+else
+    RESPONSE_SHORT="$LAST_RESPONSE"
+fi
 
 # Slack 메시지 전송
 curl -sS -X POST https://slack.com/api/chat.postMessage \
@@ -73,7 +82,7 @@ curl -sS -X POST https://slack.com/api/chat.postMessage \
         \"fields\": [
           {
             \"type\": \"mrkdwn\",
-            \"text\": \"*프롬프트:*\n${PROMPT_SHORT}${LAST_PROMPT:200:1:+...}\"
+            \"text\": \"*프롬프트:*\n$PROMPT_SHORT\"
           },
           {
             \"type\": \"mrkdwn\",
@@ -85,7 +94,7 @@ curl -sS -X POST https://slack.com/api/chat.postMessage \
         \"type\": \"section\",
         \"text\": {
           \"type\": \"mrkdwn\",
-          \"text\": \"*마지막 응답:*\n${RESPONSE_SHORT}${LAST_RESPONSE:200:1:+...}\"
+          \"text\": \"*마지막 응답:*\n$RESPONSE_SHORT\"
         }
       }
     ]

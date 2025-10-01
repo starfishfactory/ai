@@ -15,9 +15,8 @@ Claude Code 작업이 완료될 때 자동으로 Slack DM으로 알림을 보냅
 
 1. https://api.slack.com/apps 접속
 2. "Create New App" → "From scratch"
-3. "OAuth & Permissions"에서 다음 권한 추가:
+3. "OAuth & Permissions"에서 권한 추가:
    - `chat:write`
-   - `users:read` (선택)
 4. "Install to Workspace" 클릭
 5. **Bot User OAuth Token** 복사 (`xoxb-`로 시작)
 
