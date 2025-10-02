@@ -113,6 +113,18 @@ jq 'del(.hooks.Stop)' ~/.claude/settings.json > ~/.claude/settings.json.tmp
 mv ~/.claude/settings.json.tmp ~/.claude/settings.json
 ```
 
+## 디버그
+
+훅 실행 로그는 다음 위치에 저장됩니다:
+```
+~/.claude/hooks/debug.log
+```
+
+로그 확인:
+```bash
+tail -f ~/.claude/hooks/debug.log
+```
+
 ## 문제 해결
 
 ### 알림이 오지 않을 때

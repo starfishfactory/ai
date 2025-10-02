@@ -83,8 +83,16 @@ mkdir -p "$HOOK_DIR"
 cat > "$HOOK_DIR/slack_notify.sh" << 'EOF'
 #!/bin/bash
 
+# 디버그 로그
+DEBUG_LOG="$HOME/.claude/hooks/debug.log"
+echo "========== $(date) ==========" >> "$DEBUG_LOG"
+echo "Hook started" >> "$DEBUG_LOG"
+
 # 환경변수 로드
 source ~/.bashrc 2>/dev/null || true
+
+echo "ENV: SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:0:20}..." >> "$DEBUG_LOG"
+echo "ENV: SLACK_USER_ID=$SLACK_USER_ID" >> "$DEBUG_LOG"
 
 # stdin에서 JSON 읽기
 INPUT_JSON=$(cat)
@@ -93,7 +101,11 @@ INPUT_JSON=$(cat)
 TRANSCRIPT_PATH=$(echo "$INPUT_JSON" | jq -r '.transcript_path // empty')
 CWD=$(echo "$INPUT_JSON" | jq -r '.cwd // empty')
 
+echo "TRANSCRIPT: $TRANSCRIPT_PATH" >> "$DEBUG_LOG"
+echo "CWD: $CWD" >> "$DEBUG_LOG"
+
 if [ -z "$TRANSCRIPT_PATH" ] || [ ! -f "$TRANSCRIPT_PATH" ]; then
+    echo "No transcript or file not found" >> "$DEBUG_LOG"
     exit 0
 fi
 
@@ -102,11 +114,16 @@ LAST_PROMPT=$(grep '"type":"user"' "$TRANSCRIPT_PATH" | \
     jq -r 'select(.message.content | type == "string") | .message.content' 2>/dev/null | \
     tail -1)
 
+echo "PROMPT: [${LAST_PROMPT:0:100}]" >> "$DEBUG_LOG"
+
 # 마지막 어시스턴트 응답 추출 (text 타입만, 전체 텍스트)
 LAST_RESPONSE=$(grep '"type":"assistant"' "$TRANSCRIPT_PATH" | tail -1 | \
     jq -r '.message.content[]? | select(.type == "text") | .text' 2>/dev/null)
 
+echo "RESPONSE: [${LAST_RESPONSE:0:100}]" >> "$DEBUG_LOG"
+
 if [ -z "$LAST_PROMPT" ] || [ -z "$LAST_RESPONSE" ]; then
+    echo "Empty prompt or response, exit" >> "$DEBUG_LOG"
     exit 0
 fi
 
@@ -121,11 +138,19 @@ RESPONSE_SHORT="${LAST_RESPONSE:0:200}"
 LAST_SENT_FILE="$HOME/.claude/hooks/.last_sent"
 COMBINED_HASH=$(echo -n "${LAST_PROMPT}${LAST_RESPONSE}" | md5sum | cut -d' ' -f1)
 
+echo "HASH: $COMBINED_HASH" >> "$DEBUG_LOG"
+
 if [ -f "$LAST_SENT_FILE" ]; then
-    [ "$COMBINED_HASH" = "$(cat $LAST_SENT_FILE)" ] && exit 0
+    LAST_HASH=$(cat "$LAST_SENT_FILE")
+    echo "LAST_HASH: $LAST_HASH" >> "$DEBUG_LOG"
+    if [ "$COMBINED_HASH" = "$LAST_HASH" ]; then
+        echo "Duplicate detected, exit" >> "$DEBUG_LOG"
+        exit 0
+    fi
 fi
 
 echo "$COMBINED_HASH" > "$LAST_SENT_FILE"
+echo "Sending to Slack..." >> "$DEBUG_LOG"
 
 # Slack 메시지 전송
 PAYLOAD=$(jq -n \
@@ -162,10 +187,17 @@ PAYLOAD=$(jq -n \
     ]
   }')
 
-curl -sS -X POST https://slack.com/api/chat.postMessage \
+RESPONSE=$(curl -sS -w "\n%{http_code}" -X POST https://slack.com/api/chat.postMessage \
   -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "$PAYLOAD" > /dev/null 2>&1
+  -d "$PAYLOAD")
+
+HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+BODY=$(echo "$RESPONSE" | head -n-1)
+
+echo "HTTP: $HTTP_CODE" >> "$DEBUG_LOG"
+echo "BODY: ${BODY:0:200}" >> "$DEBUG_LOG"
+echo "Done" >> "$DEBUG_LOG"
 EOF
 
 chmod +x "$HOOK_DIR/slack_notify.sh"
