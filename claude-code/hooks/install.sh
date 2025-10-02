@@ -102,9 +102,9 @@ LAST_PROMPT=$(grep '"type":"user"' "$TRANSCRIPT_PATH" | \
     jq -r 'select(.message.content | type == "string") | .message.content' 2>/dev/null | \
     tail -1)
 
-# 마지막 어시스턴트 응답 추출 (text 타입만)
+# 마지막 어시스턴트 응답 추출 (text 타입만, 전체 텍스트)
 LAST_RESPONSE=$(grep '"type":"assistant"' "$TRANSCRIPT_PATH" | tail -1 | \
-    jq -r '.message.content[]? | select(.type == "text") | .text' 2>/dev/null | head -1)
+    jq -r '.message.content[]? | select(.type == "text") | .text' 2>/dev/null)
 
 if [ -z "$LAST_PROMPT" ] || [ -z "$LAST_RESPONSE" ]; then
     exit 0
@@ -117,15 +117,15 @@ PROMPT_SHORT="${LAST_PROMPT:0:200}"
 RESPONSE_SHORT="${LAST_RESPONSE:0:200}"
 [ ${#LAST_RESPONSE} -gt 200 ] && RESPONSE_SHORT="${RESPONSE_SHORT}..."
 
-# 중복 방지
+# 중복 방지 (프롬프트 + 응답 조합으로 체크)
 LAST_SENT_FILE="$HOME/.claude/hooks/.last_sent"
-PROMPT_HASH=$(echo -n "$LAST_PROMPT" | md5sum | cut -d' ' -f1)
+COMBINED_HASH=$(echo -n "${LAST_PROMPT}${LAST_RESPONSE}" | md5sum | cut -d' ' -f1)
 
 if [ -f "$LAST_SENT_FILE" ]; then
-    [ "$PROMPT_HASH" = "$(cat $LAST_SENT_FILE)" ] && exit 0
+    [ "$COMBINED_HASH" = "$(cat $LAST_SENT_FILE)" ] && exit 0
 fi
 
-echo "$PROMPT_HASH" > "$LAST_SENT_FILE"
+echo "$COMBINED_HASH" > "$LAST_SENT_FILE"
 
 # Slack 메시지 전송
 PAYLOAD=$(jq -n \
