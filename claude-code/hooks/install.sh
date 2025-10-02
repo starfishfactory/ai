@@ -132,15 +132,11 @@ smart_truncate() {
 PROMPT_SHORT=$(smart_truncate "$LAST_PROMPT")
 RESPONSE_SHORT=$(smart_truncate "$LAST_RESPONSE")
 
-# 현재 시간
-TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
-
 # JSON 페이로드 생성 (jq로 안전하게)
 PAYLOAD=$(jq -n \
   --arg channel "$SLACK_USER_ID" \
   --arg prompt "$PROMPT_SHORT" \
   --arg response "$RESPONSE_SHORT" \
-  --arg time "$TIMESTAMP" \
   --arg workdir "$WORK_DIR" \
   '{
     channel: $channel,
@@ -149,27 +145,14 @@ PAYLOAD=$(jq -n \
         type: "header",
         text: {
           type: "plain_text",
-          text: "✅ Claude Code 작업 완료"
+          text: $prompt
         }
-      },
-      {
-        type: "section",
-        fields: [
-          {
-            type: "mrkdwn",
-            text: ("*프롬프트:*\n" + $prompt)
-          },
-          {
-            type: "mrkdwn",
-            text: ("*시간:*\n" + $time)
-          }
-        ]
       },
       {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: ("*마지막 응답:*\n" + $response)
+          text: $response
         }
       },
       {
