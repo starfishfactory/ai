@@ -4,7 +4,7 @@ Claude Code 작업이 완료될 때 자동으로 Slack DM으로 알림을 보냅
 
 ## 기능
 
-- ✅ **각 응답 완료 시 자동 알림** (Stop 훅 사용)
+- ✅ **각 프롬프트-응답 마다 자동 알림** (UserPromptSubmit 훅 사용)
 - 📝 프롬프트를 헤더로 표시 (200자 제한)
 - 💬 응답 메시지 표시 (200자 제한)
 - 📁 작업 디렉토리 경로 표시
@@ -68,11 +68,11 @@ source ~/.zshrc  # 또는 ~/.bashrc
 
 ## 사용법
 
-평소대로 Claude Code를 사용하면 됩니다. **각 응답이 완료될 때마다** 자동으로 Slack 알림이 전송됩니다.
+평소대로 Claude Code를 사용하면 됩니다. **각 프롬프트-응답 마다** 자동으로 Slack 알림이 전송됩니다.
 
 ### 알림 타이밍
 
-- ✅ Claude의 응답이 완료되면 즉시 알림
+- ✅ 프롬프트를 제출하면 즉시 알림
 - 🔄 같은 프롬프트에 대한 중복 알림 방지
 - 📱 Slack DM으로 실시간 수신
 
@@ -108,8 +108,8 @@ claude code
 # 훅 스크립트 제거
 rm ~/.claude/hooks/slack_notify.sh
 
-# settings.json에서 Stop 훅 제거
-jq 'del(.hooks.Stop)' ~/.claude/settings.json > ~/.claude/settings.json.tmp
+# settings.json에서 UserPromptSubmit 훅 제거
+jq 'del(.hooks.UserPromptSubmit)' ~/.claude/settings.json > ~/.claude/settings.json.tmp
 mv ~/.claude/settings.json.tmp ~/.claude/settings.json
 ```
 
@@ -142,10 +142,10 @@ tail -f ~/.claude/hooks/debug.log
 
 2. **훅 설정 확인:**
    ```bash
-   cat ~/.claude/settings.json | jq '.hooks.Stop'
+   cat ~/.claude/settings.json | jq '.hooks.UserPromptSubmit'
    ```
 
-   Stop 훅이 등록되어 있는지 확인
+   UserPromptSubmit 훅이 등록되어 있는지 확인
 
 3. **Slack Bot 권한 확인:**
    - https://api.slack.com/apps 에서 앱 선택

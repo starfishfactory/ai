@@ -210,8 +210,8 @@ if [ ! -f "$SETTINGS_FILE" ]; then
     echo '{}' > "$SETTINGS_FILE"
 fi
 
-# jq로 훅 추가 (Stop: 응답 완료 시)
-jq '.hooks.Stop = [{"matcher": "", "hooks": [{"type": "command", "command": "'"$HOOK_DIR/slack_notify.sh"'"}]}]' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp"
+# jq로 훅 추가 (UserPromptSubmit: 각 프롬프트-응답 마다, Stop: 세션 종료 시)
+jq '.hooks.UserPromptSubmit = [{"matcher": "", "hooks": [{"type": "command", "command": "'"$HOOK_DIR/slack_notify.sh"'"}]}] | .hooks.Stop = [{"matcher": "", "hooks": [{"type": "command", "command": "'"$HOOK_DIR/slack_notify.sh"'"}]}]' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp"
 mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
 
 echo ""
@@ -225,4 +225,4 @@ echo "   - 쉘 설정 파일 권한이 600으로 설정되었습니다"
 echo "   - Token은 평문으로 저장되므로 시스템 접근 권한 관리에 유의하세요"
 echo "   - 공유 서버에서는 사용을 권장하지 않습니다"
 echo ""
-echo "🎉 이제 Claude Code 세션이 종료될 때마다 Slack으로 알림이 갑니다!"
+echo "🎉 이제 Claude Code에서 프롬프트-응답이 있을 때마다 Slack으로 알림이 갑니다!"
