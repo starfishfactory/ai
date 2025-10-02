@@ -83,61 +83,56 @@ mkdir -p "$HOOK_DIR"
 cat > "$HOOK_DIR/slack_notify.sh" << 'EOF'
 #!/bin/bash
 
-# 로그 파일 설정
-LOG_FILE="$HOME/.claude/hooks/slack_notify.log"
+# 환경변수 로드
+source ~/.bashrc 2>/dev/null || true
 
-# 에러 로깅 함수
-log_error() {
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] ERROR: $1" >> "$LOG_FILE"
-}
+# stdin에서 JSON 읽기
+INPUT_JSON=$(cat)
 
-# 트랜스크립트 경로 가져오기
-TRANSCRIPT_PATH=$(echo "$STDIN_JSON" | jq -r '.transcript_path // empty' 2>/dev/null)
+# transcript 경로 및 작업 디렉토리 추출
+TRANSCRIPT_PATH=$(echo "$INPUT_JSON" | jq -r '.transcript_path // empty')
+CWD=$(echo "$INPUT_JSON" | jq -r '.cwd // empty')
 
 if [ -z "$TRANSCRIPT_PATH" ] || [ ! -f "$TRANSCRIPT_PATH" ]; then
     exit 0
 fi
 
-# 작업 디렉토리 가져오기
-WORK_DIR=$(echo "$STDIN_JSON" | jq -r '.working_directory // "Unknown"' 2>/dev/null)
-if [ "$WORK_DIR" = "null" ]; then
-    WORK_DIR="Unknown"
+# 마지막 실제 사용자 프롬프트 추출 (content가 문자열인 것만)
+LAST_PROMPT=$(grep '"type":"user"' "$TRANSCRIPT_PATH" | \
+    jq -r 'select(.message.content | type == "string") | .message.content' 2>/dev/null | \
+    tail -1)
+
+# 마지막 어시스턴트 응답 추출 (text 타입만)
+LAST_RESPONSE=$(grep '"type":"assistant"' "$TRANSCRIPT_PATH" | tail -1 | \
+    jq -r '.message.content[]? | select(.type == "text") | .text' 2>/dev/null | head -1)
+
+if [ -z "$LAST_PROMPT" ] || [ -z "$LAST_RESPONSE" ]; then
+    exit 0
 fi
 
-# 마지막 프롬프트와 응답 추출
-LAST_PROMPT=$(jq -r '[.transcript[] | select(.speaker == "user")] | last | .content' "$TRANSCRIPT_PATH" 2>/dev/null || echo "")
-LAST_RESPONSE=$(jq -r '[.transcript[] | select(.speaker == "assistant")] | last | .content' "$TRANSCRIPT_PATH" 2>/dev/null || echo "")
+# 텍스트 자르기 (200자)
+PROMPT_SHORT="${LAST_PROMPT:0:200}"
+[ ${#LAST_PROMPT} -gt 200 ] && PROMPT_SHORT="${PROMPT_SHORT}..."
 
-# 스마트 텍스트 자르기 함수 (줄바꿈 우선, 200자 제한)
-smart_truncate() {
-    local text="$1"
-    local limit=200
+RESPONSE_SHORT="${LAST_RESPONSE:0:200}"
+[ ${#LAST_RESPONSE} -gt 200 ] && RESPONSE_SHORT="${RESPONSE_SHORT}..."
 
-    if [ ${#text} -le $limit ]; then
-        echo "$text"
-        return
-    fi
+# 중복 방지
+LAST_SENT_FILE="$HOME/.claude/hooks/.last_sent"
+PROMPT_HASH=$(echo -n "$LAST_PROMPT" | md5sum | cut -d' ' -f1)
 
-    # 200자 내에서 마지막 줄바꿈 찾기
-    local truncated="${text:0:$limit}"
-    local last_newline=$(echo "$truncated" | grep -ob $'\n' | tail -1 | cut -d: -f1)
+if [ -f "$LAST_SENT_FILE" ]; then
+    [ "$PROMPT_HASH" = "$(cat $LAST_SENT_FILE)" ] && exit 0
+fi
 
-    if [ -n "$last_newline" ] && [ "$last_newline" -gt 100 ]; then
-        echo "${text:0:$last_newline}..."
-    else
-        echo "${truncated}..."
-    fi
-}
+echo "$PROMPT_HASH" > "$LAST_SENT_FILE"
 
-PROMPT_SHORT=$(smart_truncate "$LAST_PROMPT")
-RESPONSE_SHORT=$(smart_truncate "$LAST_RESPONSE")
-
-# JSON 페이로드 생성 (jq로 안전하게)
+# Slack 메시지 전송
 PAYLOAD=$(jq -n \
   --arg channel "$SLACK_USER_ID" \
   --arg prompt "$PROMPT_SHORT" \
   --arg response "$RESPONSE_SHORT" \
-  --arg workdir "$WORK_DIR" \
+  --arg workdir "$CWD" \
   '{
     channel: $channel,
     blocks: [
@@ -167,28 +162,10 @@ PAYLOAD=$(jq -n \
     ]
   }')
 
-# Slack 메시지 전송
-RESPONSE=$(curl -sS -w "\n%{http_code}" -X POST https://slack.com/api/chat.postMessage \
+curl -sS -X POST https://slack.com/api/chat.postMessage \
   -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "$PAYLOAD")
-
-# 응답 파싱
-HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-BODY=$(echo "$RESPONSE" | sed '$d')
-
-# 에러 체크
-if [ "$HTTP_CODE" != "200" ]; then
-    log_error "HTTP $HTTP_CODE: $BODY"
-    exit 1
-fi
-
-# Slack API 에러 체크
-if ! echo "$BODY" | jq -e '.ok' > /dev/null 2>&1; then
-    ERROR_MSG=$(echo "$BODY" | jq -r '.error // "Unknown error"')
-    log_error "Slack API Error: $ERROR_MSG"
-    exit 1
-fi
+  -d "$PAYLOAD" > /dev/null 2>&1
 EOF
 
 chmod +x "$HOOK_DIR/slack_notify.sh"
@@ -201,7 +178,7 @@ if [ ! -f "$SETTINGS_FILE" ]; then
     echo '{}' > "$SETTINGS_FILE"
 fi
 
-# jq로 훅 추가
+# jq로 훅 추가 (Stop: 응답 완료 시)
 jq '.hooks.Stop = [{"matcher": "", "hooks": [{"type": "command", "command": "'"$HOOK_DIR/slack_notify.sh"'"}]}]' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp"
 mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
 

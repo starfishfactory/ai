@@ -4,12 +4,12 @@ Claude Code 작업이 완료될 때 자동으로 Slack DM으로 알림을 보냅
 
 ## 기능
 
-- ✅ 작업 완료 시 자동 알림 (간결한 포맷)
-- 📝 프롬프트를 헤더로 표시 (스마트 자르기)
-- 💬 응답 메시지 표시 (스마트 자르기)
+- ✅ **각 응답 완료 시 자동 알림** (Stop 훅 사용)
+- 📝 프롬프트를 헤더로 표시 (200자 제한)
+- 💬 응답 메시지 표시 (200자 제한)
 - 📁 작업 디렉토리 경로 표시
-- 🛡️ 안전한 JSON 처리 (특수문자 이스케이핑)
-- 📊 에러 로깅 및 추적
+- 🔄 중복 알림 방지 (같은 프롬프트에 대해 1회만)
+- 🛡️ 안전한 JSON 처리 (jq 사용)
 
 ## 요구사항
 
@@ -68,7 +68,13 @@ source ~/.zshrc  # 또는 ~/.bashrc
 
 ## 사용법
 
-평소대로 Claude Code를 사용하면 됩니다. 세션이 종료될 때 자동으로 Slack 알림이 전송됩니다.
+평소대로 Claude Code를 사용하면 됩니다. **각 응답이 완료될 때마다** 자동으로 Slack 알림이 전송됩니다.
+
+### 알림 타이밍
+
+- ✅ Claude의 응답이 완료되면 즉시 알림
+- 🔄 같은 프롬프트에 대한 중복 알림 방지
+- 📱 Slack DM으로 실시간 수신
 
 ## 테스트
 
@@ -76,8 +82,10 @@ source ~/.zshrc  # 또는 ~/.bashrc
 # Claude Code 실행
 claude code
 
-# 간단한 작업 수행 후 종료 (Ctrl+C 또는 /exit)
-# Slack DM 확인
+# 간단한 질문 (예: "안녕")
+# 응답이 완료되면 즉시 Slack DM 확인
+
+# 같은 질문을 다시 하면 중복 방지로 알림 안 감
 ```
 
 ## 파일 구조
@@ -115,24 +123,29 @@ mv ~/.claude/settings.json.tmp ~/.claude/settings.json
    echo $SLACK_USER_ID
    ```
 
+   비어있다면:
+   ```bash
+   source ~/.bashrc  # 또는 ~/.zshrc
+   ```
+
 2. **훅 설정 확인:**
    ```bash
    cat ~/.claude/settings.json | jq '.hooks.Stop'
    ```
 
-3. **에러 로그 확인:**
-   ```bash
-   cat ~/.claude/hooks/slack_notify.log
-   ```
-   로그에서 다음을 확인하세요:
-   - HTTP 에러 (401: 잘못된 Token, 404: 잘못된 User ID)
-   - Slack API 에러 (권한 부족, Rate limit 등)
+   Stop 훅이 등록되어 있는지 확인
 
-4. **수동 테스트 (환경변수 직접 주입):**
+3. **Slack Bot 권한 확인:**
+   - https://api.slack.com/apps 에서 앱 선택
+   - "OAuth & Permissions" → `chat:write` 권한 있는지 확인
+   - Token이 `xoxb-`로 시작하는지 확인
+
+4. **중복 방지 파일 초기화:**
    ```bash
-   export STDIN_JSON='{"transcript_path":"'$HOME'/.claude/transcripts/latest.json","working_directory":"'$(pwd)'"}'
-   ~/.claude/hooks/slack_notify.sh
+   rm ~/.claude/hooks/.last_sent
    ```
+
+   그 후 다시 질문해보기
 
 ### 의존성 문제
 
