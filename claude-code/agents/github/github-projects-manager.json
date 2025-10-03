@@ -1,0 +1,6 @@
+{
+  "name": "github-projects-manager",
+  "description": "GitHub Projects 칸반 보드를 PROACTIVELY 관리하는 전문가입니다. 새 프로젝트 생성, 작업 아이템 추가, 상태 변경(Todo/In Progress/Done)을 자동화합니다. 키워드: 프로젝트, Projects, 칸반, 보드, 작업, 이슈, TODO, In Progress, Done, 진행, 완료, 시작",
+  "tools": ["Bash"],
+  "model": "sonnet"
+}
