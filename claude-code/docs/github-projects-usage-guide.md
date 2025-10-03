@@ -242,6 +242,48 @@ Available agents:
 
 ## 기본 사용법
 
+### 🆕 시나리오 0: 새 프로젝트 생성
+
+```bash
+# Claude Code 실행
+claude
+
+# 새 프로젝트 생성 요청
+> "새 프로젝트를 생성해주세요: AI Agent 개발"
+```
+
+**Agent 자동 동작:**
+1. `github-projects-manager` agent 자동 선택
+2. 사용자 ID 조회
+3. 새 GitHub Projects 생성
+4. 기본 상태 필드 설정 (Todo, In Progress, Done)
+
+**출력 예시:**
+```
+🤖 github-projects-manager agent가 선택되었습니다.
+
+✅ 프로젝트 생성: AI Agent 개발
+✅ 상태 필드 설정: Todo, In Progress, Done
+📋 프로젝트 번호: 5
+🔗 https://github.com/users/starfishfactory/projects/5
+
+새 프로젝트가 준비되었습니다!
+```
+
+**프로젝트 조회:**
+```bash
+> "현재 프로젝트 목록을 보여주세요"
+```
+
+**출력:**
+```
+📊 프로젝트 목록:
+
+1. AI Agent 개발 (방금 생성됨)
+2. 이전 프로젝트 1
+3. 이전 프로젝트 2
+```
+
 ### 📝 시나리오 1: 새 작업 시작
 
 ```bash
@@ -484,9 +526,25 @@ tail -f ~/.claude/logs/github-projects-manager.log
 
 ## 자주 묻는 질문 (FAQ)
 
-### Q1: 여러 프로젝트를 동시에 사용할 수 있나요?
+### Q1: 새 프로젝트를 자동으로 생성할 수 있나요?
 
-**A:** 현재는 하나의 프로젝트만 지원합니다. 여러 프로젝트를 사용하려면:
+**A:** 네, 가능합니다!
+```bash
+# Claude Code에서 간단하게
+> "새 프로젝트를 생성해주세요: [프로젝트 이름]"
+
+# 예시
+> "새 프로젝트를 생성해주세요: 리팩토링 작업"
+```
+
+Agent가 자동으로:
+- GitHub Projects 생성
+- 기본 상태 필드 설정 (Todo, In Progress, Done)
+- 프로젝트 URL 제공
+
+### Q2: 여러 프로젝트를 동시에 사용할 수 있나요?
+
+**A:** Phase 1에서는 하나의 활성 프로젝트만 지원합니다. 프로젝트를 전환하려면:
 ```bash
 # 프로젝트별 설정 파일 생성
 ~/.claude/github-projects-config-project1.sh
@@ -496,11 +554,13 @@ tail -f ~/.claude/logs/github-projects-manager.log
 source ~/.claude/github-projects-config-project1.sh
 ```
 
-### Q2: Classic Projects도 지원하나요?
+Phase 3에서는 여러 프로젝트 자동 전환을 지원할 예정입니다.
+
+### Q3: Classic Projects도 지원하나요?
 
 **A:** 아니요, Projects V2 (GraphQL API)만 지원합니다.
 
-### Q3: 조직(Organization) 프로젝트도 사용 가능한가요?
+### Q4: 조직(Organization) 프로젝트도 사용 가능한가요?
 
 **A:** 네, 가능합니다. 프로젝트 ID 조회 시 조직 프로젝트를 선택하면 됩니다.
 
@@ -515,11 +575,11 @@ gh api graphql -f query='
 }'
 ```
 
-### Q4: 성능은 어떤가요?
+### Q5: 성능은 어떤가요?
 
 **A:** 매우 효율적입니다:
 - 평균 응답 시간: 2-3초
-- 토큰 사용량: ~600 토큰/작업
+- 토큰 사용량: ~600-800 토큰/작업 (프로젝트 생성 시 ~800)
 - API 호출: 1-2회/작업
 
 ---

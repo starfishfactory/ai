@@ -41,27 +41,29 @@ Claude Code의 **agent 시스템**을 활용하여 GitHub Projects API (GraphQL)
 
 ### 필수 기능 (Must Have)
 
-1. **프로젝트 아이템 자동 생성**
+1. **GitHub Projects 생성**
+   - 새 프로젝트 자동 생성 (작업 유형별)
+   - 기본 상태 필드 설정 (Todo, In Progress, Done)
+   - 기존 프로젝트 조회 및 선택
+
+2. **프로젝트 아이템 자동 생성**
    - 작업 시작 시 GitHub Projects에 아이템 자동 추가
    - 초기 상태: `Todo`
 
-2. **상태 자동 변경**
+3. **상태 자동 변경**
    - 작업 진행: `Todo` → `In Progress`
    - 작업 완료: `In Progress` → `Done`
-
-3. **PR 자동 연결**
-   - PR 생성 시 프로젝트 아이템과 자동 연결
-   - 링크 양방향 유지
 
 4. **다중 환경 지원**
    - agent JSON 파일 공유로 어디서든 동일한 기능 사용
 
 ### 선택 기능 (Nice to Have)
 
-- 우선순위 자동 설정
-- 담당자 자동 배정
-- 작업 진행 상황 대시보드 조회
-- 자동 라벨링
+- PR 자동 연결 (Phase 2)
+- 우선순위 자동 설정 (Phase 3)
+- 담당자 자동 배정 (Phase 3)
+- 작업 진행 상황 대시보드 조회 (Phase 3)
+- 자동 라벨링 (Phase 3)
 
 ---
 
@@ -191,7 +193,9 @@ mutation {
 | Bash 명령 생성 | ~200 |
 | GraphQL 실행 | ~150 |
 | 결과 파싱 및 응답 | ~150 |
-| **총계** | **~600 토큰/작업** |
+| **기본 작업** | **~600 토큰** |
+| **프로젝트 생성 (추가)** | **~200 토큰** |
+| **총계 (프로젝트 생성 시)** | **~800 토큰/작업** |
 
 기존 복잡한 API 클라이언트 대비 **70% 절감**
 
@@ -201,23 +205,27 @@ mutation {
 
 ### ✅ Phase 1: 기본 기능 (1단계)
 
-**목표**: 프로젝트 아이템 생성 및 상태 변경
+**목표**: 프로젝트 생성 및 아이템 관리
 
 ```yaml
 구현할 기능:
-  - 프로젝트 ID 자동 조회 및 캐싱
+  - GitHub Projects 생성 (새 프로젝트)
+  - 프로젝트 조회 및 선택 (기존 프로젝트)
+  - 기본 상태 필드 설정 (Todo/In Progress/Done)
   - 아이템 생성 (Issue/PR 기반)
-  - 상태 필드 변경 (Todo/In Progress/Done)
+  - 상태 필드 변경
   - 기본 에러 핸들링
 
 필요한 GraphQL Mutations:
-  - addProjectV2ItemById
-  - updateProjectV2ItemFieldValue
+  - createProjectV2 (프로젝트 생성)
+  - addProjectV2ItemById (아이템 추가)
+  - updateProjectV2ItemFieldValue (상태 변경)
 
 검증 방법:
-  - 테스트 프로젝트 생성
-  - 수동으로 아이템 추가 확인
+  - 새 프로젝트 생성 및 설정 확인
+  - 아이템 추가 확인
   - 상태 변경 확인
+  - 에러 처리 동작 확인
 ```
 
 ### 🔄 Phase 2: 워크플로우 통합 (2단계)
@@ -279,8 +287,9 @@ Day 3: 학습 및 배포
 
 #### Phase 1 완료 기준
 - [ ] Agent JSON 파일 작성 완료
-- [ ] GraphQL 쿼리 정상 동작
-- [ ] 테스트 프로젝트에서 아이템 생성/변경 성공
+- [ ] GraphQL 쿼리 정상 동작 (createProjectV2, addProjectV2ItemById, updateProjectV2ItemFieldValue)
+- [ ] 새 프로젝트 생성 및 상태 필드 설정 성공
+- [ ] 프로젝트에 아이템 생성/변경 성공
 - [ ] 에러 없이 5회 연속 실행 성공
 
 #### Phase 2 완료 기준
