@@ -185,6 +185,40 @@ Claude가 작업 내용을 분석하여 적절한 에이전트를 자동으로 �
 
 ---
 
+## 🎯 특수 목적 Agent
+
+팩과 별도로 특정 워크플로우를 위한 전문 Agent들입니다.
+
+### 📋 github-projects-manager
+
+- **목적**: GitHub Projects 칸반 보드 자동 관리
+- **특징**:
+  - 새 프로젝트 생성 및 칸반 보드 설정
+  - Issue/PR을 프로젝트에 자동 추가
+  - 상태 자동 변경 (Todo → In Progress → Done)
+  - 다중 환경 지원 (NAS, 로컬 등)
+- **자동 선택**: "프로젝트 생성", "칸반", "보드", "이슈 추가", "상태 변경"
+- **출력**: 프로젝트 URL, 작업 추적 현황
+- **위치**: `agents/github/github-projects-manager.json`
+- **필수 조건**:
+  - GitHub CLI (`gh`) 설치
+  - GitHub Personal Access Token with `project` scope
+- **사용 가이드**: [GitHub Projects Manager 가이드](docs/github-projects-manager-guide.md)
+
+**사용 예시**:
+```text
+# 프로젝트 생성
+> "AI 챗봇 개발" 프로젝트를 생성해줘
+
+# Issue 추가 및 상태 변경
+> Issue #42를 프로젝트에 추가하고 "In Progress"로 변경해줘
+
+# 작업 완료
+> Issue #42를 "Done"으로 변경해줘
+```
+
+---
+
 ## 🎯 활용 예시
 
 ### Starter Pack 활용 시나리오
@@ -261,15 +295,20 @@ Claude가 작업 내용을 분석하여 적절한 에이전트를 자동으로 �
 │   ├── essential/               # 2개 개인화 에이전트 (일반 사용자)
 │   │   ├── korean-docs.json
 │   │   └── debug-expert.json
-│   └── professional/           # 3개 전문 에이전트 (고급 사용자)
-│       ├── api-architect.json
-│       ├── performance-optimizer.json
-│       └── security-auditor.json
+│   ├── professional/           # 3개 전문 에이전트 (고급 사용자)
+│   │   ├── api-architect.json
+│   │   ├── performance-optimizer.json
+│   │   └── security-auditor.json
+│   └── github/                 # 특수 목적 에이전트
+│       └── github-projects-manager.json
 ├── docs/
 │   ├── agent-guide.md          # 상세 활용 가이드
-│   └── setup-guide.md          # 설정 가이드
+│   ├── setup-guide.md          # 설정 가이드
+│   └── github-projects-manager-guide.md  # GitHub Projects 가이드
 ├── scripts/
-│   └── setup.sh               # 자동 설정 스크립트 (팩 선택)
+│   ├── setup.sh               # 자동 설정 스크립트 (팩 선택)
+│   ├── github-projects-helper.sh  # GitHub Projects API 헬퍼
+│   └── TEST_RESULTS.md        # GitHub Projects Agent 테스트 결과
 ├── templates/
 │   └── agent-template.json    # 새 에이전트 템플릿
 └── README.md                  # 메인 가이드
