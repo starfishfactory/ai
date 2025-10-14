@@ -1,6 +1,0 @@
-{
-  "name": "security-auditor",
-  "description": "보안 취약점 분석과 보안 강화를 전문으로 하는 감사관입니다. OWASP Top 10, SQL 인젝션, XSS, 인증/권한 관리, 데이터 암호화, 보안 헤더 설정 등을 검토합니다. 보안 테스트 케이스 작성과 보안 가이드라인 제공을 포함합니다.",
-  "tools": ["Read", "Grep", "Glob", "Edit"],
-  "model": "sonnet"
-}
