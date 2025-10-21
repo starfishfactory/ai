@@ -63,7 +63,7 @@
 ### 1. 자동 설정 (추천)
 ```bash
 # 자동 설정 스크립트 실행
-~/IdeaProjects/molidae/ai/claude-code/scripts/setup.sh
+~/IdeaProjects/molidae/ai/scripts/setup.sh
 ```
 
 스크립트에서 제공하는 옵션:
@@ -74,11 +74,11 @@
 ### 2. 수동 설정
 ```bash
 # Core Pack (4개)
-ln -sf ~/IdeaProjects/molidae/ai/claude-code/agents/core/*.md ~/.claude/agents/
+ln -sf ~/IdeaProjects/molidae/ai/agents/core/*.md ~/.claude/agents/
 
 # Advanced Pack (Core + 2개 추가)
-ln -sf ~/IdeaProjects/molidae/ai/claude-code/agents/core/*.md ~/.claude/agents/
-ln -sf ~/IdeaProjects/molidae/ai/claude-code/agents/advanced/*.md ~/.claude/agents/
+ln -sf ~/IdeaProjects/molidae/ai/agents/core/*.md ~/.claude/agents/
+ln -sf ~/IdeaProjects/molidae/ai/agents/advanced/*.md ~/.claude/agents/
 ```
 
 ### 3. 설정 확인
@@ -199,27 +199,31 @@ Claude가 작업 내용을 분석하여 적절한 에이전트를 자동으로 �
 ## 📁 프로젝트 구조
 
 ```
-~/IdeaProjects/molidae/ai/claude-code/
-├── agents/
+~/IdeaProjects/molidae/ai/
+├── agents/                          # Claude Code 에이전트
+│   ├── README.md                    # 에이전트 가이드
 │   ├── core/                        # 4개 핵심 에이전트
 │   │   ├── code-reviewer.md
 │   │   ├── test-generator.md
 │   │   ├── debug-expert.md
 │   │   └── korean-docs.md
-│   └── advanced/                    # 2개 특수 목적 에이전트
-│       ├── security-auditor.md
-│       └── github-projects-manager.md
-├── docs/
-│   ├── agent-guide.md               # 상세 활용 가이드
-│   ├── setup-guide.md               # 설정 가이드
-│   └── github-projects-manager-guide.md  # GitHub Projects 가이드
-├── scripts/
+│   ├── advanced/                    # 2개 특수 목적 에이전트
+│   │   ├── security-auditor.md
+│   │   └── github-projects-manager.md
+│   └── templates/
+│       └── agent-template.md        # 새 에이전트 템플릿
+├── hooks/                           # Slack 알림 훅
+│   ├── README.md
+│   └── install.sh
+├── scripts/                         # 자동화 스크립트
 │   ├── setup.sh                     # 자동 설정 스크립트
 │   ├── github-projects-helper.sh    # GitHub Projects API 헬퍼
 │   └── TEST_RESULTS.md              # 테스트 결과
-├── templates/
-│   └── agent-template.md            # 새 에이전트 템플릿
-└── README.md                        # 메인 가이드
+├── docs/                            # 사용 가이드
+│   ├── agent-guide.md               # 상세 활용 가이드
+│   ├── setup-guide.md               # 설정 가이드
+│   └── github-projects-manager-guide.md  # GitHub Projects 가이드
+└── README.md                        # 프로젝트 개요
 ```
 
 ---
@@ -277,7 +281,7 @@ model: sonnet
 
 ```bash
 # 1. 자동 설정 스크립트 실행
-~/IdeaProjects/molidae/ai/claude-code/scripts/setup.sh
+~/IdeaProjects/molidae/ai/scripts/setup.sh
 
 # 2. Core Pack부터 시작 (추천)
 
