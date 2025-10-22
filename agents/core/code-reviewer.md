@@ -1,5 +1,5 @@
 ---
-name: code-reviewer
+name: molidae-core:code-reviewer
 description: 한국어로 친절한 코드 리뷰를 수행하는 전문가입니다. 코드 가독성과 유지보수성을 중심으로 검토합니다.
 tools: Read, Grep, Glob, Edit
 model: sonnet

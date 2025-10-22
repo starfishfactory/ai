@@ -48,7 +48,7 @@ GitHub Projects Manager Agent는 다음을 자동화합니다:
 Agent가 이미 설치되어 있는지 확인:
 
 ```bash
-ls -la ~/.claude/agents/github-projects-manager.json
+ls -la ~/.claude/agents/"molidae-advanced:github-projects-manager.md"
 ```
 
 또는 Claude Code에서:
@@ -120,11 +120,11 @@ gh auth status
 #### 3. Agent 파일 확인
 
 ```bash
-# Agent JSON 파일
-ls ~/.claude/agents/github-projects-manager.json
+# Agent Markdown 파일
+ls ~/.claude/agents/"molidae-advanced:github-projects-manager.md"
 
 # Helper Script
-ls ~/molidae/ai/claude-code/scripts/github-projects-helper.sh
+ls ~/IdeaProjects/molidae/ai/scripts/github-projects-helper.sh
 ```
 
 ---
@@ -323,14 +323,14 @@ gh auth status
 **해결**:
 1. Agent 파일 확인:
    ```bash
-   cat ~/.claude/agents/github-projects-manager.json
+   cat ~/.claude/agents/"molidae-advanced:github-projects-manager.md"
    ```
 2. 명시적으로 키워드 사용:
    - "프로젝트", "Projects", "칸반", "보드"
    - "이슈", "TODO", "In Progress", "Done"
 3. Agent 직접 선택 (Claude Code에서):
    ```
-   @github-projects-manager 프로젝트 생성해줘
+   molidae-advanced:github-projects-manager 에이전트로 프로젝트를 생성해줘
    ```
 
 ---
@@ -418,7 +418,7 @@ jobs:
 ### 관련 문서
 - [테스트 결과](../scripts/TEST_RESULTS.md) - Phase 1 검증 결과
 - [Helper Script 소스](../scripts/github-projects-helper.sh) - 내부 구현 참고
-- [Agent 설정](../agents/github/github-projects-manager.json) - Agent 설정 파일
+- [Agent 설정](../agents/advanced/github-projects-manager.md) - Agent 설정 파일
 
 ### 외부 참고
 - [GitHub Projects V2 문서](https://docs.github.com/en/issues/planning-and-tracking-with-projects)

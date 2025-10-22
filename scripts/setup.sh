@@ -68,15 +68,14 @@ fi
 echo ""
 log_info "에이전트 팩을 선택하세요:"
 echo ""
-echo "🚀 1) Core Pack (4개) - 모든 사용자 추천"
-echo "   • code-reviewer: 코드 가독성과 유지보수성 검토"
-echo "   • test-generator: TDD 테스트 케이스 생성"
-echo "   • debug-expert: 디버깅 및 문제 해결"
-echo "   • korean-docs: 한국어 기술 문서 작성"
+echo "🚀 1) Core Pack (3개) - 모든 사용자 추천"
+echo "   • molidae-core:code-reviewer: 코드 가독성과 유지보수성 검토"
+echo "   • molidae-core:test-generator: TDD 테스트 케이스 생성"
+echo "   • molidae-core:korean-docs: 한국어 기술 문서 작성"
 echo ""
-echo "⚡ 2) Advanced Pack (6개) - Core + 특수 목적"
-echo "   • Core Pack + security-auditor + github-projects-manager"
-echo "   • 보안 검토 및 프로젝트 관리 포함"
+echo "⚡ 2) Advanced Pack (4개) - Core + 특수 목적"
+echo "   • Core Pack + molidae-advanced:github-projects-manager"
+echo "   • 프로젝트 관리 포함"
 echo ""
 echo "🛠️  3) Custom - 개별 선택 (고급 사용자용)"
 echo ""
@@ -89,18 +88,27 @@ case $REPLY in
         log_info "🚀 Core Pack을 설정합니다..."
         log_info "기본 개발 워크플로우에 필요한 핵심 에이전트입니다!"
 
-        ln -sf "$AGENTS_DIR"/core/*.md "$USER_AGENTS_DIR"/
-        log_success "Core Pack 설정 완료 (4개 에이전트)"
+        for agent in "$AGENTS_DIR"/core/*.md; do
+            agent_basename=$(basename "$agent")
+            ln -sf "$agent" "$USER_AGENTS_DIR/molidae-core:$agent_basename"
+        done
+        log_success "Core Pack 설정 완료 (3개 에이전트)"
         ;;
 
     2)
         log_info "⚡ Advanced Pack을 설정합니다..."
-        log_info "Core + 보안 및 프로젝트 관리 기능을 포함합니다!"
+        log_info "Core + 프로젝트 관리 기능을 포함합니다!"
 
         # Core + Advanced
-        ln -sf "$AGENTS_DIR"/core/*.md "$USER_AGENTS_DIR"/
-        ln -sf "$AGENTS_DIR"/advanced/*.md "$USER_AGENTS_DIR"/
-        log_success "Advanced Pack 설정 완료 (6개 에이전트)"
+        for agent in "$AGENTS_DIR"/core/*.md; do
+            agent_basename=$(basename "$agent")
+            ln -sf "$agent" "$USER_AGENTS_DIR/molidae-core:$agent_basename"
+        done
+        for agent in "$AGENTS_DIR"/advanced/*.md; do
+            agent_basename=$(basename "$agent")
+            ln -sf "$agent" "$USER_AGENTS_DIR/molidae-advanced:$agent_basename"
+        done
+        log_success "Advanced Pack 설정 완료 (4개 에이전트)"
         ;;
 
     3)
@@ -115,7 +123,8 @@ case $REPLY in
             read -p "  - $agent_name (y/N): " -n 1 -r
             echo ""
             if [[ $REPLY =~ ^[Yy]$ ]]; then
-                ln -sf "$agent" "$USER_AGENTS_DIR"/
+                agent_basename=$(basename "$agent")
+                ln -sf "$agent" "$USER_AGENTS_DIR/molidae-core:$agent_basename"
                 log_success "  $agent_name 추가됨"
             fi
         done
@@ -129,7 +138,8 @@ case $REPLY in
             read -p "  - $agent_name (y/N): " -n 1 -r
             echo ""
             if [[ $REPLY =~ ^[Yy]$ ]]; then
-                ln -sf "$agent" "$USER_AGENTS_DIR"/
+                agent_basename=$(basename "$agent")
+                ln -sf "$agent" "$USER_AGENTS_DIR/molidae-advanced:$agent_basename"
                 log_success "  $agent_name 추가됨"
             fi
         done
@@ -188,9 +198,7 @@ echo "💡 주요 에이전트 활용법:"
 echo "  🔍 코드 리뷰: '이 코드를 검토해주세요'"
 echo "  🧪 TDD 개발: '새 기능을 테스트부터 작성해주세요'"
 echo "  📚 문서 작성: 'API 가이드를 작성해주세요'"
-echo "  🐛 디버깅: '이 에러를 분석해주세요'"
-if [ $agent_count -ge 5 ]; then
-echo "  🔒 보안 검토: '보안을 확인해주세요'"
+if [ $agent_count -ge 4 ]; then
 echo "  📋 프로젝트 관리: '프로젝트를 생성해줘'"
 fi
 echo ""

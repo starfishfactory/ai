@@ -26,7 +26,6 @@ ai/
 │
 └── docs/                           # 사용 가이드
     ├── agent-guide.md
-    ├── setup-guide.md
     └── github-projects-manager-guide.md
 ```
 
@@ -39,8 +38,8 @@ ai/
 TDD와 한국어 문서화를 중심으로 한 개인 개발 스타일에 최적화된 서브에이전트 컬렉션
 
 **에이전트 팩:**
-- **🚀 Core Pack (4개)**: code-reviewer, test-generator, debug-expert, korean-docs
-- **⚡ Advanced Pack (2개)**: security-auditor, github-projects-manager
+- **🚀 Core Pack (3개)**: molidae-core:code-reviewer, molidae-core:test-generator, molidae-core:korean-docs
+- **⚡ Advanced Pack (1개)**: molidae-advanced:github-projects-manager
 
 **설치:**
 ```bash

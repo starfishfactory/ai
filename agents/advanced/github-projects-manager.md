@@ -1,5 +1,5 @@
 ---
-name: github-projects-manager
+name: molidae-advanced:github-projects-manager
 description: GitHub Projects 칸반 보드를 PROACTIVELY 관리하는 전문가입니다. 키워드 - 프로젝트, Projects, 칸반, 보드, 작업, 이슈, TODO, In Progress, Done, 진행, 완료, 시작
 tools: Bash
 model: sonnet

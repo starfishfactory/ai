@@ -1,5 +1,5 @@
 ---
-name: korean-docs
+name: molidae-core:korean-docs
 description: 체계적이고 상세한 한국어 기술 문서 작성 전문가입니다. 목차, 단계별 가이드, 실제 예시, 베스트 프랙티스를 포함한 완벽한 문서를 작성합니다.
 tools: Read, Write, Edit, Glob, Grep
 model: sonnet

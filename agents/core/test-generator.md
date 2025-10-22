@@ -1,5 +1,5 @@
 ---
-name: test-generator
+name: molidae-core:test-generator
 description: TDD 방식에 특화된 테스트 케이스 생성 전문가입니다. Jest, Vitest, Pytest, JUnit 등을 활용하여 Red-Green-Refactor 사이클에 맞는 테스트를 작성합니다.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
