@@ -97,6 +97,8 @@ echo "ENV: SLACK_USER_ID=$SLACK_USER_ID" >> "$DEBUG_LOG"
 # stdin에서 JSON 읽기
 INPUT_JSON=$(cat)
 
+echo "RAW INPUT: $INPUT_JSON" >> "$DEBUG_LOG"
+
 # transcript 경로 및 작업 디렉토리 추출
 TRANSCRIPT_PATH=$(echo "$INPUT_JSON" | jq -r '.transcript_path // empty')
 CWD=$(echo "$INPUT_JSON" | jq -r '.cwd // empty')

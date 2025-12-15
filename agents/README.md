@@ -46,15 +46,16 @@
 
 **추천 대상**: 모든 개발자
 
-### ⚡ Advanced Pack (2개) - 특수 목적
-**"보안 및 프로젝트 관리가 필요할 때"**
+### ⚡ Advanced Pack (3개) - 특수 목적
+**"보안, 문서화, 프로젝트 관리가 필요할 때"**
 
 | 에이전트 | 목적 | 사용 시점 |
 |----------|------|-----------|
+| `dfs` | API 기능명세(DFS) 문서 작성 | API 분석 및 문서화 시 |
 | `security-auditor` | OWASP 기반 보안 검토 | 프로덕션 배포 전 |
 | `github-projects-manager` | GitHub Projects 칸반 보드 관리 | 프로젝트 관리 시 |
 
-**추천 대상**: 보안이 중요하거나 GitHub Projects를 활용하는 개발자
+**추천 대상**: 보안이 중요하거나 API 문서화, GitHub Projects를 활용하는 개발자
 
 ---
 
@@ -148,6 +149,17 @@ Claude가 작업 내용을 분석하여 적절한 에이전트를 자동으로 �
 
 ### ⚡ Advanced Pack
 
+#### 📄 dfs (Detailed Functional Specification)
+- **목적**: API 기능명세 문서 작성
+- **특징**: Controller → Service → 외부 API 전체 플로우 분석, Obsidian 호환 마크다운, 확인된 사실만 문서화
+- **출력**: 요청/응답 스펙, 분기 조건, 유효성 검사, 외부 API 호출 정보가 포함된 상세 문서
+
+**사용 예시**:
+```text
+> FlightSearchController DFS 문서 작성해줘
+> air-intl-booking의 예약 API 기능명세 문서화해줘
+```
+
 #### 🔒 security-auditor
 - **목적**: OWASP 기반 보안 취약점 분석
 - **특징**: 인증/권한, 주입 공격, XSS, 데이터 보호, 보안 헤더 검토
@@ -187,10 +199,13 @@ Claude가 작업 내용을 분석하여 적절한 에이전트를 자동으로 �
 
 ### Advanced Pack 활용 시나리오
 ```text
-1. "배포 전 보안 검토를 해주세요"
+1. "FlightSearchController API 기능명세 문서 작성해줘"
+   → dfs가 전체 플로우 분석 후 Obsidian 호환 문서 생성
+
+2. "배포 전 보안 검토를 해주세요"
    → security-auditor가 OWASP 기반 종합 보안 감사
 
-2. "새 프로젝트를 칸반 보드로 관리하고 싶어요"
+3. "새 프로젝트를 칸반 보드로 관리하고 싶어요"
    → github-projects-manager가 프로젝트 생성 및 관리
 ```
 
@@ -207,7 +222,8 @@ Claude가 작업 내용을 분석하여 적절한 에이전트를 자동으로 �
 │   │   ├── test-generator.md
 │   │   ├── debug-expert.md
 │   │   └── korean-docs.md
-│   ├── advanced/                    # 2개 특수 목적 에이전트
+│   ├── advanced/                    # 3개 특수 목적 에이전트
+│   │   ├── dfs.md
 │   │   ├── security-auditor.md
 │   │   └── github-projects-manager.md
 │   └── templates/
