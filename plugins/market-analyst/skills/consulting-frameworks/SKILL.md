@@ -1,3 +1,8 @@
+---
+name: consulting-frameworks
+description: BCG Matrix, GE/McKinsey Matrix, 7S Framework, Value Chain 등 컨설팅 전략 프레임워크 참조.
+---
+
 # 컨설팅 프레임워크 참조
 
 ## 주요 프레임워크

@@ -1,3 +1,8 @@
+---
+name: pestel-framework
+description: PESTEL 거시환경 분석. Political, Economic, Social, Technological, Environmental, Legal 6가지 요인으로 외부 환경 분석.
+---
+
 # PESTEL 분석 프레임워크
 
 ## 출처

@@ -1,3 +1,8 @@
+---
+name: market-sizing-methods
+description: TAM/SAM/SOM 시장규모 추정. Top-Down, Bottom-Up 방식과 CAGR 계산, 삼각측량 검증 방법.
+---
+
 # 시장규모 추정 (TAM/SAM/SOM)
 
 ## 정의

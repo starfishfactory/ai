@@ -1,3 +1,8 @@
+---
+name: porter-five-forces
+description: Porter's Five Forces 산업 경쟁구조 분석. 신규진입, 공급자, 구매자, 대체재, 기존경쟁 5가지 요인으로 산업 매력도 평가.
+---
+
 # Porter's Five Forces
 
 ## 출처

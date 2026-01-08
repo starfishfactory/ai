@@ -1,3 +1,8 @@
+---
+name: swot-framework
+description: SWOT 전략 분석. Strengths, Weaknesses, Opportunities, Threats 및 TOWS 전략 매트릭스 도출.
+---
+
 # SWOT 분석 프레임워크
 
 ## 출처
