@@ -1,0 +1,21 @@
+{
+  "name": "market-analyst",
+  "version": "1.0.0",
+  "description": "학술적 방법론 기반 시장분석 전문가 플러그인 (Porter, PESTEL, SWOT, TAM/SAM/SOM)",
+  "author": {
+    "name": "starfishfactory"
+  },
+  "license": "MIT",
+  "keywords": [
+    "market-analysis",
+    "porter-five-forces",
+    "pestel",
+    "swot",
+    "tam-sam-som",
+    "competitive-analysis",
+    "strategic-planning"
+  ],
+  "commands": "./commands/",
+  "agents": "./agents/",
+  "skills": "./skills/"
+}

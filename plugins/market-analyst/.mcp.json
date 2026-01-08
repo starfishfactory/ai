@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "fetch": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-server-fetch"],
+      "description": "웹 콘텐츠 가져오기 - 시장 데이터, 뉴스, 보고서 수집"
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./reports"],
+      "description": "분석 보고서 저장 및 관리"
+    }
+  }
+}
