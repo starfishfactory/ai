@@ -1,6 +1,7 @@
 ---
-description: 경쟁사 분석 및 벤치마킹 실행
-allowed-tools: WebSearch, WebFetch, Read, Write
+description: 경쟁사 분석 및 벤치마킹
+allowed-tools: WebSearch, WebFetch, Read, Write, Task
+argument-hint: <기업1, 기업2, ...>
 ---
 
 # 경쟁사 분석 및 벤치마킹
