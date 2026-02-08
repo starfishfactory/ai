@@ -1,0 +1,9 @@
+{
+  "name": "msa-onboard",
+  "version": "1.0.0",
+  "description": "MSA 환경 자동 분석 및 C4 모델 리포트 생성 플러그인",
+  "author": {
+    "name": "starfishfactory"
+  },
+  "license": "MIT"
+}
