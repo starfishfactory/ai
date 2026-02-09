@@ -37,6 +37,12 @@ if [ -f "$DEBUG_LOG" ]; then
   info "디버그 로그 삭제: $DEBUG_LOG"
 fi
 
+# === 쿨다운 파일 삭제 ===
+if [ -f "/tmp/lean-kit-last-notify" ]; then
+  rm -f "/tmp/lean-kit-last-notify"
+  info "쿨다운 파일 삭제"
+fi
+
 # === settings.json에서 훅 제거 ===
 if [ -f "$SETTINGS" ] && command -v jq &> /dev/null; then
   # JSON 유효성 확인
@@ -53,7 +59,7 @@ if [ -f "$SETTINGS" ] && command -v jq &> /dev/null; then
     if .hooks.Notification then
       .hooks.Notification |= [
         .[] | select(
-          (.hooks // []) | all(.command | test("lean-kit") | not)
+          (.hooks // []) | all(.command | test("lean-kit-notify\\.sh$") | not)
         )
       ] |
       if .hooks.Notification | length == 0 then
@@ -75,10 +81,14 @@ else
   fi
 fi
 
-# === 백업 파일 정리 ===
+# === 백업 파일 정리 (수정 결과 검증 후) ===
 if [ -f "$SETTINGS.bak" ]; then
-  rm "$SETTINGS.bak"
-  info "백업 파일 정리"
+  if jq empty "$SETTINGS" 2>/dev/null; then
+    rm -f "$SETTINGS.bak"
+    info "백업 파일 정리"
+  else
+    warn "settings.json 검증 실패. 백업 보존: $SETTINGS.bak"
+  fi
 fi
 
 info ""

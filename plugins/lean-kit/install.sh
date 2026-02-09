@@ -68,9 +68,9 @@ info "백업 생성: $SETTINGS.bak"
 
 # === 중복 체크 ===
 HOOK_COMMAND="$TARGET_SCRIPT"
-EXISTING=$(jq -r '
+EXISTING=$(jq --arg cmd "$HOOK_COMMAND" -r '
   .hooks.Notification // [] |
-  [.[].hooks[]? | select(.command == "'"$HOOK_COMMAND"'")] |
+  [.[].hooks[]? | select(.command == $cmd)] |
   length
 ' "$SETTINGS" 2>/dev/null || echo "0")
 
@@ -80,24 +80,13 @@ if [ "$EXISTING" != "0" ]; then
 fi
 
 # === 훅 추가 (기존 배열에 append) ===
-NEW_HOOK=$(cat <<EOF
-{
-  "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "$HOOK_COMMAND",
-      "timeout": 15
-    }
-  ]
-}
-EOF
-)
-
-jq --argjson hook "$NEW_HOOK" '
+jq --arg cmd "$HOOK_COMMAND" '
   .hooks //= {} |
   .hooks.Notification //= [] |
-  .hooks.Notification += [$hook]
+  .hooks.Notification += [{
+    "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
+    "hooks": [{"type": "command", "command": $cmd, "timeout": 15}]
+  }]
 ' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
 
 info "Notification 훅 등록 완료"
