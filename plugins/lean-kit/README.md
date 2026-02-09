@@ -47,12 +47,27 @@ export LEAN_KIT_AUTO_PERMIT=1
 
 > **Private repo**: `gh auth login`으로 GitHub 인증이 되어 있으면 동작합니다.
 
+auto-permit을 사용하려면 설정 파일을 수동으로 복사해야 합니다:
+
+```bash
+# 플러그인 캐시 경로에서 기본 설정 파일 복사
+cp ~/.claude/plugins/cache/starfishfactory-ai/lean-kit/*/scripts/lean-kit-permit.conf \
+   ~/.claude/hooks/lean-kit-permit.conf
+```
+
 ### 방법 2: 플러그인 모드
 
 repo를 클론한 후 로컬 경로를 지정합니다.
 
 ```bash
 claude --plugin-dir ./plugins/lean-kit
+```
+
+auto-permit을 사용하려면 설정 파일을 수동으로 복사해야 합니다:
+
+```bash
+mkdir -p ~/.claude/hooks
+cp ./plugins/lean-kit/scripts/lean-kit-permit.conf ~/.claude/hooks/
 ```
 
 ### 방법 3: 직접 설치 (standalone)
@@ -68,6 +83,8 @@ claude --plugin-dir ./plugins/lean-kit
 ## 설정 파일
 
 auto-permit 설정 파일(`~/.claude/hooks/lean-kit-permit.conf`)은 INI 스타일 섹션으로 구성됩니다.
+직접 설치(`install.sh`)에서는 자동 복사되지만, 마켓플레이스/플러그인 모드에서는 수동 복사가 필요합니다.
+설정 파일이 없으면 auto-permit이 비활성화되어 기존 동작(사용자 질의)과 동일합니다.
 
 ### 섹션 설명
 
@@ -157,6 +174,7 @@ export LEAN_KIT_DEBUG=1
 - **non-interactive 모드 미지원** (auto-permit): `claude -p` 모드에서는 `PermissionRequest` 훅이 작동하지 않습니다. 공식 문서에 따르면 이 경우 `PreToolUse` 훅을 사용해야 합니다.
 - **race condition 가능성** (auto-permit): 훅 응답이 1-2초 이상 걸리면 퍼미션 다이얼로그가 먼저 표시될 수 있습니다 ([#12176](https://github.com/anthropics/claude-code/issues/12176)). 스크립트는 수십 밀리초 내 응답하도록 최적화되어 있습니다.
 - **세션 재시작**: 직접 설치 후 Claude Code 재시작 필요
+- **설정 파일 수동 복사** (auto-permit): 마켓플레이스/플러그인 모드에서는 `install.sh`가 실행되지 않으므로 `lean-kit-permit.conf`를 `~/.claude/hooks/`에 수동 복사해야 합니다. 설정 파일이 없으면 auto-permit이 비활성화됩니다.
 - **jq 의존성**: 직접 설치(`install.sh`/`uninstall.sh`) 시 jq 필요. 플러그인 모드의 `notify.sh`는 jq 없이도 동작 (fallback 메시지 사용). `auto-permit.sh`는 jq 없으면 자동 비활성화 (사용자 질의로 폴백).
 
 ## 구조
