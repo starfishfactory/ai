@@ -1,0 +1,8 @@
+{
+  "name": "lean-kit",
+  "version": "1.0.0",
+  "description": "경량 필수 유틸리티 - macOS 알림으로 입력 대기 시간 최소화",
+  "author": { "name": "starfishfactory" },
+  "license": "MIT",
+  "keywords": ["notification", "macos", "osascript", "productivity"]
+}

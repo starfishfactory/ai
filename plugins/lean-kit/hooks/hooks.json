@@ -1,0 +1,17 @@
+{
+  "description": "macOS 네이티브 알림 - 사용자 입력 대기 시 데스크톱 알림 전송",
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/notify.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
