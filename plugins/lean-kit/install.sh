@@ -24,8 +24,35 @@ fi
 
 # === jq 의존성 체크 ===
 if ! command -v jq &> /dev/null; then
-  error "jq가 필요합니다. 설치: brew install jq"
-  exit 1
+  warn "jq가 설치되어 있지 않습니다."
+
+  # 대화형 터미널인지 확인 (파이프/CI 환경에서 read 행 걸림 방지)
+  if [ ! -t 0 ]; then
+    error "jq가 필요합니다. 터미널에서 직접 실행해주세요: brew install jq"
+    exit 1
+  fi
+
+  if command -v brew &> /dev/null; then
+    read -rp "[lean-kit] brew install jq 로 설치할까요? (Y/n) " answer || answer="n"
+    if [[ "${answer:-Y}" =~ ^[Yy]$ ]]; then
+      info "jq 설치 중..."
+      if brew install jq; then
+        info "jq 설치 완료"
+      else
+        error "jq 설치 실패. 수동으로 설치해주세요: brew install jq"
+        exit 1
+      fi
+    else
+      info "설치를 취소했습니다."
+      exit 0
+    fi
+  else
+    error "jq가 필요하지만 brew도 설치되어 있지 않습니다."
+    error "먼저 Homebrew를 설치해주세요:"
+    error '  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+    error "그 후: brew install jq"
+    exit 1
+  fi
 fi
 
 # === 경로 설정 ===

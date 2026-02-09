@@ -12,15 +12,28 @@ Claude Code 작업 중 사용자 입력이 필요할 때 macOS 네이티브 알�
 
 ## 설치
 
-### 방법 1: 플러그인 모드
+### 방법 1: 마켓플레이스 (권장)
+
+클론 없이 Claude Code 안에서 바로 설치합니다.
+
+```shell
+/plugin marketplace add starfishfactory/ai
+/plugin install lean-kit@starfishfactory-ai
+```
+
+> **Private repo**: `gh auth login`으로 GitHub 인증이 되어 있으면 동작합니다.
+
+### 방법 2: 플러그인 모드
+
+repo를 클론한 후 로컬 경로를 지정합니다.
 
 ```bash
 claude --plugin-dir ./plugins/lean-kit
 ```
 
-### 방법 2: 직접 설치 (standalone)
+### 방법 3: 직접 설치 (standalone)
 
-`~/.claude/settings.json`에 훅을 직접 등록합니다.
+`~/.claude/settings.json`에 훅을 직접 등록합니다. jq가 없으면 brew를 통한 설치를 안내합니다.
 
 ```bash
 ./plugins/lean-kit/install.sh
@@ -55,6 +68,12 @@ export LEAN_KIT_DEBUG=1
 3. 배너 또는 경고 스타일 선택
 
 ## 제거
+
+### 마켓플레이스
+
+```shell
+/plugin uninstall lean-kit@starfishfactory-ai
+```
 
 ### 직접 설치한 경우
 
