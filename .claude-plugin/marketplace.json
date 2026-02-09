@@ -1,0 +1,17 @@
+{
+  "name": "starfishfactory-ai",
+  "owner": {
+    "name": "starfishfactory"
+  },
+  "metadata": {
+    "description": "Starfish Factory AI plugins",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "lean-kit",
+      "source": "./plugins/lean-kit",
+      "description": "macOS native notifications for Claude Code - alerts when user input is needed"
+    }
+  ]
+}
