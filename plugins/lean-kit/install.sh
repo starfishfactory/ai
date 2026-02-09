@@ -93,7 +93,8 @@ info "스크립트 설치: $TARGET_PERMIT"
 # === 설정 파일 복사 (이미 존재하면 스킵 - 사용자 수정 보존) ===
 if [ ! -f "$TARGET_CONF" ]; then
   cp "$SOURCE_CONF" "$TARGET_CONF"
-  info "설정 파일 설치: $TARGET_CONF"
+  info "설정 파일 설치 (커스터마이징용): $TARGET_CONF"
+  info "  설정 파일 없이도 기본 규칙으로 작동합니다."
 else
   warn "설정 파일이 이미 존재합니다 (사용자 수정 보존): $TARGET_CONF"
 fi

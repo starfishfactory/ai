@@ -7,7 +7,10 @@
 #   LEAN_KIT_AUTO_PERMIT=1  이 값이 설정되어야 작동 (opt-in)
 #   LEAN_KIT_DEBUG=1        디버그 로깅
 #
-# 설정 파일: ~/.claude/hooks/lean-kit-permit.conf
+# 설정 파일(선택): ~/.claude/hooks/lean-kit-permit.conf
+#   파일이 없으면 아래 기본 규칙으로 작동합니다.
+#   파일이 있으면 해당 섹션만 오버라이드됩니다.
+#
 # 의존성: jq
 # 제한: non-interactive 모드(-p)에서는 작동하지 않음 (공식 제한)
 
@@ -17,10 +20,107 @@
 # === jq 의존성 확인 ===
 command -v jq &>/dev/null || exit 0
 
-# === 설정 파일 로드 ===
+# === 기본 규칙 (설정 파일이 없을 때 사용) ===
+read -r -d '' DEFAULT_DENY_BASH <<'RULES' || true
+rm -rf /
+rm -rf ~
+sudo rm
+mkfs
+dd if=
+chmod -R 777 /
+RULES
+
+read -r -d '' DEFAULT_ALLOW_BASH <<'RULES' || true
+git
+npm
+npx
+node
+python
+pip
+brew
+ls
+cat
+head
+tail
+wc
+echo
+mkdir
+cp
+mv
+chmod
+touch
+ln
+curl
+wget
+jq
+gh
+docker
+make
+cargo
+yarn
+pnpm
+which
+type
+env
+printenv
+pwd
+date
+whoami
+id
+uname
+sort
+uniq
+diff
+find
+grep
+rg
+sed
+awk
+tr
+xargs
+tee
+source
+bash
+sh
+test
+claude
+realpath
+dirname
+basename
+RULES
+
+read -r -d '' DEFAULT_DENY_FILES <<'RULES' || true
+.env
+credentials
+.ssh/
+.gnupg/
+secrets
+.git/
+RULES
+
+read -r -d '' DEFAULT_ALLOW_TOOLS <<'RULES' || true
+Edit
+Write
+NotebookEdit
+Task
+RULES
+
+read -r -d '' DEFAULT_ALLOW_MCP <<'RULES' || true
+mcp__*get*
+mcp__*list*
+mcp__*read*
+mcp__*search*
+mcp__*query*
+mcp__*fetch*
+mcp__*view*
+mcp__*find*
+mcp__*count*
+mcp__*describe*
+mcp__*show*
+RULES
+
+# === 설정 파일 (선택적 오버라이드) ===
 CONF="${LEAN_KIT_PERMIT_CONF:-$HOME/.claude/hooks/lean-kit-permit.conf}"
-# 설정 파일 없으면 기본 동작 (사용자 질의)
-[ ! -f "$CONF" ] && exit 0
 
 INPUT=$(cat)
 [ -z "$INPUT" ] && exit 0
@@ -42,9 +142,22 @@ deny_json() {
   printf '{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"deny","message":"%s"}}}' "$1"
 }
 
-# 설정 파일에서 섹션 읽기 (# 주석과 빈 줄 무시)
+# 설정 파일에서 섹션 읽기, 없으면 기본값 사용 (bash 3.2 호환)
 read_section() {
-  sed -n "/^\[$1\]/,/^\[/p" "$CONF" | grep -v '^\[' | grep -v '^#' | grep -v '^$'
+  local section="$1"
+  # 설정 파일에 해당 섹션이 존재하면 파일에서 읽기
+  if [ -f "$CONF" ] && grep -q "^\[$section\]" "$CONF" 2>/dev/null; then
+    sed -n "/^\[$section\]/,/^\[/p" "$CONF" | grep -v '^\[' | grep -v '^#' | grep -v '^$'
+    return
+  fi
+  # 기본값 사용
+  case "$section" in
+    deny_bash)    echo "$DEFAULT_DENY_BASH" ;;
+    allow_bash)   echo "$DEFAULT_ALLOW_BASH" ;;
+    deny_files)   echo "$DEFAULT_DENY_FILES" ;;
+    allow_tools)  echo "$DEFAULT_ALLOW_TOOLS" ;;
+    allow_mcp)    echo "$DEFAULT_ALLOW_MCP" ;;
+  esac
 }
 
 # === 1. Bash 명령어 처리 ===
