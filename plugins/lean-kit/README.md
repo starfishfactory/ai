@@ -69,14 +69,14 @@ claude --plugin-dir ./plugins/lean-kit
 
 ### 마켓플레이스
 
+마켓플레이스 갱신 후 플러그인을 업데이트합니다:
+
 ```shell
-/plugin update lean-kit@starfishfactory-ai
+/plugin marketplace update starfishfactory-ai
 ```
 
-자동 업데이트를 활성화하면 Claude Code 시작 시 자동으로 최신 버전을 가져옵니다:
-
-1. `/plugin` 실행 → **Marketplaces** 탭
-2. `starfishfactory-ai` 선택 → **Enable auto-update**
+> 자동 업데이트를 활성화하면 마켓플레이스 갱신과 플러그인 업데이트가 Claude Code 시작 시 자동으로 수행됩니다:
+> `/plugin` 실행 → **Marketplaces** 탭 → `starfishfactory-ai` 선택 → **Enable auto-update**
 
 ### 플러그인 모드
 
