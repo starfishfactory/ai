@@ -12,6 +12,11 @@
       "name": "lean-kit",
       "source": "./plugins/lean-kit",
       "description": "macOS native notifications for Claude Code - alerts when user input is needed"
+    },
+    {
+      "name": "msa-onboard-team",
+      "source": "./plugins/msa-onboard-team",
+      "description": "MSA 환경 Agent Teams 병렬 분석 + C4 모델 리포트 생성"
     }
   ]
 }
