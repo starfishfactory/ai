@@ -65,6 +65,36 @@ claude --plugin-dir ./plugins/lean-kit
 
 설치 후 Claude Code를 재시작하세요.
 
+## 업데이트
+
+### 마켓플레이스
+
+재설치로 최신 버전을 가져옵니다.
+
+```shell
+/plugin uninstall lean-kit@starfishfactory-ai
+/plugin install lean-kit@starfishfactory-ai
+```
+
+### 플러그인 모드
+
+로컬 저장소를 pull하고 Claude Code를 재시작하면 됩니다.
+
+```bash
+git pull origin main
+```
+
+### 직접 설치
+
+로컬 저장소를 pull한 후 install.sh를 재실행합니다. 스크립트는 최신으로 덮어쓰고, 훅 중복은 자동 방지되며, 사용자 설정 파일은 보존됩니다.
+
+```bash
+git pull origin main
+./plugins/lean-kit/install.sh
+```
+
+> 모든 방식에서 업데이트 후 Claude Code 세션 재시작이 필요합니다.
+
 ## 설정 파일
 
 기본 규칙이 스크립트에 내장되어 있어 설정 파일 없이도 작동합니다.
