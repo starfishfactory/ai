@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # lean-kit install.sh - 유저 스콥 직접 설치 (standalone)
-# ~/.claude/settings.json에 Notification 훅을 추가합니다.
+# ~/.claude/settings.json에 Notification + PermissionRequest 훅을 추가합니다.
 #
 
 set -euo pipefail
@@ -62,10 +62,19 @@ HOOKS_DIR="$CLAUDE_DIR/hooks"
 SETTINGS="$CLAUDE_DIR/settings.json"
 TARGET_SCRIPT="$HOOKS_DIR/lean-kit-notify.sh"
 SOURCE_SCRIPT="$SCRIPT_DIR/scripts/notify.sh"
+TARGET_PERMIT="$HOOKS_DIR/lean-kit-auto-permit.sh"
+SOURCE_PERMIT="$SCRIPT_DIR/scripts/auto-permit.sh"
+TARGET_CONF="$HOOKS_DIR/lean-kit-permit.conf"
+SOURCE_CONF="$SCRIPT_DIR/scripts/lean-kit-permit.conf"
 
 # === 소스 스크립트 확인 ===
 if [ ! -f "$SOURCE_SCRIPT" ]; then
   error "notify.sh를 찾을 수 없습니다: $SOURCE_SCRIPT"
+  exit 1
+fi
+
+if [ ! -f "$SOURCE_PERMIT" ]; then
+  error "auto-permit.sh를 찾을 수 없습니다: $SOURCE_PERMIT"
   exit 1
 fi
 
@@ -76,6 +85,19 @@ mkdir -p "$HOOKS_DIR"
 cp "$SOURCE_SCRIPT" "$TARGET_SCRIPT"
 chmod +x "$TARGET_SCRIPT"
 info "스크립트 설치: $TARGET_SCRIPT"
+
+cp "$SOURCE_PERMIT" "$TARGET_PERMIT"
+chmod +x "$TARGET_PERMIT"
+info "스크립트 설치: $TARGET_PERMIT"
+
+# === 설정 파일 복사 (이미 존재하면 스킵 - 사용자 수정 보존) ===
+if [ ! -f "$TARGET_CONF" ]; then
+  cp "$SOURCE_CONF" "$TARGET_CONF"
+  info "설정 파일 설치 (커스터마이징용): $TARGET_CONF"
+  info "  설정 파일 없이도 기본 규칙으로 작동합니다."
+else
+  warn "설정 파일이 이미 존재합니다 (사용자 수정 보존): $TARGET_CONF"
+fi
 
 # === settings.json 처리 ===
 if [ ! -f "$SETTINGS" ]; then
@@ -93,7 +115,7 @@ fi
 cp "$SETTINGS" "$SETTINGS.bak"
 info "백업 생성: $SETTINGS.bak"
 
-# === 중복 체크 ===
+# === 중복 체크 (Notification) ===
 HOOK_COMMAND="$TARGET_SCRIPT"
 EXISTING=$(jq --arg cmd "$HOOK_COMMAND" -r '
   .hooks.Notification // [] |
@@ -102,24 +124,45 @@ EXISTING=$(jq --arg cmd "$HOOK_COMMAND" -r '
 ' "$SETTINGS" 2>/dev/null || echo "0")
 
 if [ "$EXISTING" != "0" ]; then
-  warn "이미 설치되어 있습니다. 건너뜁니다."
-  exit 0
+  warn "Notification 훅이 이미 설치되어 있습니다. 건너뜁니다."
+else
+  jq --arg cmd "$HOOK_COMMAND" '
+    .hooks //= {} |
+    .hooks.Notification //= [] |
+    .hooks.Notification += [{
+      "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
+      "hooks": [{"type": "command", "command": $cmd, "timeout": 15}]
+    }]
+  ' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+  info "Notification 훅 등록 완료"
 fi
 
-# === 훅 추가 (기존 배열에 append) ===
-jq --arg cmd "$HOOK_COMMAND" '
-  .hooks //= {} |
-  .hooks.Notification //= [] |
-  .hooks.Notification += [{
-    "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
-    "hooks": [{"type": "command", "command": $cmd, "timeout": 15}]
-  }]
-' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+# === 중복 체크 (PermissionRequest) ===
+PERMIT_COMMAND="$TARGET_PERMIT"
+EXISTING_PERMIT=$(jq --arg cmd "$PERMIT_COMMAND" -r '
+  .hooks.PermissionRequest // [] |
+  [.[].hooks[]? | select(.command == $cmd)] |
+  length
+' "$SETTINGS" 2>/dev/null || echo "0")
 
-info "Notification 훅 등록 완료"
+if [ "$EXISTING_PERMIT" != "0" ]; then
+  warn "PermissionRequest 훅이 이미 설치되어 있습니다. 건너뜁니다."
+else
+  jq --arg cmd "$PERMIT_COMMAND" '
+    .hooks //= {} |
+    .hooks.PermissionRequest //= [] |
+    .hooks.PermissionRequest += [{
+      "matcher": "",
+      "hooks": [{"type": "command", "command": $cmd, "timeout": 5}]
+    }]
+  ' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+  info "PermissionRequest 훅 등록 완료"
+fi
+
 info ""
 info "설치 완료! Claude Code를 재시작하면 적용됩니다."
 info ""
 info "환경변수 설정 (선택):"
 info "  export LEAN_KIT_SOUND=Glass    # 알림 소리 (비워두면 무음: LEAN_KIT_SOUND=)"
+info "  export LEAN_KIT_AUTO_PERMIT=1  # 퍼미션 자동 승인 활성화"
 info "  export LEAN_KIT_DEBUG=1        # 디버그 로깅"
