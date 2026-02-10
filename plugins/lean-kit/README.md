@@ -69,12 +69,14 @@ claude --plugin-dir ./plugins/lean-kit
 
 ### 마켓플레이스
 
-재설치로 최신 버전을 가져옵니다.
-
 ```shell
-/plugin uninstall lean-kit@starfishfactory-ai
-/plugin install lean-kit@starfishfactory-ai
+/plugin update lean-kit@starfishfactory-ai
 ```
+
+자동 업데이트를 활성화하면 Claude Code 시작 시 자동으로 최신 버전을 가져옵니다:
+
+1. `/plugin` 실행 → **Marketplaces** 탭
+2. `starfishfactory-ai` 선택 → **Enable auto-update**
 
 ### 플러그인 모드
 
