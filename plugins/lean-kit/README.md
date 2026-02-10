@@ -220,6 +220,8 @@ plugins/lean-kit/
 │   ├── notify.sh                # macOS 알림 스크립트
 │   ├── auto-permit.sh           # 퍼미션 자동 승인 스크립트
 │   └── lean-kit-permit.conf     # 오버라이드 템플릿 (선택사항)
+├── tests/
+│   └── test-auto-permit.sh      # auto-permit 훅 테스트 (64개)
 ├── install.sh                   # 직접 설치
 ├── uninstall.sh                 # 제거
 └── README.md

@@ -1,6 +1,6 @@
 {
   "name": "lean-kit",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "경량 필수 유틸리티 - macOS 알림 + 퍼미션 자동 승인으로 입력 대기 시간 최소화",
   "author": { "name": "starfishfactory" },
   "license": "MIT",
