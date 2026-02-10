@@ -60,23 +60,36 @@ Dockerfile/docker-compose에 정의되어 있으나 분석 결과에서 누락�
 
 | 점수 | 판정 | 처리 |
 |------|------|------|
-| 80-100 | PASS | 리포트 상단에 `✅ 신뢰도: N%` 표시 |
-| 60-79 | WARN | `⚠️ [주의]` 마커 + 부록에 이슈 목록 + "수동 확인 권장" |
-| 0-59 | FAIL | 리포트 생성 중단. AskUserQuestion: (1) 계속 (2) 재분석 (3) 취소 |
+| 80-100 | PASS | 리포트 상단에 `✅ 신뢰도: N%` 표시. 루프 즉시 종료 |
+| < 80 | WARN/FAIL | Generator-Critic 루프: Critic(Lead)이 피드백 → Generator(Teammate/Lead)가 JSON 수정 → 재검증 (최대 3회) |
+
+**루프 종료 후 최종 판정**:
+
+| 조건 | 처리 |
+|------|------|
+| PASS(80+) 달성 | Phase 3 진행 |
+| 3회 완료 후 WARN(60-79) | `⚠️ [주의]` 마커 + 부록에 이슈 목록 + "수동 확인 권장". Phase 3 진행 |
+| 3회 완료 후 FAIL(0-59) | 리포트 생성 중단. AskUserQuestion: (1) 계속 (2) 재분석 (3) 취소 |
 
 **출력 형식**:
 
 ```json
 {
+  "round": 2,
   "score": 85,
   "verdict": "PASS",
+  "history": [
+    { "round": 1, "score": 68, "verdict": "WARN", "deductionCount": 7 },
+    { "round": 2, "score": 85, "verdict": "PASS", "deductionCount": 3 }
+  ],
   "deductions": [
     { "step": 1, "item": "서비스 이름 불일치: user-svc vs user-service", "points": -5 },
     { "step": 3, "item": "미탐지 DB 연결: order-service → Redis", "points": -5 },
     { "step": 4, "item": "확인 불가: payment-service → external-pg", "points": -2 }
   ],
   "corrections": [
-    { "field": "dependency-mapper.serviceDependencies[2].to", "from": "user-svc", "to": "user-service" }
+    { "field": "dependency-mapper.serviceDependencies[2].to", "from": "user-svc", "to": "user-service", "round": 1 },
+    { "field": "dependency-mapper.databaseConnections[+]", "added": "order-service → Redis", "round": 1 }
   ]
 }
 ```
@@ -203,22 +216,37 @@ tags:                    # 필수
 
 | 점수 | 처리 |
 |------|------|
-| 80-100 | 최종 출력 |
-| 60-79 | Mermaid/링크 자동 수정 시도 → 재검증 1회. 미달 시 오류 목록과 함께 출력 |
-| 0-59 | `❌ 품질 검증 미달` 경고 + 오류 목록 + 수동 수정 가이드 |
+| 80-100 | 최종 출력. 루프 즉시 종료 |
+| < 80 | Generator-Critic 루프: Critic(Lead) 피드백 → Generator(Lead) 수정 → 재검증 (최대 3회) |
+
+**루프 종료 후 최종 판정**:
+
+| 조건 | 처리 |
+|------|------|
+| PASS(80+) 달성 | 최종 출력 |
+| 3회 완료 후 60+ | 경고와 함께 최종 출력 |
+| 3회 완료 후 < 60 | `❌ 품질 검증 미달` 경고 + 오류 목록 + 수동 수정 가이드 |
 
 **출력 형식**:
 
 ```json
 {
-  "score": 78,
-  "verdict": "WARN",
-  "issues": [
-    { "step": 1, "severity": "error", "item": "02-container.md: alias 'user-service' 하이픈 포함", "autoFixable": true },
-    { "step": 2, "severity": "warning", "item": "03-components/order.md: [[../04-service-catalog#주문]] 섹션 미존재", "autoFixable": false },
-    { "step": 3, "severity": "error", "item": "01-system-context.md: Person 요소 누락", "autoFixable": false }
+  "round": 2,
+  "score": 88,
+  "verdict": "PASS",
+  "history": [
+    { "round": 1, "score": 68, "verdict": "WARN", "issueCount": 5, "autoFixCount": 3, "manualFixCount": 2 },
+    { "round": 2, "score": 88, "verdict": "PASS", "issueCount": 1, "autoFixCount": 0, "manualFixCount": 1 }
   ],
-  "autoFixCount": 1,
-  "manualFixCount": 2
+  "issues": [
+    { "step": 2, "severity": "warning", "item": "03-components/order.md: [[../04-service-catalog#주문]] 섹션 미존재", "autoFixable": false }
+  ],
+  "fixHistory": [
+    { "round": 1, "fixed": "02-container.md: alias 'user-service' → 'userservice'", "type": "mermaid-alias" },
+    { "round": 1, "fixed": "01-system-context.md: Person 요소 추가", "type": "c4-element" },
+    { "round": 1, "fixed": "03-components/order.md: 깨진 링크 수정", "type": "obsidian-link" }
+  ],
+  "autoFixCount": 0,
+  "manualFixCount": 1
 }
 ```

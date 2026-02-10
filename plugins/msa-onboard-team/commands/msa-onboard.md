@@ -54,7 +54,7 @@ AskUserQuestion을 사용하여 다음을 확인합니다:
 - **절대 직접 분석하지 마세요.** 반드시 3명의 teammate를 spawn하여 병렬로 분석합니다.
 - 모든 teammate가 완료될 때까지 대기하세요.
 - teammate의 작업 완료 상태가 표시되지 않을 수 있습니다. 상태가 업데이트되지 않으면 수동으로 확인 후 진행하세요.
-- teammate가 완료되면 팀을 정리하여 유휴 토큰 소비를 방지하세요.
+- **팀을 즉시 정리하지 마세요.** Phase 2 교차 검증 루프에서 Teammate가 Generator 역할(피드백 기반 수정)을 수행합니다. 팀 정리는 Phase 2 루프 완료 후 수행합니다.
 
 ### Teammate 1: 서비스 식별자 (service-discoverer)
 
@@ -293,14 +293,21 @@ AskUserQuestion을 사용하여 다음을 확인합니다:
   - `{출력경로}/_infra-analysis.json`
   - `{출력경로}/_dependency-map.json`
 - 모든 파일이 존재하면 Phase 2로 진행합니다.
+- **⚠️ 팀을 정리하지 마세요.** Phase 2 Generator-Critic 루프에서 Teammate가 수정을 수행해야 하므로, 팀은 Phase 2 루프 완료 후 정리합니다.
 
 ---
 
-## Phase 2: 교차 검증 (Lead 직접 수행)
+## Phase 2: 교차 검증 — Generator-Critic 루프 (최대 3회)
 
-`verification-standards.md`의 "교차 검증 — 5단계"를 참조하여 직접 수행합니다.
+> **역할 분담**: Critic = Lead (교차 검증 수행), Generator = Teammates (피드백 기반 JSON 수정)
 
-### 수행 절차
+`verification-standards.md`의 "교차 검증 — 5단계"를 참조합니다.
+
+### 루프 절차 (Round 1~3)
+
+각 Round에서 다음을 수행합니다:
+
+#### Critic (Lead): 교차 검증 수행
 
 1. 3개 JSON 파일을 읽어 메모리에 로드
 2. **1단계 — 서비스 일관성**: service-discoverer ↔ dependency-mapper 서비스 목록 대조
@@ -309,17 +316,43 @@ AskUserQuestion을 사용하여 다음을 확인합니다:
 5. **4단계 — Devil's Advocate**: `[확인 필요]` 항목을 소스 코드에서 직접 확인 (Read/Grep 사용)
 6. **5단계 — 신뢰도 점수 산출**: 100점 기준 감점 방식
 
-### 판정 기준
+#### 판정 및 분기
 
 | 점수 | 판정 | 처리 |
 |------|------|------|
-| 80-100 | PASS | 리포트 상단에 `✅ 신뢰도: N%` 표시. Phase 3 진행 |
-| 60-79 | WARN | `⚠️ [주의]` 마커 + 부록에 이슈 목록 + "수동 확인 권장". Phase 3 진행 |
-| 0-59 | FAIL | 리포트 생성 중단. AskUserQuestion으로 사용자에게 선택지 제공: (1) 계속 진행 (2) 재분석 (3) 취소 |
+| 80-100 | PASS | 루프 즉시 종료 → 팀 정리 → Phase 3 진행 |
+| < 80 | WARN/FAIL | 피드백 작성 → Generator(Teammates)에게 수정 지시 → 다음 Round |
+
+#### Generator (Teammates): 피드백 기반 수정
+
+Critic(Lead)이 PASS 미달 시, 불일치 항목별로 해당 Teammate에게 **구체적 수정 지시**를 전달합니다:
+- 예: "service-discoverer: user-svc → user-service로 이름 통일"
+- 예: "dependency-mapper: order-service → Redis 연결 누락, 소스코드에서 확인됨 — 추가"
+- 예: "infra-analyzer: DB storage 항목에 Redis 누락 — 추가"
+
+각 Teammate는 자신의 JSON 파일을 수정합니다. 수정 완료 후 다음 Round로 진행합니다.
+
+### 루프 종료 조건
+
+| 조건 | 처리 |
+|------|------|
+| PASS(80+) 달성 | 즉시 팀 정리 → Phase 3 진행 |
+| 3회 완료 후 WARN(60-79) | 경고와 함께 팀 정리 → Phase 3 진행 |
+| 3회 완료 후 FAIL(0-59) | 팀 정리 → AskUserQuestion: (1) 계속 진행 (2) 재분석 (3) 취소 |
+
+#### 사용자 선택 후 처리 (FAIL 시)
+
+- **(1) 계속 진행**: 현재 검증 결과(FAIL)를 `⚠️` 경고와 함께 Phase 3으로 진행
+- **(2) 재분석**: Phase 0부터 재시작 — 출력 경로 재확인 후 teammate를 새로 spawn하여 분석 재수행
+- **(3) 취소**: 작업 중단. 현재까지의 분석 결과(`_*.json`)는 유지
+
+### 루프 완료 후 팀 정리
+
+Generator-Critic 루프가 종료되면 **반드시 팀을 정리**하여 유휴 토큰 소비를 방지합니다.
 
 ### 출력
 
-교차 검증 결과를 `{출력경로}/_cross-validation.json`에 저장합니다.
+교차 검증 결과를 `{출력경로}/_cross-validation.json`에 저장합니다. 루프 이력(`round`, `history`)을 포함합니다.
 
 ---
 
@@ -352,28 +385,50 @@ AskUserQuestion을 사용하여 다음을 확인합니다:
 
 ---
 
-## Phase 4: 리포트 검증 (Lead 직접 수행)
+## Phase 4: 리포트 검증 — Generator-Critic Self-Reflection 루프 (최대 3회)
 
-`verification-standards.md`의 "리포트 검증 — 4단계"를 참조하여 직접 수행합니다.
+> **역할 분담**: Generator = Lead (리포트 수정), Critic = Lead (리포트 검증). Self-Reflection 패턴.
+> 규칙 기반 검증(Mermaid 문법, Obsidian 링크)이라 별도 에이전트 불필요. Phase 2에서 팀 정리 완료.
 
-### 수행 절차
+`verification-standards.md`의 "리포트 검증 — 4단계"를 참조합니다.
+
+### 루프 절차 (Round 1~3)
+
+각 Round에서 다음을 수행합니다:
+
+#### Critic (Lead): 리포트 검증 수행
 
 1. **1단계 — Mermaid 문법 유효성**: alias 규칙, 구조 검증, 요소별 문법 확인
 2. **2단계 — Obsidian 링크 유효성**: 위키 링크, 프론트매터 검증
 3. **3단계 — C4 모델 완전성**: Level 1/2/3 필수 요소 확인
 4. **4단계 — 분석결과-리포트 일치성**: 분석 JSON과 리포트 내용 대조
 
-### 판정 기준
+#### 판정 및 분기
 
-| 점수 | 처리 |
+| 점수 | 판정 | 처리 |
+|------|------|------|
+| 80-100 | PASS | 루프 즉시 종료 → Phase 5 진행 |
+| < 80 | WARN/FAIL | 피드백(이슈 목록) 작성 → Generator(Lead)가 수정 → 다음 Round |
+
+#### Generator (Lead): 피드백 기반 수정
+
+Critic(Lead)이 PASS 미달 시, `autoFixable` 항목을 중심으로 수정합니다:
+- Mermaid alias 규칙 위반 수정 (예: `user-service` → `userservice`)
+- Obsidian 깨진 링크 수정
+- 누락 C4 요소 추가
+- 수정 내역을 `_report-audit.json`의 `fixHistory`에 기록
+
+### 루프 종료 조건
+
+| 조건 | 처리 |
 |------|------|
-| 80-100 | Phase 5로 진행 (최종 출력) |
-| 60-79 | Mermaid alias/링크 등 자동 수정 가능 항목 수정 → 재검증 1회. 재검증 후에도 미달 시 오류 목록과 함께 출력 |
-| 0-59 | `❌ 품질 검증 미달` 경고 + 오류 목록 + 수동 수정 가이드와 함께 출력 |
+| PASS(80+) 달성 | 즉시 Phase 5 진행 |
+| 3회 완료 후 60+ | 경고와 함께 Phase 5 진행 |
+| 3회 완료 후 < 60 | `❌ 품질 검증 미달` 경고 + 오류 목록 + 수동 수정 가이드와 함께 출력 |
 
 ### 출력
 
-리포트 검증 결과를 `{출력경로}/_report-audit.json`에 저장합니다.
+리포트 검증 결과를 `{출력경로}/_report-audit.json`에 저장합니다. 루프 이력(`round`, `history`, `fixHistory`)을 포함합니다.
 
 ---
 
