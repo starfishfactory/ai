@@ -67,6 +67,8 @@ tmux 세션 안에서 Claude Code를 실행하여 split pane을 사용하는 방
 
 > **핵심**: split pane 백엔드로 **tmux** 또는 **it2(iTerm2 네이티브)** 중 하나만 있으면 됩니다. 둘 다 설치할 필요는 없습니다.
 
+> **참고**: tmux 기본 사용법이 익숙하지 않다면 [tmux 사용법 가이드](./tmux-usage-guide.md)를 먼저 참고하세요.
+
 ### 2.1 설치
 
 ```bash
@@ -265,6 +267,14 @@ split pane이 작동하지 않는다면 아래 항목을 확인하세요.
 □ teammate 수가 4명 이상은 아닌가? (레이스 컨디션 회피)
 ```
 
+#### tmux prefix 키 충돌
+
+```
+□ Claude Code 실행 중 Ctrl+b가 안 먹히는가? → tmux 사용법 가이드 섹션 2.2 참고
+```
+
+> 자세한 해결 방법은 [tmux 사용법 가이드 — Ctrl+b가 안 먹힐 때](./tmux-usage-guide.md#22-ctrlb가-안-먹힐-때)를 참고하세요.
+
 #### 방식 A (tmux)
 
 ```
@@ -333,6 +343,9 @@ claude --teammate-mode in-process
 - **Shift+Up/Down** 단축키로 teammate 간 전환이 가능합니다.
 
 ### 5.3 참고 자료
+
+**내부 가이드**:
+- [tmux 사용법 가이드](./tmux-usage-guide.md) — tmux 핵심 개념, 명령어, 설정
 
 **공식 문서**:
 - [Claude Code - Orchestrate teams of Claude Code sessions](https://code.claude.com/docs/en/agent-teams)
