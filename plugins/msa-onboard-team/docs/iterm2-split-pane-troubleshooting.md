@@ -2,36 +2,53 @@
 
 ## 1. 필수 설정 체크리스트
 
-Agent Teams의 split pane 모드를 활성화하려면 다음 5가지를 반드시 확인하세요:
+Agent Teams의 split pane 모드를 활성화하려면 아래 항목을 확인하세요.
+
+> **핵심**: split pane 백엔드로 **tmux** 또는 **it2(iTerm2 네이티브)** 중 하나만 있으면 됩니다. 둘 다 설치할 필요는 없습니다.
+
+### 공통 필수 항목
 
 | # | 체크 항목 | 설정 방법 | 확인 방법 |
 |---|---------|---------|---------|
 | 1 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 환경변수 | `~/.claude/settings.json`에 추가: `"env": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" }` | 터미널에서 `echo $CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` |
-| 2 | `it2` CLI 설치 (iTerm2용) | `pip3 install --upgrade it2` (macOS 기본 환경에는 `pip`이 없으므로 `pip3` 사용) | `which it2` 실행하여 경로 확인 |
-| 3 | iTerm2 Python API 활성화 | **iTerm2 → Settings → General → Magic → Enable Python API 체크** | iTerm2 메뉴에서 직접 확인 |
-| 4 | tmux 설치 (필수) | macOS: `brew install tmux` / Linux: `sudo apt install tmux` | `which tmux` 또는 `tmux -V` |
-| 5 | tmux 세션 안에서 claude 실행 | `tmux new-session -s work` 후 `claude` 실행, 또는 CLI 플래그: `claude --teammate-mode tmux` | `echo $TMUX`로 tmux 세션 확인 |
 
-> **참고**: `teammateMode`는 `~/.claude/settings.json`의 유효한 필드가 아닙니다. teammate 모드는 tmux 세션 안에서 실행하면 auto 모드가 자동 감지하거나, CLI 플래그 `--teammate-mode tmux`로 지정해야 합니다.
+### 방식 A: tmux 사용 (tmux 세션 안에서 실행)
+
+| # | 체크 항목 | 설정 방법 | 확인 방법 |
+|---|---------|---------|---------|
+| A-1 | tmux 설치 | macOS: `brew install tmux` / Linux: `sudo apt install tmux` | `which tmux` 또는 `tmux -V` |
+| A-2 | tmux 세션 안에서 claude 실행 | `tmux new-session -s work` 후 `claude` 실행 | `echo $TMUX`로 tmux 세션 확인 |
+
+### 방식 B: it2 사용 (iTerm2 네이티브 split pane, tmux 불필요)
+
+| # | 체크 항목 | 설정 방법 | 확인 방법 |
+|---|---------|---------|---------|
+| B-1 | `it2` CLI 설치 | `pip3 install --upgrade it2` (macOS 기본 환경에는 `pip`이 없으므로 `pip3` 사용) | `which it2` 실행하여 경로 확인 |
+| B-2 | iTerm2 Python API 활성화 | **iTerm2 → Settings → General → Magic → Enable Python API 체크** | iTerm2 메뉴에서 직접 확인 |
+| B-3 | tmux 세션 **밖**에서 실행 | 일반 iTerm2 탭에서 `claude --teammate-mode tmux` 실행 | `echo $TMUX` → 빈 값이면 OK |
+
+> **참고**: `--teammate-mode tmux`는 "tmux만 사용하라"는 뜻이 아닙니다. 이 플래그를 설정하면 Claude Code가 환경을 자동 감지하여, tmux 세션 안이면 tmux split pane을, tmux 세션 밖이고 iTerm2 + it2가 있으면 iTerm2 네이티브 split pane을 사용합니다.
 
 ---
 
-## 2. "auto" 모드의 동작 방식
+## 2. "auto" 모드와 "tmux" 모드의 동작 방식
 
-공식 문서에 따르면 기본값 `"auto"` 모드는 다음과 같이 작동합니다:
-
-**[중요]** 이것이 split pane이 안 되는 가장 흔한 원인입니다:
+공식 문서에 따르면 teammate 모드는 다음과 같이 작동합니다:
 
 ```
-"auto" 모드의 동작:
+"auto" 모드 (기본값):
 ├─ tmux 세션 안에서 실행 → split pane 모드 자동 활성화
 └─ 일반 터미널에서 직접 실행 → in-process 모드로 폴백 (split pane 안 됨)
+
+"tmux" 모드 (--teammate-mode tmux):
+├─ tmux 세션 안에서 실행 → tmux split pane 사용
+└─ tmux 세션 밖 + iTerm2 + it2 → iTerm2 네이티브 split pane 사용
 ```
 
-**즉, iTerm2에서 tmux 없이 그냥 `claude`를 실행하면 split pane이 절대 작동하지 않습니다.**
+**[중요]** `"auto"` 모드에서는 tmux 세션 밖이면 split pane이 작동하지 않습니다. it2 방식을 쓰려면 반드시 `--teammate-mode tmux`를 지정하세요.
 
 - `"auto"` (기본값): tmux 세션 자동 감지 → 있으면 split, 없으면 in-process
-- `"tmux"`: split pane 모드 강제 활성화, iTerm2/tmux 자동 감지
+- `"tmux"`: split pane 모드 강제 활성화, **환경 자동 감지** (tmux 세션이면 tmux 사용, 아니면 it2 사용)
 - `"in-process"`: split pane 사용 안 함 (Shift+Up/Down으로 teammate 전환)
 
 ---
@@ -174,35 +191,9 @@ claude --teammate-mode in-process
 
 ## 5. 권장 실행 순서
 
-이 순서대로 따라하면 split pane이 정상 작동합니다:
+아래에서 **방식 A(tmux)** 또는 **방식 B(it2)** 중 하나를 선택하여 따라하세요.
 
-### Step 1: 필수 패키지 설치
-
-```bash
-# macOS
-brew install tmux
-
-# Linux (Ubuntu/Debian)
-sudo apt install tmux
-
-# Python 패키지 (iTerm2용) - macOS에서는 pip3 사용
-pip3 install --upgrade it2
-```
-
-> **주의**: macOS 기본 환경에는 `pip`이 없고 `pip3`만 사용 가능합니다.
-> 설치 후 `it2`가 PATH에 없다면, `~/.zshrc`에 다음을 추가하세요:
-> ```bash
-> export PATH="$HOME/Library/Python/3.9/bin:$PATH"
-> ```
-
-### Step 2: iTerm2 설정
-
-1. **iTerm2 메뉴 열기**: Preferences → General
-2. **Magic 섹션 찾기**: General 탭 → 아래로 스크롤
-3. **Python API 활성화**: "Enable Python API" 체크박스 선택
-4. **iTerm2 재시작** (선택사항이지만 권장)
-
-### Step 3: settings.json 설정
+### Step 1: settings.json 설정 (공통)
 
 `~/.claude/settings.json` 파일을 열어 다음과 같이 설정:
 
@@ -214,47 +205,110 @@ pip3 install --upgrade it2
 }
 ```
 
-> **참고**: `teammateMode`는 settings.json의 유효한 필드가 아닙니다. teammate 모드는 tmux 세션 안에서 자동 감지되거나, CLI 플래그 `--teammate-mode tmux`로 지정합니다.
+> **참고**: `teammateMode`는 settings.json의 유효한 필드가 아닙니다. teammate 모드는 환경 자동 감지 또는 CLI 플래그 `--teammate-mode tmux`로 지정합니다.
 
-### Step 4: tmux로 실행 (3가지 선택지)
+---
 
-#### 선택지 1: tmux -CC (가장 권장)
+### 방식 A: tmux 사용
+
+#### Step A-1: tmux 설치
+
+```bash
+# macOS
+brew install tmux
+
+# Linux (Ubuntu/Debian)
+sudo apt install tmux
+```
+
+#### Step A-2: tmux로 실행 (3가지 선택지)
+
+##### 선택지 1: tmux -CC (가장 권장)
 ```bash
 tmux -CC new-session claude
 ```
 
-#### 선택지 2: 일반 tmux 세션
+##### 선택지 2: 일반 tmux 세션
 ```bash
 tmux new-session -s work
 # 세션 진입 후:
 claude
 ```
 
-#### 선택지 3: CLI 플래그 (빠른 테스트)
+##### 선택지 3: CLI 플래그 (빠른 테스트)
 ```bash
 tmux new-session -s test "claude --teammate-mode tmux"
 ```
 
 ---
 
+### 방식 B: it2 사용 (iTerm2 네이티브, tmux 불필요)
+
+#### Step B-1: it2 설치
+
+```bash
+# Python 패키지 (iTerm2용) - macOS에서는 pip3 사용
+pip3 install --upgrade it2
+```
+
+> **주의**: macOS 기본 환경에는 `pip`이 없고 `pip3`만 사용 가능합니다.
+> 설치 후 `it2`가 PATH에 없다면, `~/.zshrc`에 다음을 추가하세요:
+> ```bash
+> export PATH="$HOME/Library/Python/3.9/bin:$PATH"
+> ```
+
+#### Step B-2: iTerm2 Python API 활성화
+
+1. **iTerm2 메뉴 열기**: Preferences → General
+2. **Magic 섹션 찾기**: General 탭 → 아래로 스크롤
+3. **Python API 활성화**: "Enable Python API" 체크박스 선택
+4. **iTerm2 재시작** (선택사항이지만 권장)
+
+#### Step B-3: 실행
+
+```bash
+# tmux 세션 밖의 일반 iTerm2 탭에서:
+claude --teammate-mode tmux
+# → it2를 자동 감지하여 iTerm2 네이티브 split pane 사용
+```
+
+> **주의**: `--teammate-mode tmux`라는 이름이지만, tmux 세션 밖에서 실행하면 자동으로 it2 백엔드를 사용합니다.
+
+---
+
 ## 6. 트러블슈팅 체크리스트
 
-split pane이 여전히 작동하지 않는다면:
+split pane이 여전히 작동하지 않는다면, 사용 중인 방식에 맞는 항목을 확인하세요:
 
+### 공통 체크
 ```
 □ `echo $CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` → "1" 출력되는가?
+□ ~/.claude/settings.json에 "env" 섹션이 있는가?
+□ "squadSize"가 4 이상은 아닌가? (레이스 컨디션 회피)
+```
+
+### 방식 A (tmux) 체크
+```
 □ `which tmux` → 경로 출력되는가?
+□ tmux 세션 안에서 실행하고 있는가? (`echo $TMUX` → 값이 있는가?)
+```
+
+### 방식 B (it2) 체크
+```
 □ `which it2` → 경로 출력되는가?
 □ `it2 --version` → v0.1.9 이상인가?
 □ iTerm2 Settings → General → Magic → "Enable Python API" 체크되어 있는가?
-□ ~/.claude/settings.json에 "env" 섹션이 있는가?
-□ "squadSize"가 4 이상은 아닌가? (레이스 컨디션 회피)
-□ tmux 세션 안에서 실행하고 있는가?
+□ tmux 세션 밖에서 실행하고 있는가? (`echo $TMUX` → 빈 값인가?)
+□ `--teammate-mode tmux` 플래그를 사용하고 있는가?
 ```
 
-모든 항목이 체크되었으면 이 명령으로 테스트:
+방식별 테스트 명령:
 ```bash
+# 방식 A 테스트:
 tmux -CC new-session claude
+
+# 방식 B 테스트:
+claude --teammate-mode tmux
 ```
 
 ---
@@ -297,15 +351,27 @@ ln -s /Applications/iTerm.app/Contents/MacOS/it2 /usr/local/bin/it2
 # 현재 설정 진단 스크립트
 echo "=== 진단 결과 ==="
 echo "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: $CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"
-echo "tmux version: $(tmux -V)"
-echo "it2 version: $(it2 --version 2>/dev/null || echo 'NOT FOUND')"
-echo "TMUX session: ${TMUX:-NOT IN TMUX}"
+echo "tmux version: $(tmux -V 2>/dev/null || echo 'NOT INSTALLED')"
+echo "it2 version: $(it2 --version 2>/dev/null || echo 'NOT INSTALLED')"
+echo "TMUX session: ${TMUX:-NOT IN TMUX (→ it2 방식 사용 가능)}"
 echo "settings.json path: ~/.claude/settings.json"
+echo ""
+echo "=== 사용 가능한 방식 ==="
+if [ -n "$TMUX" ]; then
+  echo "✅ 방식 A (tmux): 현재 tmux 세션 안 → 바로 claude 실행 가능"
+else
+  echo "ℹ️  방식 A (tmux): tmux 세션 밖 → tmux new-session 필요"
+fi
+if command -v it2 &>/dev/null; then
+  echo "✅ 방식 B (it2): it2 설치됨 → claude --teammate-mode tmux 실행 가능"
+else
+  echo "❌ 방식 B (it2): it2 미설치 → pip3 install it2 필요"
+fi
 ```
 
-### iTerm2 Dynamic Profile로 tmux 자동 시작
+### iTerm2 Dynamic Profile로 자동 시작
 
-매번 `tmux new-session -s work`을 수동으로 입력하는 대신, iTerm2 프로필에 등록하면 편리합니다.
+매번 명령을 수동 입력하는 대신, iTerm2 프로필에 등록하면 편리합니다. 방식 A(tmux)와 방식 B(it2) 프로필을 모두 등록해두면 상황에 따라 선택할 수 있습니다.
 
 다음 파일을 생성하세요:
 
@@ -315,9 +381,15 @@ echo "settings.json path: ~/.claude/settings.json"
 {
   "Profiles": [
     {
-      "Name": "tmux (Claude Teams)",
+      "Name": "Claude Teams (tmux)",
       "Guid": "tmux-claude-teams-profile",
       "Initial Text": "tmux new-session -A -s main",
+      "Custom Directory": "Recycle"
+    },
+    {
+      "Name": "Claude Teams (it2 네이티브)",
+      "Guid": "it2-claude-teams-profile",
+      "Initial Text": "claude --teammate-mode tmux",
       "Custom Directory": "Recycle"
     }
   ]
@@ -325,12 +397,14 @@ echo "settings.json path: ~/.claude/settings.json"
 ```
 
 **사용 방법**:
-1. iTerm2 → Profiles (`Cmd + O`) → **"tmux (Claude Teams)"** 선택
-2. 자동으로 tmux 세션 진입 → `claude` 실행
-3. 기본 프로필로 설정하려면: Settings → Profiles → "tmux (Claude Teams)" → **Set as Default**
+1. iTerm2 → Profiles (`Cmd + O`) → 원하는 프로필 선택
+   - **"Claude Teams (tmux)"**: tmux 세션 진입 → `claude` 실행
+   - **"Claude Teams (it2 네이티브)"**: tmux 없이 바로 claude 실행 (it2로 split pane)
+2. 기본 프로필로 설정하려면: Settings → Profiles → 원하는 프로필 → **Set as Default**
 
 **설정 포인트**:
-- `-A` 플래그: 기존 `main` 세션이 있으면 재접속, 없으면 새로 생성
+- tmux 프로필의 `-A` 플래그: 기존 `main` 세션이 있으면 재접속, 없으면 새로 생성
+- it2 프로필: tmux 세션 밖에서 실행되므로 자동으로 iTerm2 네이티브 split pane 사용
 - `Recycle`: 이전 작업 디렉토리를 유지
 
 ---
