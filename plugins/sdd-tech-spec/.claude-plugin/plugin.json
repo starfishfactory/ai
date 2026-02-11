@@ -1,0 +1,10 @@
+{
+  "name": "sdd-tech-spec",
+  "version": "1.0.0",
+  "description": "SDD 방법론 기반 Tech Spec 작성 (Generator-Critic 루프)",
+  "author": { "name": "starfishfactory" },
+  "license": "MIT",
+  "keywords": ["sdd", "tech-spec", "specification-driven-development"],
+  "commands": "./commands/",
+  "skills": "./skills/"
+}
