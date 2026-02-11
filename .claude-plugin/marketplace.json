@@ -17,6 +17,11 @@
       "name": "msa-onboard-team",
       "source": "./plugins/msa-onboard-team",
       "description": "MSA 환경 Agent Teams 병렬 분석 + C4 모델 리포트 생성"
+    },
+    {
+      "name": "sdd-tech-spec",
+      "source": "./plugins/sdd-tech-spec",
+      "description": "SDD(Specification-Driven Development) 방법론 기반 Tech Spec 작성"
     }
   ]
 }
