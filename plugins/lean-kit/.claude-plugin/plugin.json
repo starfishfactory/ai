@@ -1,8 +1,9 @@
 {
   "name": "lean-kit",
-  "version": "1.2.0",
-  "description": "경량 필수 유틸리티 - macOS 알림 + 퍼미션 자동 승인으로 입력 대기 시간 최소화",
+  "version": "1.3.0",
+  "description": "경량 필수 유틸리티 - macOS 알림 + 퍼미션 자동 승인 + 1줄 컴팩트 statusline",
   "author": { "name": "starfishfactory" },
   "license": "MIT",
-  "keywords": ["notification", "macos", "osascript", "productivity", "permission", "auto-permit"]
+  "keywords": ["notification", "macos", "osascript", "productivity", "permission", "auto-permit", "statusline"],
+  "commands": "./commands/"
 }
