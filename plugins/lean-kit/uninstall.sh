@@ -24,6 +24,7 @@ TARGET_SCRIPT="$HOOKS_DIR/lean-kit-notify.sh"
 TARGET_PERMIT="$HOOKS_DIR/lean-kit-auto-permit.sh"
 TARGET_CONF="$HOOKS_DIR/lean-kit-permit.conf"
 DEBUG_LOG="$HOOKS_DIR/lean-kit-debug.log"
+TARGET_STATUSLINE="$CLAUDE_DIR/statusline.sh"
 
 # === 스크립트 삭제 ===
 if [ -f "$TARGET_SCRIPT" ]; then
@@ -39,6 +40,14 @@ if [ -f "$TARGET_PERMIT" ]; then
   info "스크립트 삭제: $TARGET_PERMIT"
 else
   warn "auto-permit 스크립트가 이미 없습니다: $TARGET_PERMIT"
+fi
+
+# === statusline 삭제 ===
+if [ -f "$TARGET_STATUSLINE" ]; then
+  rm "$TARGET_STATUSLINE"
+  info "스크립트 삭제: $TARGET_STATUSLINE"
+else
+  warn "statusline이 이미 없습니다: $TARGET_STATUSLINE"
 fi
 
 # === 설정 파일 안내 (사용자 커스터마이징 보존) ===
@@ -58,6 +67,10 @@ if [ -f "/tmp/lean-kit-last-notify" ]; then
   rm -f "/tmp/lean-kit-last-notify"
   info "쿨다운 파일 삭제"
 fi
+
+# === statusline 캐시 정리 ===
+rm -f /tmp/ccusage_statusline.cache /tmp/ccusage_statusline.pid 2>/dev/null
+rmdir /tmp/ccusage_statusline.lock 2>/dev/null
 
 # === settings.json에서 훅 제거 ===
 if [ -f "$SETTINGS" ] && command -v jq &> /dev/null; then
@@ -92,6 +105,11 @@ if [ -f "$SETTINGS" ] && command -v jq &> /dev/null; then
       ] |
       if .hooks.PermissionRequest | length == 0 then
         del(.hooks.PermissionRequest)
+      else . end
+    else . end |
+    # statusLine 제거 (lean-kit의 statusline.sh만)
+    if .statusLine.command then
+      if (.statusLine.command | test("statusline\\.sh$")) then del(.statusLine)
       else . end
     else . end |
     # hooks 객체가 비었으면 제거

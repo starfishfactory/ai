@@ -66,6 +66,8 @@ TARGET_PERMIT="$HOOKS_DIR/lean-kit-auto-permit.sh"
 SOURCE_PERMIT="$SCRIPT_DIR/scripts/auto-permit.sh"
 TARGET_CONF="$HOOKS_DIR/lean-kit-permit.conf"
 SOURCE_CONF="$SCRIPT_DIR/scripts/lean-kit-permit.conf"
+TARGET_STATUSLINE="$CLAUDE_DIR/statusline.sh"
+SOURCE_STATUSLINE="$SCRIPT_DIR/scripts/statusline.sh"
 
 # === 소스 스크립트 확인 ===
 if [ ! -f "$SOURCE_SCRIPT" ]; then
@@ -75,6 +77,11 @@ fi
 
 if [ ! -f "$SOURCE_PERMIT" ]; then
   error "auto-permit.sh를 찾을 수 없습니다: $SOURCE_PERMIT"
+  exit 1
+fi
+
+if [ ! -f "$SOURCE_STATUSLINE" ]; then
+  error "statusline.sh를 찾을 수 없습니다: $SOURCE_STATUSLINE"
   exit 1
 fi
 
@@ -89,6 +96,10 @@ info "스크립트 설치: $TARGET_SCRIPT"
 cp "$SOURCE_PERMIT" "$TARGET_PERMIT"
 chmod +x "$TARGET_PERMIT"
 info "스크립트 설치: $TARGET_PERMIT"
+
+cp "$SOURCE_STATUSLINE" "$TARGET_STATUSLINE"
+chmod +x "$TARGET_STATUSLINE"
+info "스크립트 설치: $TARGET_STATUSLINE"
 
 # === 설정 파일 복사 (이미 존재하면 스킵 - 사용자 수정 보존) ===
 if [ ! -f "$TARGET_CONF" ]; then
@@ -157,6 +168,29 @@ else
     }]
   ' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
   info "PermissionRequest 훅 등록 완료"
+fi
+
+# === statusLine 설정 ===
+EXISTING_SL=$(jq -r '.statusLine.command // ""' "$SETTINGS" 2>/dev/null)
+if echo "$EXISTING_SL" | grep -q 'statusline\.sh$'; then
+  warn "statusLine이 이미 설정되어 있습니다. 건너뜁니다."
+else
+  SKIP_SL=0
+  if [ -n "$EXISTING_SL" ]; then
+    warn "기존 statusLine 설정: $EXISTING_SL"
+    if [ -t 0 ]; then
+      read -rp "[lean-kit] lean-kit statusline으로 교체할까요? (Y/n) " sl_answer || sl_answer="n"
+      [[ ! "${sl_answer:-Y}" =~ ^[Yy]$ ]] && SKIP_SL=1
+    else
+      warn "비대화형 모드: 기존 statusLine을 보존합니다."
+      SKIP_SL=1
+    fi
+  fi
+  if [ "$SKIP_SL" != "1" ]; then
+    jq '.statusLine = {"type":"command","command":"~/.claude/statusline.sh","padding":0}' \
+      "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+    info "statusLine 설정 등록 완료"
+  fi
 fi
 
 info ""
