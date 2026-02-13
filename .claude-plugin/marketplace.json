@@ -22,6 +22,11 @@
       "name": "sdd-tech-spec",
       "source": "./plugins/sdd-tech-spec",
       "description": "SDD(Specification-Driven Development) 방법론 기반 Tech Spec 작성"
+    },
+    {
+      "name": "git",
+      "source": "./plugins/git",
+      "description": "Gitmoji 스마트 커밋 + 브랜치 관리 + PR 자동 생성/리뷰"
     }
   ]
 }
