@@ -1,26 +1,26 @@
 #!/usr/bin/env bash
 #
-# lean-kit auto-permit.sh - PermissionRequest 자동 승인
-# 퍼미션 다이얼로그 표시 시 안전한 도구/명령어를 자동 승인합니다.
+# lean-kit auto-permit.sh - PermissionRequest auto-approval
+# Auto-approves safe tools/commands when permission dialog appears.
 #
-# 환경변수:
-#   LEAN_KIT_AUTO_PERMIT=1  이 값이 설정되어야 작동 (opt-in)
-#   LEAN_KIT_DEBUG=1        디버그 로깅
+# Environment variables:
+#   LEAN_KIT_AUTO_PERMIT=1  Must be set for activation (opt-in)
+#   LEAN_KIT_DEBUG=1        Debug logging
 #
-# 설정 파일(선택): ~/.claude/hooks/lean-kit-permit.conf
-#   파일이 없으면 아래 기본 규칙으로 작동합니다.
-#   파일이 있으면 해당 섹션만 오버라이드됩니다.
+# Config file (optional): ~/.claude/hooks/lean-kit-permit.conf
+#   If file does not exist, default rules below are used.
+#   If file exists, only matching sections are overridden.
 #
-# 의존성: jq
-# 제한: non-interactive 모드(-p)에서는 작동하지 않음 (공식 제한)
+# Dependency: jq
+# Limitation: Does not work in non-interactive mode (-p) (official limitation)
 
-# === opt-in 확인 ===
+# === Check opt-in ===
 [ "${LEAN_KIT_AUTO_PERMIT:-0}" != "1" ] && exit 0
 
-# === jq 의존성 확인 ===
+# === Check jq dependency ===
 command -v jq &>/dev/null || exit 0
 
-# === 기본 규칙 (설정 파일이 없을 때 사용) ===
+# === Default rules (used when config file is absent) ===
 read -r -d '' DEFAULT_DENY_BASH <<'RULES' || true
 rm -rf /
 rm -rf ~
@@ -119,7 +119,7 @@ mcp__*describe*
 mcp__*show*
 RULES
 
-# === 설정 파일 (선택적 오버라이드) ===
+# === Config file (optional override) ===
 CONF="${LEAN_KIT_PERMIT_CONF:-$HOME/.claude/hooks/lean-kit-permit.conf}"
 
 INPUT=$(cat)
@@ -128,13 +128,13 @@ INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 [ -z "$TOOL_NAME" ] && exit 0
 
-# === 디버그 로깅 ===
+# === Debug logging ===
 if [ "${LEAN_KIT_DEBUG:-0}" = "1" ]; then
   LOG="$HOME/.claude/hooks/lean-kit-debug.log"
   echo "[$(date)] auto-permit: tool=$TOOL_NAME" >> "$LOG"
 fi
 
-# JSON 응답 헬퍼
+# JSON response helpers
 allow_json() {
   printf '{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"allow"}}}'
 }
@@ -142,15 +142,15 @@ deny_json() {
   printf '{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"deny","message":"%s"}}}' "$1"
 }
 
-# 설정 파일에서 섹션 읽기, 없으면 기본값 사용 (bash 3.2 호환)
+# Read section from config file, fall back to defaults (bash 3.2 compatible)
 read_section() {
   local section="$1"
-  # 설정 파일에 해당 섹션이 존재하면 파일에서 읽기
+  # If section exists in config file, read from file
   if [ -f "$CONF" ] && grep -q "^\[$section\]" "$CONF" 2>/dev/null; then
     sed -n "/^\[$section\]/,/^\[/p" "$CONF" | grep -v '^\[' | grep -v '^#' | grep -v '^$'
     return
   fi
-  # 기본값 사용
+  # Use defaults
   case "$section" in
     deny_bash)    echo "$DEFAULT_DENY_BASH" ;;
     allow_bash)   echo "$DEFAULT_ALLOW_BASH" ;;
@@ -160,11 +160,11 @@ read_section() {
   esac
 }
 
-# === 1. Bash 명령어 처리 ===
+# === 1. Bash command handling ===
 if [ "$TOOL_NAME" = "Bash" ]; then
   CMD=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
-  # deny 섹션: 포함 패턴 매칭
+  # Deny section: substring pattern matching
   while IFS= read -r pattern; do
     case "$CMD" in *$pattern*)
       deny_json "Blocked by deny rule: $pattern"
@@ -172,43 +172,43 @@ if [ "$TOOL_NAME" = "Bash" ]; then
     esac
   done < <(read_section "deny_bash")
 
-  # allow 섹션: 접두사 매칭
+  # Allow section: prefix matching
   while IFS= read -r prefix; do
     case "$CMD" in "$prefix"\ *|"$prefix")
       allow_json; exit 0 ;;
     esac
   done < <(read_section "allow_bash")
 
-  exit 0  # 미분류 → 사용자 질의
+  exit 0  # Unclassified → prompt user
 fi
 
-# === 2. 파일 수정 도구 ===
+# === 2. File modification tools ===
 case "$TOOL_NAME" in
   Edit|Write|NotebookEdit)
     FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
-    # deny_files 섹션: 민감 파일 보호
+    # deny_files section: protect sensitive files
     while IFS= read -r pattern; do
       case "$FILE_PATH" in *$pattern*)
-        exit 0 ;;  # 사용자 질의로 폴백
+        exit 0 ;;  # Fall back to user prompt
       esac
     done < <(read_section "deny_files")
-    # allow_tools에 Edit/Write가 있으면 승인
+    # Approve if tool is in allow_tools
     if read_section "allow_tools" | grep -qx "$TOOL_NAME"; then
       allow_json; exit 0
     fi ;;
 esac
 
-# === 3. 기타 도구 (Task, MCP 등) ===
+# === 3. Other tools (Task, MCP, etc.) ===
 if read_section "allow_tools" | grep -qx "$TOOL_NAME"; then
   allow_json; exit 0
 fi
 
-# === 4. MCP 도구 - 패턴 매칭 ===
+# === 4. MCP tools - pattern matching ===
 while IFS= read -r pattern; do
   case "$TOOL_NAME" in $pattern)
     allow_json; exit 0 ;;
   esac
 done < <(read_section "allow_mcp")
 
-# === 5. 기타 → 사용자 질의 ===
+# === 5. Unmatched → prompt user ===
 exit 0

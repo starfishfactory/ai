@@ -1,48 +1,46 @@
 ---
-description: TAM/SAM/SOM 시장규모 추정
+description: TAM/SAM/SOM market sizing estimation
 allowed-tools: WebSearch, WebFetch, Read, Write, Task
-argument-hint: <시장/산업>
+argument-hint: <market/industry>
 ---
+# Market Sizing: $ARGUMENTS
 
-# 시장규모 추정: $ARGUMENTS
+## Request
+Estimate TAM/SAM/SOM market size for **$ARGUMENTS**.
 
-## 분석 요청
-**$ARGUMENTS**의 TAM/SAM/SOM 시장규모를 추정하세요.
+## Analysis Items
+| Category | Definition | Calculation |
+|----------|-----------|-------------|
+| **TAM** | Total market | Industry size x ratio |
+| **SAM** | Addressable market | TAM x serviceable ratio |
+| **SOM** | Obtainable market | SAM x expected share |
 
-## 분석 항목
-| 구분 | 정의 | 계산 |
-|------|------|------|
-| **TAM** | 전체 시장 | 산업 규모 × 비율 |
-| **SAM** | 접근 가능 시장 | TAM × 서비스 가능 비율 |
-| **SOM** | 확보 가능 시장 | SAM × 예상 점유율 |
-
-## 출력 형식
-
+## Output Format
 ```
-# $ARGUMENTS 시장규모
+# $ARGUMENTS Market Size
 
-## 시장 정의
-- 범위:
-- 지역:
-- 기준연도:
+## Market Definition
+- Scope:
+- Region:
+- Base year:
 
 ## TAM/SAM/SOM
-| 구분 | 규모 | CAGR | 산출 근거 |
-|------|------|------|----------|
+| Category | Size | CAGR | Basis |
+|----------|------|------|-------|
 | TAM | $ | % | |
 | SAM | $ | % | |
-| SOM (3년) | $ | % | |
+| SOM (3yr) | $ | % | |
 
-## 성장 드라이버
+## Growth Drivers
 1.
 2.
 
-## 리스크
+## Risks
 1.
 2.
 
-## 출처
+## Sources
 -
 ```
 
-**Top-Down과 Bottom-Up 중 하나 이상 방법으로 산출. 출처 필수.**
+**Use at least one of Top-Down or Bottom-Up methods. Sources required.**

@@ -1,7 +1,7 @@
 {
   "name": "msa-onboard-team",
   "version": "2.0.0",
-  "description": "MSA 환경 Agent Teams 병렬 분석 + C4 모델 리포트 생성",
+  "description": "MSA environment Agent Teams parallel analysis + C4 model report generation",
   "author": {
     "name": "starfishfactory"
   },

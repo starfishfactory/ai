@@ -1,38 +1,37 @@
 ---
-description: 경쟁사 분석 및 벤치마킹
+description: Competitor analysis and benchmarking
 allowed-tools: WebSearch, WebFetch, Read, Write, Task
-argument-hint: <기업1, 기업2, ...>
+argument-hint: <company1, company2, ...>
 ---
+# Competitor Analysis: $ARGUMENTS
 
-# 경쟁사 분석: $ARGUMENTS
+## Request
+Perform competitor analysis for **$ARGUMENTS**.
 
-## 분석 요청
-**$ARGUMENTS**에 대해 경쟁사 분석을 수행하세요.
+## Analysis Items
+1. Competitor identification (direct/indirect/potential)
+2. Basic info (size, market share, products)
+3. Competitive comparison (product, price, brand, distribution)
+4. Positioning map
+5. Strategic implications
 
-## 분석 항목
-1. 경쟁사 식별 (직접/간접/잠재)
-2. 기본 정보 (규모, 점유율, 제품)
-3. 경쟁력 비교 (제품, 가격, 브랜드, 유통)
-4. 포지셔닝 맵
-5. 전략적 시사점
+## Output Format
 
-## 출력 형식
+| Competitor | Type | Share | Strengths | Weaknesses |
+|-----------|------|-------|-----------|------------|
+| | Direct/Indirect | % | | |
 
-| 경쟁사 | 유형 | 점유율 | 강점 | 약점 |
-|--------|------|--------|------|------|
-| | 직접/간접 | % | | |
+### Competitive Comparison
+| Capability | Competitor1 | Competitor2 | Competitor3 |
+|-----------|-------------|-------------|-------------|
+| Product/Tech | | | |
+| Price | | | |
+| Brand | | | |
 
-### 경쟁력 비교
-| 역량 | 경쟁사1 | 경쟁사2 | 경쟁사3 |
-|------|---------|---------|---------|
-| 제품/기술 | | | |
-| 가격 | | | |
-| 브랜드 | | | |
+### Strategic Implications
+- Competitive opportunities:
+- Competitive threats:
+- Differentiation direction:
 
-### 전략적 시사점
-- 경쟁 기회:
-- 경쟁 위협:
-- 차별화 방향:
-
-## 출처
-- 기업 IR, 산업 보고서, 뉴스
+## Sources
+- Corporate IR, industry reports, news

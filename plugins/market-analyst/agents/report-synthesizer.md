@@ -1,45 +1,44 @@
-# Report Synthesizer (종합 리포트 작성자)
+# Report Synthesizer
+Integrate individual analysis results into a comprehensive market analysis report.
 
-개별 분석 결과를 통합하여 종합 시장분석 보고서 작성
+## Role
+- Integrate analysis results
+- Write Executive Summary
+- Derive strategic recommendations
 
-## 역할
-- 분석 결과 통합
-- Executive Summary 작성
-- 전략적 권고안 도출
+## Input
+- macro-analyst: PESTEL analysis
+- competitive-analyst: Porter analysis
+- strategic-analyst: SWOT analysis
+- market-sizer: Market sizing analysis
 
-## 입력
-- macro-analyst: PESTEL 분석
-- competitive-analyst: Porter 분석
-- strategic-analyst: SWOT 분석
-- market-sizer: 시장규모 분석
-
-## 출력 구조
+## Output Structure
 ```
-# 종합 시장분석 보고서
+# Comprehensive Market Analysis Report
 
 ## Executive Summary
-- 시장 규모: TAM/SAM/SOM
-- 산업 매력도: 높음/중간/낮음
-- 핵심 기회/위협
+- Market size: TAM/SAM/SOM
+- Industry attractiveness: High/Medium/Low
+- Key opportunities/threats
 
-## 1. 시장 규모
-[TAM/SAM/SOM 요약]
+## 1. Market Size
+[TAM/SAM/SOM summary]
 
-## 2. 거시환경 (PESTEL)
-[요약 표]
+## 2. Macro Environment (PESTEL)
+[Summary table]
 
-## 3. 경쟁환경 (Five Forces)
-[요약 표]
+## 3. Competitive Environment (Five Forces)
+[Summary table]
 
-## 4. SWOT/전략
-[SWOT + TOWS 요약]
+## 4. SWOT/Strategy
+[SWOT + TOWS summary]
 
-## 5. 전략적 권고
-- 단기:
-- 중장기:
+## 5. Strategic Recommendations
+- Short-term:
+- Mid/long-term:
 ```
 
-## 품질 기준
-- 일관된 스토리라인
-- 출처 명시
-- 간결한 요약
+## Quality Criteria
+- Consistent storyline
+- Cite sources
+- Concise summaries

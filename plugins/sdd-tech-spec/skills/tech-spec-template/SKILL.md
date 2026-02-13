@@ -1,45 +1,43 @@
 ---
 name: tech-spec-template
-description: Tech Spec GFM 출력 템플릿 및 유형별 필수/선택 섹션 매핑
+description: Tech Spec GFM output template and per-type required/optional section mapping
 user-invocable: false
 ---
 
-# Tech Spec GFM 출력 템플릿
+# Tech Spec GFM Output Template
 
 ## YAML Frontmatter
 
-모든 Spec은 다음 YAML frontmatter로 시작한다:
+All specs start with this YAML frontmatter:
 
 ```yaml
 ---
-title: {Spec 제목}
+title: {Spec title}
 status: draft
-tags: [{관련 태그들}]
+tags: [{related tags}]
 created: {YYYY-MM-DD}
 spec-type: {feature-design | system-architecture | api-spec}
 ---
 ```
 
-- `status`: draft → review → approved 순으로 진행
-- `spec-type`: sdd-framework SKILL의 유형 구분과 일치
+- `status`: Progresses draft > review > approved
+- `spec-type`: Matches type classification from sdd-framework SKILL
 
----
+## Section Structure
 
-## 섹션 구조
-
-### 1. 개요
+### 1. Overview
 
 ```markdown
-## 1. 개요
+## 1. Overview
 
-### 1.1 배경
-{이 Spec이 필요한 배경. 현재 상황과 문제점.}
+### 1.1 Background
+{Why this spec is needed. Current situation and problems.}
 
-### 1.2 동기
-{왜 지금 이 작업이 필요한가. 비즈니스/기술적 동기.}
+### 1.2 Motivation
+{Why this work is needed now. Business/technical motivation.}
 
-### 1.3 문제 정의
-{해결하려는 핵심 문제를 1-2문장으로 명확히 정의.}
+### 1.3 Problem Statement
+{Define the core problem to solve in 1-2 sentences.}
 ```
 
 ### 2. Goals & Non-Goals
@@ -48,50 +46,50 @@ spec-type: {feature-design | system-architecture | api-spec}
 ## 2. Goals & Non-Goals
 
 ### 2.1 Goals
-1. {구체적이고 측정 가능한 목표 1}
-2. {구체적이고 측정 가능한 목표 2}
-3. {구체적이고 측정 가능한 목표 3}
+1. {Specific, measurable goal 1}
+2. {Specific, measurable goal 2}
+3. {Specific, measurable goal 3}
 
 ### 2.2 Non-Goals
-1. {명시적으로 범위에서 제외하는 항목 1}
-2. {명시적으로 범위에서 제외하는 항목 2}
+1. {Explicitly excluded item 1}
+2. {Explicitly excluded item 2}
 ```
 
-### 3. 상세 설계
+### 3. Detailed Design
 
 ```markdown
-## 3. 상세 설계
+## 3. Detailed Design
 
-### 3.1 아키텍처
+### 3.1 Architecture
 
-{시스템/기능의 전체 구조를 설명.}
+{Describe overall system/feature structure.}
 
 \`\`\`mermaid
 graph TD
-    A[컴포넌트 A] --> B[컴포넌트 B]
-    B --> C[컴포넌트 C]
+    A[Component A] --> B[Component B]
+    B --> C[Component C]
 \`\`\`
 
-### 3.2 데이터 모델
+### 3.2 Data Model
 
-{핵심 데이터 구조와 관계를 정의.}
+{Define core data structures and relationships.}
 
-| 필드 | 타입 | 설명 | 제약조건 |
+| Field | Type | Description | Constraints |
 |------|------|------|----------|
-| id | UUID | 고유 식별자 | PK, NOT NULL |
+| id | UUID | Unique identifier | PK, NOT NULL |
 
-### 3.3 API 설계
+### 3.3 API Design
 
 #### `POST /api/v1/resource`
 
-**요청**:
+**Request**:
 \`\`\`json
 {
   "field": "value"
 }
 \`\`\`
 
-**응답** (200 OK):
+**Response** (200 OK):
 \`\`\`json
 {
   "id": "uuid",
@@ -99,199 +97,195 @@ graph TD
 }
 \`\`\`
 
-**에러 코드**:
-| 코드 | 설명 |
+**Error Codes**:
+| Code | Description |
 |------|------|
-| 400 | 잘못된 요청 |
-| 404 | 리소스 없음 |
+| 400 | Bad request |
+| 404 | Resource not found |
 
-### 3.4 시퀀스 다이어그램
+### 3.4 Sequence Diagram
 
 \`\`\`mermaid
 sequenceDiagram
     participant Client
     participant Server
     participant DB
-    Client->>Server: 요청
-    Server->>DB: 쿼리
-    DB-->>Server: 결과
-    Server-->>Client: 응답
+    Client->>Server: Request
+    Server->>DB: Query
+    DB-->>Server: Result
+    Server-->>Client: Response
 \`\`\`
 ```
 
-### 4. 기능 요구사항 (FR) + 비기능 요구사항 (NFR)
+### 4. Functional Requirements (FR) + Non-Functional Requirements (NFR)
 
 ```markdown
-## 4. 요구사항
+## 4. Requirements
 
-### 4.1 기능 요구사항 (FR)
+### 4.1 Functional Requirements (FR)
 
-| ID | 요구사항 | 수용 기준 | 우선순위 |
+| ID | Requirement | Acceptance Criteria | Priority |
 |----|---------|----------|---------|
-| FR-001 | {기능 설명} | {검증 가능한 기준} | P0/P1/P2 |
-| FR-002 | {기능 설명} | {검증 가능한 기준} | P0/P1/P2 |
+| FR-001 | {Feature description} | {Verifiable criteria} | P0/P1/P2 |
+| FR-002 | {Feature description} | {Verifiable criteria} | P0/P1/P2 |
 
-### 4.2 비기능 요구사항 (NFR)
+### 4.2 Non-Functional Requirements (NFR)
 
-| ID | 카테고리 | 요구사항 | 목표 수치 |
+| ID | Category | Requirement | Target Metric |
 |----|---------|---------|----------|
-| NFR-001 | 성능 | {구체적 요구사항} | {수치 기준} |
-| NFR-002 | 가용성 | {구체적 요구사항} | {수치 기준} |
-| NFR-003 | 보안 | {구체적 요구사항} | {수치 기준} |
+| NFR-001 | Performance | {Specific requirement} | {Numeric target} |
+| NFR-002 | Availability | {Specific requirement} | {Numeric target} |
+| NFR-003 | Security | {Specific requirement} | {Numeric target} |
 ```
 
-### 5. 의존성 & 제약사항
+### 5. Dependencies & Constraints
 
 ```markdown
-## 5. 의존성 & 제약사항
+## 5. Dependencies & Constraints
 
-### 5.1 의존성
+### 5.1 Dependencies
 
-| 의존성 | 유형 | 설명 | 영향 |
+| Dependency | Type | Description | Impact |
 |--------|------|------|------|
-| {서비스/라이브러리} | 기술적/조직적 | {설명} | {미충족 시 영향} |
+| {Service/library} | Technical/Organizational | {Description} | {Impact if unmet} |
 
-### 5.2 제약사항
+### 5.2 Constraints
 
-- **기술적**: {기술 스택, 인프라 제약}
-- **사업적**: {예산, 일정, 인력 제약}
-- **규제적**: {법률, 컴플라이언스 제약}
+- **Technical**: {Tech stack, infrastructure constraints}
+- **Business**: {Budget, schedule, staffing constraints}
+- **Regulatory**: {Legal, compliance constraints}
 ```
 
-### 6. 성공 지표 & 테스트 기준
+### 6. Success Metrics & Test Criteria
 
 ```markdown
-## 6. 성공 지표 & 테스트 기준
+## 6. Success Metrics & Test Criteria
 
-### 6.1 성공 지표
+### 6.1 Success Metrics
 
-| 지표 | 현재 값 | 목표 값 | 측정 방법 |
+| Metric | Current Value | Target Value | Measurement Method |
 |------|--------|--------|----------|
-| {KPI} | {현재} | {목표} | {방법} |
+| {KPI} | {Current} | {Target} | {Method} |
 
-### 6.2 테스트 기준
+### 6.2 Test Criteria
 
-- **단위 테스트**: {커버리지 목표, 핵심 테스트 케이스}
-- **통합 테스트**: {시나리오, 검증 항목}
-- **성능 테스트**: {부하 조건, 기대 결과}
+- **Unit tests**: {Coverage target, key test cases}
+- **Integration tests**: {Scenarios, verification items}
+- **Performance tests**: {Load conditions, expected results}
 ```
 
-### 7. 리스크 & 완화 전략
+### 7. Risks & Mitigation
 
 ```markdown
-## 7. 리스크 & 완화 전략
+## 7. Risks & Mitigation
 
-| ID | 리스크 | 유형 | 확률 | 영향도 | 완화 전략 |
+| ID | Risk | Type | Probability | Impact | Mitigation |
 |----|--------|------|------|--------|----------|
-| R-001 | {리스크 설명} | 기술/일정/외부 | 상/중/하 | 상/중/하 | {구체적 대응} |
-| R-002 | {리스크 설명} | 기술/일정/외부 | 상/중/하 | 상/중/하 | {구체적 대응} |
-| R-003 | {리스크 설명} | 기술/일정/외부 | 상/중/하 | 상/중/하 | {구체적 대응} |
+| R-001 | {Risk description} | Technical/Schedule/External | H/M/L | H/M/L | {Specific response} |
+| R-002 | {Risk description} | Technical/Schedule/External | H/M/L | H/M/L | {Specific response} |
+| R-003 | {Risk description} | Technical/Schedule/External | H/M/L | H/M/L | {Specific response} |
 ```
 
-### 8. 마일스톤 & 타임라인
+### 8. Milestones & Timeline
 
 ```markdown
-## 8. 마일스톤 & 타임라인
+## 8. Milestones & Timeline
 
-| 단계 | 마일스톤 | 산출물 | 예상 기간 |
+| Phase | Milestone | Deliverables | Estimated Duration |
 |------|---------|--------|----------|
-| 1 | {마일스톤 1} | {산출물} | {기간} |
-| 2 | {마일스톤 2} | {산출물} | {기간} |
-| 3 | {마일스톤 3} | {산출물} | {기간} |
+| 1 | {Milestone 1} | {Deliverables} | {Duration} |
+| 2 | {Milestone 2} | {Deliverables} | {Duration} |
+| 3 | {Milestone 3} | {Deliverables} | {Duration} |
 ```
 
-### 9. 대안 검토
+### 9. Alternative Review
 
 ```markdown
-## 9. 대안 검토
+## 9. Alternative Review
 
-### 9.1 검토한 대안
+### 9.1 Reviewed Alternatives
 
-#### 대안 A: {대안 이름}
-- **설명**: {대안 설명}
-- **장점**: {장점}
-- **단점**: {단점}
+#### Alternative A: {Name}
+- **Description**: {Description}
+- **Pros**: {Pros}
+- **Cons**: {Cons}
 
-#### 대안 B: {대안 이름}
-- **설명**: {대안 설명}
-- **장점**: {장점}
-- **단점**: {단점}
+#### Alternative B: {Name}
+- **Description**: {Description}
+- **Pros**: {Pros}
+- **Cons**: {Cons}
 
-### 9.2 선택 근거
-{현재 설계를 선택한 이유와 대안을 배제한 근거}
+### 9.2 Selection Rationale
+{Reason for choosing current design and rationale for rejecting alternatives}
 ```
 
-### 10. 부록
+### 10. Appendix
 
 ```markdown
-## 10. 부록
+## 10. Appendix
 
-### 10.1 용어 정의
+### 10.1 Glossary
 
-| 용어 | 정의 |
+| Term | Definition |
 |------|------|
-| {용어} | {정의} |
+| {Term} | {Definition} |
 
-### 10.2 참고 자료
-- [{자료명}]({URL 또는 파일 경로})
+### 10.2 References
+- [{Resource name}]({URL or file path})
 ```
 
----
+## Per-Type Required/Optional Mapping
 
-## 유형별 필수/선택 매핑
+### Feature Design (feature-design)
 
-### 기능 설계 (feature-design)
-
-| 섹션 | 필수/선택 | 비고 |
+| Section | Required/Optional | Notes |
 |------|----------|------|
-| 1. 개요 | 필수 | |
-| 2. Goals & Non-Goals | **필수** | Goals 3개+, Non-Goals 2개+ |
-| 3. 상세 설계 | 선택 | 3.3 API 설계는 해당 시에만 |
-| 4. 요구사항 | **필수** | FR, NFR 모두 |
-| 5. 의존성 & 제약사항 | 선택 | |
-| 6. 성공 지표 & 테스트 기준 | **필수** | |
-| 7. 리스크 & 완화 전략 | 선택 | |
-| 8. 마일스톤 & 타임라인 | 선택 | |
-| 9. 대안 검토 | 선택 | |
-| 10. 부록 | 선택 | |
+| 1. Overview | Required | |
+| 2. Goals & Non-Goals | **Required** | Goals 3+, Non-Goals 2+ |
+| 3. Detailed Design | Optional | 3.3 API Design only if applicable |
+| 4. Requirements | **Required** | Both FR and NFR |
+| 5. Dependencies & Constraints | Optional | |
+| 6. Success Metrics & Test Criteria | **Required** | |
+| 7. Risks & Mitigation | Optional | |
+| 8. Milestones & Timeline | Optional | |
+| 9. Alternative Review | Optional | |
+| 10. Appendix | Optional | |
 
-### 시스템 아키텍처 (system-architecture)
+### System Architecture (system-architecture)
 
-| 섹션 | 필수/선택 | 비고 |
+| Section | Required/Optional | Notes |
 |------|----------|------|
-| 1. 개요 | 필수 | |
-| 2. Goals & Non-Goals | 필수 | |
-| 3. 상세 설계 | **필수** | 아키텍처, 데이터 모델, 시퀀스 필수 |
-| 4. 요구사항 | 선택 | FR 상세는 선택 |
-| 5. 의존성 & 제약사항 | **필수** | |
-| 6. 성공 지표 & 테스트 기준 | 선택 | |
-| 7. 리스크 & 완화 전략 | **필수** | |
-| 8. 마일스톤 & 타임라인 | 선택 | |
-| 9. 대안 검토 | 필수 | |
-| 10. 부록 | 선택 | |
+| 1. Overview | Required | |
+| 2. Goals & Non-Goals | Required | |
+| 3. Detailed Design | **Required** | Architecture, data model, sequence required |
+| 4. Requirements | Optional | Detailed FR optional |
+| 5. Dependencies & Constraints | **Required** | |
+| 6. Success Metrics & Test Criteria | Optional | |
+| 7. Risks & Mitigation | **Required** | |
+| 8. Milestones & Timeline | Optional | |
+| 9. Alternative Review | Required | |
+| 10. Appendix | Optional | |
 
-### API 스펙 (api-spec)
+### API Spec (api-spec)
 
-| 섹션 | 필수/선택 | 비고 |
+| Section | Required/Optional | Notes |
 |------|----------|------|
-| 1. 개요 | 필수 | |
-| 2. Goals & Non-Goals | 필수 | |
-| 3. 상세 설계 | **필수** | 3.3 API 설계 필수 |
-| 4. 요구사항 | **필수** | 에러 코드 포함 |
-| 5. 의존성 & 제약사항 | **필수** | 인증/인가 포함 |
-| 6. 성공 지표 & 테스트 기준 | 선택 | |
-| 7. 리스크 & 완화 전략 | 선택 | |
-| 8. 마일스톤 & 타임라인 | 선택 | |
-| 9. 대안 검토 | 선택 | |
-| 10. 부록 | 선택 | |
+| 1. Overview | Required | |
+| 2. Goals & Non-Goals | Required | |
+| 3. Detailed Design | **Required** | 3.3 API Design required |
+| 4. Requirements | **Required** | Include error codes |
+| 5. Dependencies & Constraints | **Required** | Include auth/authz |
+| 6. Success Metrics & Test Criteria | Optional | |
+| 7. Risks & Mitigation | Optional | |
+| 8. Milestones & Timeline | Optional | |
+| 9. Alternative Review | Optional | |
+| 10. Appendix | Optional | |
 
----
+## Markdown Rules
 
-## 마크다운 작성 규칙
-
-1. **GFM 표준 준수**: GitHub Flavored Markdown만 사용
-2. **링크 형식**: 표준 링크 `[text](file.md)` 만 사용. `[[위키링크]]` 미사용
-3. **다이어그램**: Mermaid 코드 블록 사용 (````mermaid`)
-4. **코드 블록**: 언어 명시 (````json`, ````yaml`, ````sql` 등)
-5. **테이블**: GFM 파이프 테이블 형식
-6. **제목 계층**: `##` (H2)부터 시작. `#` (H1)은 문서 제목(frontmatter title)에 대응
+1. **GFM standard**: Use GitHub Flavored Markdown only
+2. **Links**: Use standard links `[text](file.md)` only. No `[[wiki links]]`
+3. **Diagrams**: Use Mermaid code blocks (````mermaid`)
+4. **Code blocks**: Specify language (````json`, ````yaml`, ````sql`, etc.)
+5. **Tables**: GFM pipe table format
+6. **Heading hierarchy**: Start from `##` (H2). `#` (H1) corresponds to document title (frontmatter title)
