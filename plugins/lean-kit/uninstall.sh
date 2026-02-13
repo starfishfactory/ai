@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
-# lean-kit uninstall.sh - 제거 스크립트
-# ~/.claude/settings.json에서 lean-kit 훅을 제거하고 스크립트를 삭제합니다.
+# lean-kit uninstall.sh - Uninstall script
+# Removes lean-kit hooks from ~/.claude/settings.json and deletes scripts.
 #
 
 set -euo pipefail
 
-# === 색상 ===
+# === Colors ===
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
@@ -16,7 +16,7 @@ info()  { echo -e "${GREEN}[lean-kit]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[lean-kit]${NC} $1"; }
 error() { echo -e "${RED}[lean-kit]${NC} $1" >&2; }
 
-# === 경로 설정 ===
+# === Path setup ===
 CLAUDE_DIR="$HOME/.claude"
 HOOKS_DIR="$CLAUDE_DIR/hooks"
 SETTINGS="$CLAUDE_DIR/settings.json"
@@ -26,66 +26,66 @@ TARGET_CONF="$HOOKS_DIR/lean-kit-permit.conf"
 DEBUG_LOG="$HOOKS_DIR/lean-kit-debug.log"
 TARGET_STATUSLINE="$CLAUDE_DIR/statusline.sh"
 
-# === 스크립트 삭제 ===
+# === Delete scripts ===
 if [ -f "$TARGET_SCRIPT" ]; then
   rm "$TARGET_SCRIPT"
-  info "스크립트 삭제: $TARGET_SCRIPT"
+  info "Script removed: $TARGET_SCRIPT"
 else
-  warn "스크립트가 이미 없습니다: $TARGET_SCRIPT"
+  warn "Script already absent: $TARGET_SCRIPT"
 fi
 
-# === auto-permit 스크립트 삭제 ===
+# === Delete auto-permit script ===
 if [ -f "$TARGET_PERMIT" ]; then
   rm "$TARGET_PERMIT"
-  info "스크립트 삭제: $TARGET_PERMIT"
+  info "Script removed: $TARGET_PERMIT"
 else
-  warn "auto-permit 스크립트가 이미 없습니다: $TARGET_PERMIT"
+  warn "Auto-permit script already absent: $TARGET_PERMIT"
 fi
 
-# === statusline 삭제 ===
+# === Delete statusline ===
 if [ -f "$TARGET_STATUSLINE" ]; then
   rm "$TARGET_STATUSLINE"
-  info "스크립트 삭제: $TARGET_STATUSLINE"
+  info "Script removed: $TARGET_STATUSLINE"
 else
-  warn "statusline이 이미 없습니다: $TARGET_STATUSLINE"
+  warn "Statusline already absent: $TARGET_STATUSLINE"
 fi
 
-# === 설정 파일 안내 (사용자 커스터마이징 보존) ===
+# === Config file notice (preserve user customizations) ===
 if [ -f "$TARGET_CONF" ]; then
-  warn "설정 파일을 보존합니다 (사용자 수정이 있을 수 있음): $TARGET_CONF"
-  warn "수동 삭제: rm $TARGET_CONF"
+  warn "Config file preserved (may contain user modifications): $TARGET_CONF"
+  warn "Manual removal: rm $TARGET_CONF"
 fi
 
-# === 디버그 로그 삭제 ===
+# === Delete debug log ===
 if [ -f "$DEBUG_LOG" ]; then
   rm "$DEBUG_LOG"
-  info "디버그 로그 삭제: $DEBUG_LOG"
+  info "Debug log removed: $DEBUG_LOG"
 fi
 
-# === 쿨다운 파일 삭제 ===
+# === Delete cooldown file ===
 if [ -f "/tmp/lean-kit-last-notify" ]; then
   rm -f "/tmp/lean-kit-last-notify"
-  info "쿨다운 파일 삭제"
+  info "Cooldown file removed"
 fi
 
-# === statusline 캐시 정리 ===
+# === Clean statusline cache ===
 rm -f /tmp/ccusage_statusline.cache /tmp/ccusage_statusline.pid 2>/dev/null
 rmdir /tmp/ccusage_statusline.lock 2>/dev/null
 
-# === settings.json에서 훅 제거 ===
+# === Remove hooks from settings.json ===
 if [ -f "$SETTINGS" ] && command -v jq &> /dev/null; then
-  # JSON 유효성 확인
+  # Validate JSON
   if ! jq empty "$SETTINGS" 2>/dev/null; then
-    error "settings.json이 유효한 JSON이 아닙니다. 수동으로 확인해주세요."
+    error "settings.json is not valid JSON. Please check manually."
     exit 1
   fi
 
-  # 백업
+  # Backup
   cp "$SETTINGS" "$SETTINGS.bak"
 
-  # lean-kit 관련 훅만 제거 (다른 훅 보존)
+  # Remove only lean-kit hooks (preserve other hooks)
   jq '
-    # Notification 훅 제거
+    # Remove Notification hooks
     if .hooks.Notification then
       .hooks.Notification |= [
         .[] | select(
@@ -96,7 +96,7 @@ if [ -f "$SETTINGS" ] && command -v jq &> /dev/null; then
         del(.hooks.Notification)
       else . end
     else . end |
-    # PermissionRequest 훅 제거
+    # Remove PermissionRequest hooks
     if .hooks.PermissionRequest then
       .hooks.PermissionRequest |= [
         .[] | select(
@@ -107,36 +107,36 @@ if [ -f "$SETTINGS" ] && command -v jq &> /dev/null; then
         del(.hooks.PermissionRequest)
       else . end
     else . end |
-    # statusLine 제거 (lean-kit의 statusline.sh만)
+    # Remove statusLine (only lean-kit statusline.sh)
     if .statusLine.command then
       if (.statusLine.command | test("statusline\\.sh$")) then del(.statusLine)
       else . end
     else . end |
-    # hooks 객체가 비었으면 제거
+    # Remove hooks object if empty
     if .hooks and (.hooks | length == 0) then
       del(.hooks)
     else . end
   ' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
 
-  info "settings.json에서 훅 제거 완료"
+  info "Hooks removed from settings.json"
 else
   if [ ! -f "$SETTINGS" ]; then
-    warn "settings.json이 없습니다."
+    warn "settings.json not found."
   fi
   if ! command -v jq &> /dev/null; then
-    warn "jq가 없어 settings.json을 수정할 수 없습니다. 수동으로 제거해주세요."
+    warn "jq not available. Cannot modify settings.json. Please remove manually."
   fi
 fi
 
-# === 백업 파일 정리 (수정 결과 검증 후) ===
+# === Clean backup file (after verifying result) ===
 if [ -f "$SETTINGS.bak" ]; then
   if jq empty "$SETTINGS" 2>/dev/null; then
     rm -f "$SETTINGS.bak"
-    info "백업 파일 정리"
+    info "Backup file cleaned up"
   else
-    warn "settings.json 검증 실패. 백업 보존: $SETTINGS.bak"
+    warn "settings.json validation failed. Backup preserved: $SETTINGS.bak"
   fi
 fi
 
 info ""
-info "제거 완료! Claude Code를 재시작하면 적용됩니다."
+info "Uninstall complete! Restart Claude Code to apply."

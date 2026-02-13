@@ -1,31 +1,30 @@
 ---
 name: iso-20252-standards
-description: ISO 20252:2019 시장조사 품질 표준. 투명성, 재현성, 윤리성 원칙과 품질 체크리스트.
+description: ISO 20252:2019 market research quality standard. Transparency, reproducibility, ethics principles and quality checklist.
 ---
+# ISO 20252:2019 Market Research Standard
 
-# ISO 20252:2019 시장조사 표준
+## Overview
+- **Standard**: ISO 20252:2019
+- **Body**: ISO/TC 225
+- **Current**: 2019 (3rd edition)
 
-## 개요
-- **표준**: ISO 20252:2019
-- **기관**: ISO/TC 225
-- **현행**: 2019년 (3rd edition)
+## Core Principles
+1. **Transparency**: State methodology and limitations explicitly
+2. **Reproducibility**: Document all procedures
+3. **Ethics**: Protect privacy, maintain confidentiality
 
-## 핵심 원칙
-1. **투명성**: 방법론 명시, 한계점 기술
-2. **재현성**: 절차 문서화
-3. **윤리성**: 프라이버시 보호, 기밀 유지
-
-## 프로세스
+## Process
 ```
-설계 → 수집 → 처리 → 보고
+Design -> Collection -> Processing -> Reporting
 ```
 
-## 품질 체크리스트
-- [ ] 조사 목적 명확
-- [ ] 표본 크기 적절
-- [ ] 출처 명시
-- [ ] 한계점 기술
+## Quality Checklist
+- [ ] Research objective clearly defined
+- [ ] Sample size adequate
+- [ ] Sources cited
+- [ ] Limitations stated
 
-## 참고
+## References
 - [ISO 20252:2019](https://www.iso.org/standard/73671.html)
 - ESOMAR Guidelines

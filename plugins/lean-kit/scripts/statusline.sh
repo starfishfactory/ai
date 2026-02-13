@@ -44,7 +44,7 @@ progress_bar() {
   printf '%*s' "$empty" '' | tr ' ' '-'
 }
 
-# git utilities
+# ---- git utilities ----
 num_or_zero() { v="$1"; [[ "$v" =~ ^[0-9]+$ ]] && echo "$v" || echo 0; }
 
 # ---- JSON extraction utilities ----
@@ -244,24 +244,24 @@ if command -v ccusage >/dev/null 2>&1 && [ "$HAS_JQ" -eq 1 ]; then
 fi
 
 # ---- render statusline (1-line compact) ----
-# 계정
+# Account
 if [ -n "$account_email" ]; then
   printf '👤 %s%s%s' "$(account_color)" "$account_email" "$(rst)"
   printf '  📁 %s%s%s' "$(dir_color)" "$current_dir" "$(rst)"
 else
   printf '📁 %s%s%s' "$(dir_color)" "$current_dir" "$(rst)"
 fi
-# Git 브랜치
+# Git branch
 [ -n "$git_branch" ] && printf '  🌿 %s%s%s' "$(git_color)" "$git_branch" "$(rst)"
-# 모델
+# Model
 printf '  🤖 %s%s%s' "$(model_color)" "$model_name" "$(rst)"
-# 컨텍스트
+# Context
 [ -n "$context_pct" ] && printf '  🧠 %s%s[%s]%s' "$(context_color)" "$context_pct" "$(progress_bar "$context_remaining_pct" 10)" "$(rst)"
-# 비용 + burn rate
+# Cost + burn rate
 if [ -n "$cost_usd" ] && [[ "$cost_usd" =~ ^[0-9.]+$ ]]; then
   printf '  💰 %s$%.2f%s' "$(cost_color)" "$cost_usd" "$(rst)"
   [ -n "$cost_per_hour" ] && printf '(%s$%.2f/h%s)' "$(burn_color)" "$cost_per_hour" "$(rst)"
 fi
-# 세션 잔여 시간
+# Session remaining time
 [ -n "$session_txt_short" ] && printf '  ⌛ %s%s%s' "$(session_color)" "$session_txt_short" "$(rst)"
 printf '\n'

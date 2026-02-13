@@ -1,105 +1,101 @@
 ---
-description: MSA 환경 Agent Teams 병렬 분석 + 교차 검증 + C4 리포트 생성
+description: MSA environment Agent Teams parallel analysis + cross-validation + C4 report generation
 allowed-tools: Read, Grep, Glob, Bash, Write, AskUserQuestion
-argument-hint: <프로젝트 경로>
+argument-hint: <project path>
 ---
 
-# MSA 온보딩 분석 (Agent Teams): $ARGUMENTS
+# MSA Onboarding Analysis (Agent Teams): $ARGUMENTS
 
-> ⚠️ **Agent Teams는 실험적 기능입니다**
-> - 활성화: settings.json 또는 .claude/settings.json에 `{ "env": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" } }` 추가
-> - 공식 문서: https://code.claude.com/docs/en/agent-teams
-> - 비용: ~7x tokens (plan mode 기준). Opus teammates 사용 시 더 증가
-> - tmux 설치 필요: `brew install tmux` (macOS) / `sudo apt install tmux` (Linux)
-> - iTerm2 사용 시: Settings → General → Magic → Enable Python API
-> - **미지원 터미널**: VS Code 통합 터미널, Windows Terminal, Ghostty (split pane 모드)
+> **Agent Teams is experimental.**
+> - Enable: add `{ "env": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" } }` to settings.json or .claude/settings.json
+> - Docs: https://code.claude.com/docs/en/agent-teams
+> - Cost: ~7x tokens (plan mode). More with Opus teammates
+> - Requires tmux: `brew install tmux` (macOS) / `sudo apt install tmux` (Linux)
+> - iTerm2: Settings → General → Magic → Enable Python API
+> - **Unsupported terminals**: VS Code integrated terminal, Windows Terminal, Ghostty (split pane mode)
 
-## 분석 대상
+## Target
 
-경로: `$ARGUMENTS`
+Path: `$ARGUMENTS`
 
-> `$ARGUMENTS`가 비어있으면 현재 디렉토리(`.`)를 분석 대상으로 사용합니다.
+> If `$ARGUMENTS` is empty, use current directory (`.`).
 
----
+## Phase 0: Project Scan + User Confirmation
 
-## Phase 0: 프로젝트 스캔 + 사용자 확인
+### Auto-Scan
 
-### 자동 스캔
-
-디렉토리 구조:
+Directory structure:
 !`find ${ARGUMENTS:-.} -maxdepth 2 -type d 2>/dev/null | head -50`
 
-빌드 파일:
+Build files:
 !`find ${ARGUMENTS:-.} -maxdepth 3 \( -name "package.json" -o -name "pom.xml" -o -name "build.gradle" -o -name "build.gradle.kts" -o -name "go.mod" -o -name "Cargo.toml" -o -name "requirements.txt" -o -name "pyproject.toml" \) 2>/dev/null`
 
-Docker 설정:
+Docker config:
 !`find ${ARGUMENTS:-.} -maxdepth 3 \( -name "Dockerfile" -o -name "docker-compose*.yml" -o -name "docker-compose*.yaml" \) 2>/dev/null`
 
-Kubernetes 설정:
+Kubernetes config:
 !`find ${ARGUMENTS:-.} -maxdepth 4 \( -name "*.yaml" -o -name "*.yml" \) \( -path "*/k8s/*" -o -path "*/kubernetes/*" -o -path "*/helm/*" -o -path "*/deploy/*" \) 2>/dev/null | head -30`
 
-CI/CD 설정:
+CI/CD config:
 !`find ${ARGUMENTS:-.} -maxdepth 3 \( -name "Jenkinsfile" -o -name ".gitlab-ci.yml" -o -path "*/.github/workflows/*" -o -name "Makefile" \) 2>/dev/null`
 
-### 사용자 확인
+### User Confirmation
 
-AskUserQuestion을 사용하여 다음을 확인합니다:
-- **리포트 출력 경로**: 생성할 문서를 저장할 경로 (기본값: `./msa-onboard-report`)
+Use AskUserQuestion to confirm:
+- **Report output path**: where to save generated docs (default: `./msa-onboard-report`)
 
----
+## Phase 1: Parallel Analysis (Agent Teams — spawn 3 teammates)
 
-## Phase 1: 병렬 분석 (Agent Teams — 3명 teammate spawn)
+**Critical instructions:**
+- **NEVER analyze directly.** MUST spawn 3 teammates for parallel analysis.
+- Wait until ALL teammates complete.
+- Status display may not update. Manually check if status stalls, then proceed.
+- **Do NOT dismiss the team yet.** Teammates serve as Generators in Phase 2 GC loop. Dismiss team only after Phase 2 loop completes.
 
-**중요 지침:**
-- **절대 직접 분석하지 마세요.** 반드시 3명의 teammate를 spawn하여 병렬로 분석합니다.
-- 모든 teammate가 완료될 때까지 대기하세요.
-- teammate의 작업 완료 상태가 표시되지 않을 수 있습니다. 상태가 업데이트되지 않으면 수동으로 확인 후 진행하세요.
-- **팀을 즉시 정리하지 마세요.** Phase 2 교차 검증 루프에서 Teammate가 Generator 역할(피드백 기반 수정)을 수행합니다. 팀 정리는 Phase 2 루프 완료 후 수행합니다.
+### Teammate 1: Service Discoverer (service-discoverer)
 
-### Teammate 1: 서비스 식별자 (service-discoverer)
-
-다음 지침으로 teammate를 spawn하세요:
+Spawn with this prompt:
 
 ```
-당신은 MSA 프로젝트에서 마이크로서비스를 식별하는 전문가입니다.
-분석 대상 프로젝트 경로: ${ARGUMENTS:-.}
+You are an expert at identifying microservices in MSA projects.
+Target project path: ${ARGUMENTS:-.}
 
-## 분석 프로세스
+## Analysis Process
 
-1. **프로젝트 구조 파악**: 최상위 디렉토리 구조로 mono-repo / multi-repo 판별. 각 하위 디렉토리의 독립성 확인.
+1. **Project structure**: Determine mono-repo / multi-repo from top-level directory structure. Check independence of subdirectories.
 
-2. **빌드 파일 기반 서비스 식별**: 각 빌드 파일이 있는 디렉토리를 잠재적 서비스로 판별:
-   - package.json → Node.js (Express, NestJS, Next.js 등)
-   - pom.xml → Java (Spring Boot, Quarkus 등)
-   - build.gradle / build.gradle.kts → Java/Kotlin (Spring Boot 등)
-   - go.mod → Go (gin, echo, fiber 등)
+2. **Build-file-based service identification**: Treat each build file directory as a potential service:
+   - package.json → Node.js (Express, NestJS, Next.js, etc.)
+   - pom.xml → Java (Spring Boot, Quarkus, etc.)
+   - build.gradle / build.gradle.kts → Java/Kotlin (Spring Boot, etc.)
+   - go.mod → Go (gin, echo, fiber, etc.)
    - Cargo.toml → Rust
-   - requirements.txt / pyproject.toml → Python (FastAPI, Django, Flask 등)
+   - requirements.txt / pyproject.toml → Python (FastAPI, Django, Flask, etc.)
 
-3. **프레임워크 탐지**: 서비스별 사용 프레임워크를 정확히 판별:
+3. **Framework detection**: Identify exact framework per service:
    - Java/Kotlin: spring-boot-starter-web, quarkus, micronaut
    - Node.js: express, @nestjs/core, fastify, koa
    - Python: fastapi, django, flask
    - Go: gin-gonic, echo, fiber
 
-4. **Dockerfile 기반 확인**: Dockerfile이 있는 디렉토리는 독립 배포 단위로 확정. FROM 이미지에서 런타임 확인, EXPOSE 포트 정보 수집, 멀티스테이지 빌드 패턴 확인.
+4. **Dockerfile-based confirmation**: Directories with Dockerfile = independent deployment unit. Check FROM image for runtime, collect EXPOSE port info, check multi-stage build patterns.
 
-5. **서비스 역할 추론**: 디렉토리명, 패키지명, README 등에서 서비스 역할을 추론:
-   - *-gateway, *-api: API 게이트웨이
-   - *-auth, *-user: 인증/사용자 관리
-   - *-order, *-payment: 비즈니스 도메인
-   - *-common, *-shared, *-lib: 공통 라이브러리 (서비스 아님)
+5. **Service role inference**: Infer roles from directory names, package names, README:
+   - *-gateway, *-api: API Gateway
+   - *-auth, *-user: Auth/User management
+   - *-order, *-payment: Business domain
+   - *-common, *-shared, *-lib: Shared library (not a service)
 
-## 출력
+## Output
 
-결과를 {출력경로}/_service-discovery.json 파일에 JSON 형식으로 저장하세요:
+Save results to {output_path}/_service-discovery.json:
 
 {
   "type": "mono-repo | multi-repo",
   "services": [
     {
-      "name": "서비스 이름",
-      "path": "상대 경로",
+      "name": "service name",
+      "path": "relative path",
       "language": "Java | TypeScript | Python | Go",
       "framework": "Spring Boot | Express | FastAPI",
       "buildTool": "Gradle | Maven | npm | pip",
@@ -110,66 +106,66 @@ AskUserQuestion을 사용하여 다음을 확인합니다:
   ],
   "libraries": [
     {
-      "name": "공통 라이브러리 이름",
-      "path": "상대 경로"
+      "name": "shared library name",
+      "path": "relative path"
     }
   ]
 }
 
-작업이 완료되면 저장한 파일 경로를 보고하세요.
+Report the saved file path when done.
 ```
 
-### Teammate 2: 인프라 분석자 (infra-analyzer)
+### Teammate 2: Infra Analyzer (infra-analyzer)
 
-다음 지침으로 teammate를 spawn하세요:
+Spawn with this prompt:
 
 ```
-당신은 MSA 프로젝트의 인프라 설정을 분석하는 전문가입니다.
-분석 대상 프로젝트 경로: ${ARGUMENTS:-.}
+You are an expert at analyzing infrastructure configuration in MSA projects.
+Target project path: ${ARGUMENTS:-.}
 
-## 분석 프로세스
+## Analysis Process
 
-1. **Docker Compose 분석** (docker-compose*.yml / docker-compose*.yaml):
-   - services: 각 서비스 이름, 이미지, 빌드 컨텍스트
-   - ports: 포트 매핑 (호스트:컨테이너)
-   - networks: 네트워크 구성, 서비스 그룹핑
-   - volumes: 볼륨 마운트, 데이터 영속성
-   - depends_on: 서비스 시작 순서, 의존성
-   - environment: 환경변수 키 (값은 수집하지 않음)
-   - healthcheck: 헬스체크 설정
+1. **Docker Compose analysis** (docker-compose*.yml / docker-compose*.yaml):
+   - services: name, image, build context per service
+   - ports: port mapping (host:container)
+   - networks: network config, service grouping
+   - volumes: volume mounts, data persistence
+   - depends_on: startup order, dependencies
+   - environment: env var keys only (never collect values)
+   - healthcheck: health check config
 
-2. **Kubernetes 분석** (YAML manifests):
+2. **Kubernetes analysis** (YAML manifests):
    - Deployment: replicas, image, resources, env
    - Service: type (ClusterIP/NodePort/LoadBalancer), ports
    - Ingress: host, path, TLS
-   - ConfigMap: 키 목록 (값 제외)
-   - Secret: 키 목록 (값 제외)
-   - HPA: minReplicas, maxReplicas, 메트릭
-   - PVC: 스토리지 크기, accessMode
-   - Helm 차트: Chart.yaml (이름, 버전, dependencies), values.yaml (주요 설정 키)
+   - ConfigMap: key list (no values)
+   - Secret: key list (no values)
+   - HPA: minReplicas, maxReplicas, metrics
+   - PVC: storage size, accessMode
+   - Helm charts: Chart.yaml (name, version, dependencies), values.yaml (key config keys)
 
-3. **CI/CD 파이프라인 분석**:
+3. **CI/CD pipeline analysis**:
    - GitHub Actions: .github/workflows/*.yml
    - GitLab CI: .gitlab-ci.yml
    - Jenkins: Jenkinsfile
-   - 분석 포인트: 빌드 단계, 배포 전략, 환경 분리, 시크릿 관리 방식
+   - Focus: build stages, deployment strategy, environment separation, secrets management
 
-4. **환경 설정 분석**:
-   - .env.example / .env.sample 파일의 키 목록
-   - application.yml / application.properties의 프로파일 구조
-   - 환경별 설정 분리 패턴
+4. **Environment config analysis**:
+   - .env.example / .env.sample: key list
+   - application.yml / application.properties: profile structure
+   - Per-environment config separation patterns
 
-> 중요: 실제 시크릿 값은 절대 수집하지 않습니다. 키 이름과 구조만 분석합니다.
+> IMPORTANT: NEVER collect actual secret values. Analyze key names and structure only.
 
-## 출력
+## Output
 
-결과를 {출력경로}/_infra-analysis.json 파일에 JSON 형식으로 저장하세요:
+Save results to {output_path}/_infra-analysis.json:
 
 {
   "containerOrchestration": {
     "type": "Docker Compose | Kubernetes | ECS",
-    "services": ["서비스 목록"],
-    "networks": ["네트워크 목록"]
+    "services": ["service list"],
+    "networks": ["network list"]
   },
   "cicd": {
     "tool": "GitHub Actions | GitLab CI | Jenkins",
@@ -185,66 +181,66 @@ AskUserQuestion을 사용하여 다음을 확인합니다:
     "databases": [
       { "name": "db-name", "type": "PostgreSQL", "connectedServices": ["svc1"] }
     ],
-    "volumes": ["volume 목록"]
+    "volumes": ["volume list"]
   }
 }
 
-작업이 완료되면 저장한 파일 경로를 보고하세요.
+Report the saved file path when done.
 ```
 
-### Teammate 3: 의존성 매퍼 (dependency-mapper)
+### Teammate 3: Dependency Mapper (dependency-mapper)
 
-다음 지침으로 teammate를 spawn하세요:
+Spawn with this prompt:
 
 ```
-당신은 MSA 프로젝트의 서비스 간 의존성을 정적 분석으로 매핑하는 전문가입니다.
-분석 대상 프로젝트 경로: ${ARGUMENTS:-.}
+You are an expert at statically analyzing inter-service dependencies in MSA projects.
+Target project path: ${ARGUMENTS:-.}
 
-## 분석 프로세스
+## Analysis Process
 
-1. **HTTP 호출 탐지**: 각 서비스 코드에서 다른 서비스로의 HTTP 호출 탐지
+1. **HTTP call detection**: Detect HTTP calls from each service to others
    - Java/Spring: RestTemplate, WebClient, FeignClient
    - Node.js: axios, fetch, got, node-fetch
    - Python: requests, httpx, aiohttp
    - Go: http.Client, http.Get, http.Post
-   - URL 패턴: http://, https://, 서비스명 포함 URL
-   - 서비스 디스커버리: Eureka client, Consul agent, K8s Service DNS
-   - 환경변수 기반: SERVICE_URL, API_HOST 등
+   - URL patterns: http://, https://, URLs containing service names
+   - Service discovery: Eureka client, Consul agent, K8s Service DNS
+   - Env-var-based: SERVICE_URL, API_HOST, etc.
 
-2. **gRPC 통신 탐지**:
-   - .proto 파일 위치 및 service 정의
-   - gRPC stub 생성 코드
-   - gRPC 클라이언트 설정
+2. **gRPC communication detection**:
+   - .proto file locations and service definitions
+   - gRPC stub generation code
+   - gRPC client configuration
 
-3. **메시지 큐 통신 탐지**:
-   - Kafka: KafkaTemplate/KafkaProducer(producer), @KafkaListener/KafkaConsumer(consumer), Topic 이름
+3. **Message queue communication detection**:
+   - Kafka: KafkaTemplate/KafkaProducer(producer), @KafkaListener/KafkaConsumer(consumer), topic names
    - RabbitMQ: @RabbitListener, amqplib, pika, Exchange/Queue/Routing Key
    - Redis Pub/Sub: RedisMessageListenerContainer, ioredis
 
-4. **데이터베이스 연결 매핑**:
+4. **Database connection mapping**:
    - JDBC URL (jdbc:postgresql://, jdbc:mysql://) → PostgreSQL, MySQL
    - mongoose.connect, MongoClient → MongoDB
    - redis://, RedisTemplate, ioredis → Redis
    - SQLAlchemy, SQLALCHEMY_DATABASE_URI → Python ORM
    - gorm.Open, sql.Open → Go
-   - DB명 → 서비스 매핑으로 같은 DB를 공유하는 서비스도 탐지
+   - Map DB names → services to detect shared DB access
 
-5. **외부 시스템 연동**:
-   - AWS SDK 호출 (S3, SQS, SNS, DynamoDB)
-   - 외부 API 호출 (결제, 이메일, SMS 등)
-   - OAuth/OIDC 연동 (Keycloak, Auth0 등)
+5. **External system integrations**:
+   - AWS SDK calls (S3, SQS, SNS, DynamoDB)
+   - External API calls (payment, email, SMS, etc.)
+   - OAuth/OIDC integrations (Keycloak, Auth0, etc.)
 
-## 신뢰도 표기
+## Confidence Labeling
 
-각 의존성에 대해 신뢰도를 표기합니다:
-- **확인됨**: 코드에서 직접 확인된 의존성
-- **[확인 필요]**: 설정 파일에만 있거나, 추론에 의한 의존성
+Label each dependency:
+- **Confirmed**: directly verified in code
+- **[Needs Verification]**: found only in config files or inferred
 
-> 중요: 추측하지 않습니다. 코드에서 확인되지 않은 의존성은 반드시 [확인 필요]로 표기합니다.
+> IMPORTANT: Do not guess. Dependencies not confirmed in code MUST be marked [Needs Verification].
 
-## 출력
+## Output
 
-결과를 {출력경로}/_dependency-map.json 파일에 JSON 형식으로 저장하세요:
+Save results to {output_path}/_dependency-map.json:
 
 {
   "serviceDependencies": [
@@ -253,7 +249,7 @@ AskUserQuestion을 사용하여 다음을 확인합니다:
       "to": "service-b",
       "protocol": "REST | gRPC | Kafka | RabbitMQ",
       "detail": "GET /api/users | topic: user-events",
-      "confidence": "확인됨 | [확인 필요]"
+      "confidence": "Confirmed | [Needs Verification]"
     }
   ],
   "databaseConnections": [
@@ -269,7 +265,7 @@ AskUserQuestion을 사용하여 다음을 확인합니다:
       "service": "service-a",
       "external": "AWS S3",
       "protocol": "SDK",
-      "purpose": "파일 저장"
+      "purpose": "file storage"
     }
   ],
   "messageQueues": [
@@ -282,171 +278,163 @@ AskUserQuestion을 사용하여 다음을 확인합니다:
   ]
 }
 
-작업이 완료되면 저장한 파일 경로를 보고하세요.
+Report the saved file path when done.
 ```
 
-### Teammate 완료 대기
+### Teammate Completion Wait
 
-- 3명의 teammate가 모두 완료될 때까지 **절대 다음 Phase로 진행하지 마세요**.
-- 상태 표시가 업데이트되지 않으면 각 teammate의 JSON 출력 파일 존재 여부를 수동 확인하세요:
-  - `{출력경로}/_service-discovery.json`
-  - `{출력경로}/_infra-analysis.json`
-  - `{출력경로}/_dependency-map.json`
-- 모든 파일이 존재하면 Phase 2로 진행합니다.
-- **⚠️ 팀을 정리하지 마세요.** Phase 2 Generator-Critic 루프에서 Teammate가 수정을 수행해야 하므로, 팀은 Phase 2 루프 완료 후 정리합니다.
+- **NEVER proceed to next Phase** until all 3 teammates complete.
+- If status display stalls, manually check JSON output file existence:
+  - `{output_path}/_service-discovery.json`
+  - `{output_path}/_infra-analysis.json`
+  - `{output_path}/_dependency-map.json`
+- Proceed to Phase 2 when all files exist.
+- **Do NOT dismiss the team.** Phase 2 GC loop requires Teammates as Generators. Dismiss after Phase 2 loop completes.
 
----
+## Phase 2: Cross-Validation — Generator-Critic Loop (max 3 rounds)
 
-## Phase 2: 교차 검증 — Generator-Critic 루프 (최대 3회)
+> **Roles**: Critic = Lead (cross-validation), Generator = Teammates (feedback-based JSON fixes)
 
-> **역할 분담**: Critic = Lead (교차 검증 수행), Generator = Teammates (피드백 기반 JSON 수정)
+Reference `verification-standards.md` "Cross-Validation — 5 Steps".
 
-`verification-standards.md`의 "교차 검증 — 5단계"를 참조합니다.
+### Loop Procedure (Round 1~3)
 
-### 루프 절차 (Round 1~3)
+Each round:
 
-각 Round에서 다음을 수행합니다:
+#### Critic (Lead): Cross-Validation
 
-#### Critic (Lead): 교차 검증 수행
+1. Read and load all 3 JSON files
+2. **Step 1 — Service consistency**: service-discoverer vs dependency-mapper service list comparison
+3. **Step 2 — Infra-dependency alignment**: infra-analyzer vs dependency-mapper DB/port/network comparison
+4. **Step 3 — Completeness check**: detect missing services/communications against Dockerfile/docker-compose (use Grep/Glob)
+5. **Step 4 — Devil's Advocate**: verify `[Needs Verification]` items in source code (use Read/Grep)
+6. **Step 5 — Confidence score**: deduction from 100
 
-1. 3개 JSON 파일을 읽어 메모리에 로드
-2. **1단계 — 서비스 일관성**: service-discoverer ↔ dependency-mapper 서비스 목록 대조
-3. **2단계 — 인프라-의존성 정합**: infra-analyzer ↔ dependency-mapper DB/포트/네트워크 대조
-4. **3단계 — 완전성 검사**: Dockerfile/docker-compose 기준으로 누락 서비스/통신 탐지 (Grep/Glob 사용)
-5. **4단계 — Devil's Advocate**: `[확인 필요]` 항목을 소스 코드에서 직접 확인 (Read/Grep 사용)
-6. **5단계 — 신뢰도 점수 산출**: 100점 기준 감점 방식
+#### Verdict and Branching
 
-#### 판정 및 분기
+| Score | Verdict | Action |
+|-------|---------|--------|
+| 80-100 | PASS | Exit loop → dismiss team → proceed to Phase 3 |
+| < 80 | WARN/FAIL | Write feedback → instruct Generator(Teammates) to fix → next round |
 
-| 점수 | 판정 | 처리 |
-|------|------|------|
-| 80-100 | PASS | 루프 즉시 종료 → 팀 정리 → Phase 3 진행 |
-| < 80 | WARN/FAIL | 피드백 작성 → Generator(Teammates)에게 수정 지시 → 다음 Round |
+#### Generator (Teammates): Feedback-Based Fixes
 
-#### Generator (Teammates): 피드백 기반 수정
+If Critic(Lead) scores below PASS, send **specific fix instructions** to relevant Teammate per discrepancy:
+- e.g., "service-discoverer: unify user-svc → user-service"
+- e.g., "dependency-mapper: order-service → Redis connection missing, confirmed in source — add it"
+- e.g., "infra-analyzer: Redis missing from DB storage — add it"
 
-Critic(Lead)이 PASS 미달 시, 불일치 항목별로 해당 Teammate에게 **구체적 수정 지시**를 전달합니다:
-- 예: "service-discoverer: user-svc → user-service로 이름 통일"
-- 예: "dependency-mapper: order-service → Redis 연결 누락, 소스코드에서 확인됨 — 추가"
-- 예: "infra-analyzer: DB storage 항목에 Redis 누락 — 추가"
+Each Teammate fixes their own JSON file. Proceed to next round after fixes complete.
 
-각 Teammate는 자신의 JSON 파일을 수정합니다. 수정 완료 후 다음 Round로 진행합니다.
+### Loop Exit Conditions
 
-### 루프 종료 조건
+| Condition | Action |
+|-----------|--------|
+| PASS(80+) achieved | Dismiss team → proceed to Phase 3 |
+| 3 rounds done, WARN(60-79) | Dismiss team with warnings → proceed to Phase 3 |
+| 3 rounds done, FAIL(0-59) | Dismiss team → AskUserQuestion: (1) Continue (2) Re-analyze (3) Cancel |
 
-| 조건 | 처리 |
-|------|------|
-| PASS(80+) 달성 | 즉시 팀 정리 → Phase 3 진행 |
-| 3회 완료 후 WARN(60-79) | 경고와 함께 팀 정리 → Phase 3 진행 |
-| 3회 완료 후 FAIL(0-59) | 팀 정리 → AskUserQuestion: (1) 계속 진행 (2) 재분석 (3) 취소 |
+#### User Choice Handling (on FAIL)
 
-#### 사용자 선택 후 처리 (FAIL 시)
+- **(1) Continue**: proceed to Phase 3 with FAIL warning
+- **(2) Re-analyze**: restart from Phase 0 — re-confirm output path, spawn new teammates
+- **(3) Cancel**: abort. Keep existing analysis results (`_*.json`)
 
-- **(1) 계속 진행**: 현재 검증 결과(FAIL)를 `⚠️` 경고와 함께 Phase 3으로 진행
-- **(2) 재분석**: Phase 0부터 재시작 — 출력 경로 재확인 후 teammate를 새로 spawn하여 분석 재수행
-- **(3) 취소**: 작업 중단. 현재까지의 분석 결과(`_*.json`)는 유지
+### Post-Loop Team Dismissal
 
-### 루프 완료 후 팀 정리
+After GC loop ends, **MUST dismiss team** to prevent idle token consumption.
 
-Generator-Critic 루프가 종료되면 **반드시 팀을 정리**하여 유휴 토큰 소비를 방지합니다.
+### Output
 
-### 출력
+Save cross-validation results to `{output_path}/_cross-validation.json`. Include loop history (`round`, `history`).
 
-교차 검증 결과를 `{출력경로}/_cross-validation.json`에 저장합니다. 루프 이력(`round`, `history`)을 포함합니다.
+## Phase 3: C4 Report Generation (Lead performs directly)
 
----
+Reference `output-templates.md` and `c4-mermaid-reference.md` to generate directly.
 
-## Phase 3: C4 리포트 생성 (Lead 직접 수행)
-
-`output-templates.md`와 `c4-mermaid-reference.md`를 참조하여 직접 생성합니다.
-
-### 생성할 파일
+### Files to Generate
 
 ```
-{출력경로}/
-├── README.md                    # 목차 + 개요 + 검증 결과 요약
-├── 01-system-context.md         # Level 1 C4Context 다이어그램
-├── 02-container.md              # Level 2 C4Container 다이어그램
-├── 03-components/               # Level 3 C4Component (주요 서비스별)
+{output_path}/
+├── README.md                    # TOC + overview + verification summary
+├── 01-system-context.md         # Level 1 C4Context diagram
+├── 02-container.md              # Level 2 C4Container diagram
+├── 03-components/               # Level 3 C4Component (per major service)
 │   ├── {service-1}.md
 │   └── {service-2}.md
-├── 04-service-catalog.md        # 서비스 목록 + 기술 스택
-├── 05-infra-overview.md         # 인프라 구성
-└── 06-dependency-map.md         # 의존성 맵 + graph LR 다이어그램
+├── 04-service-catalog.md        # Service list + tech stack
+├── 05-infra-overview.md         # Infrastructure config
+└── 06-dependency-map.md         # Dependency map + graph LR diagram
 ```
 
-### 규칙
+### Rules
 
-- 모든 파일에 YAML 프론트매터 포함 (`created`, `tags` 필수)
-- Mermaid alias는 영문 소문자 + 숫자만 (하이픈, 공백, 언더스코어 불가)
-- Obsidian 위키 링크로 문서 간 참조: `[[파일명|표시명]]`
-- 교차 검증에서 발견된 수정사항을 반영
-- 교차 검증 점수가 WARN인 경우 README.md에 `⚠️ [주의]` 마커와 이슈 목록 포함
+- All files include YAML frontmatter (`created`, `tags` required)
+- Mermaid alias: lowercase + digits only (no hyphens, spaces, underscores)
+- Obsidian wiki links for cross-references: `[[filename|display]]`
+- Reflect corrections from cross-validation
+- If cross-validation score is WARN, include `[CAUTION]` marker and issue list in README.md
 
----
+## Phase 4: Report Verification — Generator-Critic Self-Reflection Loop (max 3 rounds)
 
-## Phase 4: 리포트 검증 — Generator-Critic Self-Reflection 루프 (최대 3회)
+> **Roles**: Generator = Lead (fix report), Critic = Lead (verify report). Self-Reflection pattern.
+> Rule-based verification (Mermaid syntax, Obsidian links) — no separate agent needed. Team already dismissed in Phase 2.
 
-> **역할 분담**: Generator = Lead (리포트 수정), Critic = Lead (리포트 검증). Self-Reflection 패턴.
-> 규칙 기반 검증(Mermaid 문법, Obsidian 링크)이라 별도 에이전트 불필요. Phase 2에서 팀 정리 완료.
+Reference `verification-standards.md` "Report Verification — 4 Steps".
 
-`verification-standards.md`의 "리포트 검증 — 4단계"를 참조합니다.
+### Loop Procedure (Round 1~3)
 
-### 루프 절차 (Round 1~3)
+Each round:
 
-각 Round에서 다음을 수행합니다:
+#### Critic (Lead): Report Verification
 
-#### Critic (Lead): 리포트 검증 수행
+1. **Step 1 — Mermaid syntax validity**: alias rules, structure, element syntax
+2. **Step 2 — Obsidian link validity**: wiki links, frontmatter
+3. **Step 3 — C4 model completeness**: Level 1/2/3 required elements
+4. **Step 4 — Analysis-report consistency**: analysis JSON vs report content comparison
 
-1. **1단계 — Mermaid 문법 유효성**: alias 규칙, 구조 검증, 요소별 문법 확인
-2. **2단계 — Obsidian 링크 유효성**: 위키 링크, 프론트매터 검증
-3. **3단계 — C4 모델 완전성**: Level 1/2/3 필수 요소 확인
-4. **4단계 — 분석결과-리포트 일치성**: 분석 JSON과 리포트 내용 대조
+#### Verdict and Branching
 
-#### 판정 및 분기
+| Score | Verdict | Action |
+|-------|---------|--------|
+| 80-100 | PASS | Exit loop → proceed to Phase 5 |
+| < 80 | WARN/FAIL | Write feedback (issue list) → Generator(Lead) fixes → next round |
 
-| 점수 | 판정 | 처리 |
-|------|------|------|
-| 80-100 | PASS | 루프 즉시 종료 → Phase 5 진행 |
-| < 80 | WARN/FAIL | 피드백(이슈 목록) 작성 → Generator(Lead)가 수정 → 다음 Round |
+#### Generator (Lead): Feedback-Based Fixes
 
-#### Generator (Lead): 피드백 기반 수정
+If Critic(Lead) scores below PASS, fix `autoFixable` items first:
+- Fix Mermaid alias violations (e.g., `user-service` → `userservice`)
+- Fix broken Obsidian links
+- Add missing C4 elements
+- Record fix history in `_report-audit.json` `fixHistory`
 
-Critic(Lead)이 PASS 미달 시, `autoFixable` 항목을 중심으로 수정합니다:
-- Mermaid alias 규칙 위반 수정 (예: `user-service` → `userservice`)
-- Obsidian 깨진 링크 수정
-- 누락 C4 요소 추가
-- 수정 내역을 `_report-audit.json`의 `fixHistory`에 기록
+### Loop Exit Conditions
 
-### 루프 종료 조건
+| Condition | Action |
+|-----------|--------|
+| PASS(80+) achieved | Proceed to Phase 5 |
+| 3 rounds done, 60+ | Proceed to Phase 5 with warnings |
+| 3 rounds done, < 60 | `Quality verification failed` warning + error list + manual fix guide |
 
-| 조건 | 처리 |
-|------|------|
-| PASS(80+) 달성 | 즉시 Phase 5 진행 |
-| 3회 완료 후 60+ | 경고와 함께 Phase 5 진행 |
-| 3회 완료 후 < 60 | `❌ 품질 검증 미달` 경고 + 오류 목록 + 수동 수정 가이드와 함께 출력 |
+### Output
 
-### 출력
+Save report verification results to `{output_path}/_report-audit.json`. Include loop history (`round`, `history`, `fixHistory`).
 
-리포트 검증 결과를 `{출력경로}/_report-audit.json`에 저장합니다. 루프 이력(`round`, `history`, `fixHistory`)을 포함합니다.
+## Phase 5: Final Output
 
----
+Present to user:
 
-## Phase 5: 최종 출력
-
-사용자에게 다음을 출력합니다:
-
-1. **생성된 파일 목록** (경로 포함)
-2. **신뢰도 점수** (교차 검증): 점수/100
-   - 80-100: ✅ PASS
-   - 60-79: ⚠️ WARN — 수동 확인 권장 항목 요약
-   - 0-59: ❌ FAIL — 주요 이슈 목록
-3. **품질 점수** (리포트 검증): 점수/100
-   - 80-100: ✅ PASS
-   - 60-79: ⚠️ WARN — 자동 수정/미수정 항목 요약
-   - 0-59: ❌ FAIL — 오류 목록 + 수동 수정 가이드
-4. **주요 이슈 요약** (있는 경우)
-5. **Obsidian에서 여는 방법**:
+1. **Generated file list** (with paths)
+2. **Confidence score** (cross-validation): score/100
+   - 80-100: PASS
+   - 60-79: WARN — summary of items needing manual review
+   - 0-59: FAIL — major issue list
+3. **Quality score** (report verification): score/100
+   - 80-100: PASS
+   - 60-79: WARN — auto-fixed/unfixed items summary
+   - 0-59: FAIL — error list + manual fix guide
+4. **Key issues summary** (if any)
+5. **How to view in Obsidian**:
    ```
-   Obsidian 볼트로 {출력경로}를 열면 C4 Mermaid 다이어그램과 문서 간 링크가 렌더링됩니다.
+   Open {output_path} as an Obsidian vault to render C4 Mermaid diagrams and inter-document links.
    ```

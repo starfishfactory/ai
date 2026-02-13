@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 #
-# lean-kit notify.sh - macOS 네이티브 알림 전송
-# Claude Code 훅에서 호출되어 사용자 입력 대기 시 데스크톱 알림을 보냅니다.
+# lean-kit notify.sh - Send macOS native notifications
+# Called from Claude Code hooks to send desktop alerts when waiting for user input.
 #
 
-# === macOS 환경 감지 ===
+# === Detect macOS environment ===
 [ "$(uname -s)" != "Darwin" ] && exit 0
 
-# === GUI 세션 확인 (headless/SSH 환경 제외) ===
+# === Check GUI session (exclude headless/SSH) ===
 if ! pgrep -x "WindowServer" > /dev/null 2>&1; then
   exit 0
 fi
 
-# === stdin JSON 읽기 ===
+# === Read stdin JSON ===
 INPUT=$(cat)
 [ -z "$INPUT" ] && exit 0
 
-# === 필드 추출 (jq fallback 포함) ===
+# === Extract fields (with jq fallback) ===
 NTYPE=""
 MSG=""
 CWD=""
@@ -26,7 +26,7 @@ if command -v jq &> /dev/null; then
   CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null) || CWD=""
 fi
 
-# === notification_type별 한국어 제목 ===
+# === Korean title per notification_type ===
 case "$NTYPE" in
   permission_prompt)  TITLE="Claude Code - 승인 필요" ;;
   idle_prompt)        TITLE="Claude Code - 입력 대기" ;;
@@ -34,20 +34,20 @@ case "$NTYPE" in
   *)                  TITLE="Claude Code" ;;
 esac
 
-# === 기본값 처리 ===
+# === Default message ===
 [ -z "$MSG" ] && MSG="Claude Code에서 입력을 기다리고 있습니다"
 
-# === 메시지 길이 제한 (150자) ===
+# === Truncate message (150 chars) ===
 [ ${#MSG} -gt 150 ] && MSG="${MSG:0:147}..."
 
-# === 작업 디렉토리명 (subtitle) ===
+# === Working directory name (subtitle) ===
 SUBTITLE=""
 [ -n "$CWD" ] && SUBTITLE="$(basename "$CWD")"
 
-# === 소리 설정 (환경변수로 제어, 기본: Glass) ===
+# === Sound setting (env var, default: Glass) ===
 SOUND="${LEAN_KIT_SOUND-Glass}"
 
-# === 알림 쿨다운 (5초 이내 재알림 억제) ===
+# === Notification cooldown (suppress re-notify within 5s) ===
 COOLDOWN_FILE="/tmp/lean-kit-last-notify"
 if [ -f "$COOLDOWN_FILE" ]; then
   LAST=$(cat "$COOLDOWN_FILE" 2>/dev/null) || LAST=0
@@ -56,14 +56,14 @@ if [ -f "$COOLDOWN_FILE" ]; then
 fi
 date +%s > "$COOLDOWN_FILE"
 
-# === 디버그 로깅 ===
+# === Debug logging ===
 if [ "${LEAN_KIT_DEBUG:-0}" = "1" ]; then
   LOG="$HOME/.claude/hooks/lean-kit-debug.log"
   mkdir -p "$(dirname "$LOG")"
   echo "[$(date)] type=$NTYPE msg=${MSG:0:50} cwd=$CWD" >> "$LOG"
 fi
 
-# === osascript 전송 (on run argv 패턴 - 인젝션 방지) ===
+# === Send via osascript (on run argv pattern - injection safe) ===
 osascript - "$TITLE" "$SUBTITLE" "$MSG" "$SOUND" <<'APPLESCRIPT' 2>/dev/null || exit 0
 on run argv
   set theTitle to item 1 of argv

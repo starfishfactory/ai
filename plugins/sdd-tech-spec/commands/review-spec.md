@@ -1,78 +1,76 @@
 ---
-description: 기존 Tech Spec에 대한 SDD 품질 리뷰 (읽기 전용)
+description: SDD quality review of an existing Tech Spec (read-only)
 allowed-tools: Read, Grep, Glob, Task
-argument-hint: <Spec 파일 경로>
+argument-hint: <Spec file path>
 ---
 
-# Tech Spec 리뷰: $ARGUMENTS
+# Tech Spec Review: $ARGUMENTS
 
-기존 Tech Spec 파일을 SDD 품질 기준으로 평가한다.
-파일을 수정하거나 생성하지 않으며, 평가 결과만 출력한다.
+Evaluate an existing Tech Spec file against SDD quality criteria.
+No file modifications or creations; output evaluation results only.
 
----
+## Step 1: Read Spec File
 
-## Step 1: Spec 파일 읽기
+Read the file at `$ARGUMENTS` path using Read.
+If the file does not exist, output an error message and exit.
 
-`$ARGUMENTS` 경로의 파일을 Read로 읽는다.
-파일이 존재하지 않으면 오류 메시지를 출력하고 종료한다.
+## Step 2: Detect Spec Type
 
-## Step 2: Spec 유형 감지
+Check the `spec-type` field in YAML frontmatter:
+- `feature-design`: Feature Design
+- `system-architecture`: System Architecture
+- `api-spec`: API Spec
+- Missing or other value: Treat as "other"
 
-YAML frontmatter의 `spec-type` 필드를 확인한다:
-- `feature-design`: 기능 설계
-- `system-architecture`: 시스템 아키텍처
-- `api-spec`: API 스펙
-- 필드 없음 또는 기타 값: "기타"로 간주
+## Step 3: Load Skills and Agent Prompts
 
-## Step 3: 스킬 및 에이전트 프롬프트 로드
+Read the following files:
+- `agents/spec-critic.md`: Critic agent prompt
+- `skills/quality-criteria/SKILL.md`: Evaluation criteria and deduction tables
+- `skills/sdd-framework/SKILL.md`: SDD methodology and type guides
 
-다음 파일을 Read로 읽는다:
-- `agents/spec-critic.md`: Critic 에이전트 프롬프트
-- `skills/quality-criteria/SKILL.md`: 평가 기준 및 감점 테이블
-- `skills/sdd-framework/SKILL.md`: SDD 방법론 및 유형별 가이드
+## Step 4: Invoke Critic
 
-## Step 4: Critic 호출
-
-Task 도구로 spec-critic을 호출한다:
-- **프롬프트 구성**: `agents/spec-critic.md` 내용 포함
-- **전달 정보**:
-  - Spec 파일 전문
-  - Spec 유형
-  - quality-criteria SKILL의 평가 기준
-  - sdd-framework SKILL의 유형별 가이드
+Invoke spec-critic via Task tool:
+- **Prompt**: Include `agents/spec-critic.md` content
+- **Input**:
+  - Full spec file content
+  - Spec type
+  - quality-criteria SKILL evaluation criteria
+  - sdd-framework SKILL type guides
 - **subagent_type**: `general-purpose`
-- **요청**: 평가 결과를 quality-criteria SKILL의 JSON 출력 형식으로 반환
+- **Request**: Return evaluation results in quality-criteria SKILL JSON output format
 
-## Step 5: 결과 출력
+## Step 5: Output Results
 
-Critic의 평가 결과를 가독성 있게 포맷팅하여 출력한다.
-파일 수정이나 생성은 하지 않는다.
+Format and output the Critic's evaluation results for readability.
+Do not modify or create any files.
 
-### 출력 형식
+### Output Format
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Tech Spec 리뷰 결과
+  Tech Spec Review Results
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-파일: {파일 경로}
-유형: {Spec 유형}
-점수: {총점}/100 ({판정})
+File: {file path}
+Type: {spec type}
+Score: {total}/100 ({verdict})
 
-카테고리별 점수:
-  완전성:     {점수}/{만점}
-  구체성:     {점수}/{만점}
-  일관성:     {점수}/{만점}
-  실행가능성: {점수}/{만점}
-  리스크관리: {점수}/{만점}
+Category Scores:
+  Completeness:    {score}/{max}
+  Specificity:     {score}/{max}
+  Consistency:     {score}/{max}
+  Feasibility:     {score}/{max}
+  Risk Management: {score}/{max}
 
-주요 이슈 (major):
-  - [{섹션}] {이슈 설명}
-    → {개선 제안}
+Major Issues:
+  - [{section}] {issue description}
+    > {improvement suggestion}
 
-경미한 이슈 (minor):
-  - [{섹션}] {이슈 설명}
-    → {개선 제안}
+Minor Issues:
+  - [{section}] {issue description}
+    > {improvement suggestion}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

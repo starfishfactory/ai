@@ -1,32 +1,32 @@
 ---
 name: msa-onboard
-description: MSA 분석 보조 컨텍스트 (C4 참조, 출력 템플릿, 검증 기준)
+description: MSA analysis context (C4 reference, output templates, verification standards)
 user-invocable: false
 ---
 
-# MSA 온보딩 분석 보조 컨텍스트
+# MSA Onboarding Analysis Context
 
-이 스킬은 사용자가 직접 호출하지 않습니다. `msa-onboard` 커맨드와 Agent Teams의 teammates가 참조하는 보조 파일을 제공합니다.
+Not user-invocable. Provides reference files for `msa-onboard` command and Agent Teams teammates.
 
-## 포함 파일
+## Included Files
 
-| 파일 | 용도 | 참조 주체 |
-|------|------|-----------|
-| `c4-mermaid-reference.md` | C4 모델 레벨별 Mermaid 문법 + 요소 타입 | Lead (Phase 3: 리포트 생성) |
-| `output-templates.md` | 출력 파일별 마크다운 템플릿 (Obsidian 호환) | Lead (Phase 3: 리포트 생성) |
-| `verification-standards.md` | 교차 검증 5단계 + 리포트 검증 4단계 기준 | Lead (Phase 2, 4: 검증) |
+| File | Purpose | Consumer |
+|------|---------|----------|
+| `c4-mermaid-reference.md` | C4 level Mermaid syntax + element types | Lead (Phase 3: report generation) |
+| `output-templates.md` | Markdown templates per output file (Obsidian-compatible) | Lead (Phase 3: report generation) |
+| `verification-standards.md` | Cross-validation 5 steps + report verification 4 steps | Lead (Phase 2, 4: verification) |
 
-## 분석 아키텍처
+## Analysis Architecture
 
 ```
-[Phase 0] Lead: 프로젝트 스캔 + 출력 경로 확인
-[Phase 1] Teammates 3명 병렬: service-discoverer, infra-analyzer, dependency-mapper → JSON
-[Phase 2] Lead: 교차 검증 → 신뢰도 점수(0-100) + 불일치 목록
-[Phase 3] Lead: C4 리포트 생성 (output-templates, c4-mermaid-reference 참조)
-[Phase 4] Lead: 리포트 검증 → 품질 점수(0-100) + 수정 제안
-[Phase 5] Lead: 최종 출력
+[Phase 0] Lead: project scan + output path confirmation
+[Phase 1] 3 Teammates parallel: service-discoverer, infra-analyzer, dependency-mapper → JSON
+[Phase 2] Lead: cross-validation → confidence score(0-100) + discrepancy list
+[Phase 3] Lead: C4 report generation (output-templates, c4-mermaid-reference)
+[Phase 4] Lead: report verification → quality score(0-100) + fix suggestions
+[Phase 5] Lead: final output
 ```
 
-- Phase 1만 Agent Teams (3 teammates 병렬)
-- Phase 2-5는 Lead가 직접 수행
-- agents/ 디렉토리 없음 (subagent 미사용)
+- Phase 1 only uses Agent Teams (3 teammates parallel)
+- Phase 2-5 performed by Lead directly
+- No agents/ directory (no subagents)

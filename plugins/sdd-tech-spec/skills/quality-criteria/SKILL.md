@@ -1,84 +1,70 @@
 ---
 name: quality-criteria
-description: Tech Spec 품질 평가 기준 (100점 만점 감점 방식, 5개 카테고리) 및 Critic 피드백 출력 형식
+description: Tech Spec quality evaluation criteria (100-point deduction system, 5 categories) and Critic feedback JSON output format
 user-invocable: false
 ---
 
-# Tech Spec 품질 평가 기준
+# Tech Spec Quality Evaluation Criteria
 
-100점 만점 감점 방식. 5개 카테고리로 평가하며, 각 카테고리별 최대 감점 한도 내에서 항목별로 감점한다.
+100-point deduction system. Evaluate across 5 categories; deduct per item within each category's max limit.
 
----
+## Category 1: Completeness (30 pts max)
 
-## 카테고리 1: 완전성 (30점 만점)
-
-| 검증 항목 | 미달 시 감점 |
+| Check Item | Deduction |
 |----------|------------|
-| 필수 섹션 누락 (유형별 필수 기준) | -5점/개 |
-| Goals 3개 미만 | -4점 |
-| Non-Goals 2개 미만 | -3점 |
-| 상세 설계 섹션 없음 | -5점 |
-| 기능 요구사항(FR) 없음 | -4점 |
-| 비기능 요구사항(NFR) 없음 | -3점 |
-| 리스크 2개 미만 | -3점 |
-| 대안 검토 없음 | -3점 |
+| Missing required section (per type) | -5/each |
+| Goals < 3 | -4 |
+| Non-Goals < 2 | -3 |
+| No detailed design section | -5 |
+| No functional requirements (FR) | -4 |
+| No non-functional requirements (NFR) | -3 |
+| Risks < 2 | -3 |
+| No alternative review | -3 |
 
----
+## Category 2: Specificity (25 pts max)
 
-## 카테고리 2: 구체성 (25점 만점)
-
-| 검증 항목 | 미달 시 감점 |
+| Check Item | Deduction |
 |----------|------------|
-| 모호한 형용사 사용 ("적절한", "효율적인", "빠른", "높은") | -3점/개 (최대 -9점) |
-| NFR에 수치 기준 없음 (응답시간, 가용성, 처리량 등) | -5점 |
-| 테스트 불가능한 요구사항 (검증 기준 없는 FR/NFR) | -3점/개 (최대 -9점) |
-| Mermaid 다이어그램 없음 (아키텍처/시퀀스) | -3점 |
+| Vague adjectives ("appropriate", "efficient", "fast", "high") | -3/each (max -9) |
+| NFR without numeric targets (response time, availability, throughput, etc.) | -5 |
+| Untestable requirements (FR/NFR without verification criteria) | -3/each (max -9) |
+| No Mermaid diagrams (architecture/sequence) | -3 |
 
----
+## Category 3: Consistency (15 pts max)
 
-## 카테고리 3: 일관성 (15점 만점)
-
-| 검증 항목 | 미달 시 감점 |
+| Check Item | Deduction |
 |----------|------------|
-| Goals에 명시된 항목이 상세 설계에 미반영 | -5점/개 |
-| 같은 개념에 다른 용어 사용 | -3점/개 |
-| FR/NFR 번호 참조가 실제 존재하지 않음 | -3점/개 |
+| Goal item not reflected in detailed design | -5/each |
+| Same concept uses different terms | -3/each |
+| FR/NFR number reference does not exist | -3/each |
 
----
+## Category 4: Feasibility (15 pts max)
 
-## 카테고리 4: 실행가능성 (15점 만점)
-
-| 검증 항목 | 미달 시 감점 |
+| Check Item | Deduction |
 |----------|------------|
-| 설계에서 사용한 기술의 의존성 미명시 | -5점 |
-| 마일스톤 간 논리적 순서 위반 | -5점 |
-| 기술적/사업적 제약사항 미식별 | -5점 |
+| Dependencies of used technologies not specified | -5 |
+| Logical order violation between milestones | -5 |
+| Technical/business constraints not identified | -5 |
 
----
+## Category 5: Risk Management (15 pts max)
 
-## 카테고리 5: 리스크 관리 (15점 만점)
-
-| 검증 항목 | 미달 시 감점 |
+| Check Item | Deduction |
 |----------|------------|
-| 리스크 3개 미만 (기술/일정/외부 각 1개 이상) | -5점 |
-| 리스크별 영향도/확률 평가 없음 | -5점 |
-| 리스크별 완화 전략 없음 | -5점 |
+| Risks < 3 (need >= 1 each of technical/schedule/external) | -5 |
+| No impact/probability assessment per risk | -5 |
+| No mitigation strategy per risk | -5 |
 
----
+## Verdict Criteria
 
-## 판정 기준
-
-| 점수 | 판정 | 액션 |
+| Score | Verdict | Action |
 |------|------|------|
-| 80점 이상 | **PASS** | 루프 종료, 최종 출력 진행 |
-| 60-79점 | **REVISE** | 다음 Generator-Critic 반복 |
-| 60점 미만 | **FAIL** | 사용자에게 계속/수정/취소 선택 요청 |
+| >= 80 | **PASS** | End loop, proceed to final output |
+| 60-79 | **REVISE** | Next Generator-Critic iteration |
+| < 60 | **FAIL** | Ask user to choose: continue/revise/cancel |
 
----
+## Critic Feedback JSON Output Format
 
-## Critic 피드백 JSON 출력 형식
-
-Critic 에이전트는 반드시 다음 JSON 스키마로 평가 결과를 출력한다:
+Critic agent MUST output evaluation results in this JSON schema:
 
 ```json
 {
@@ -89,89 +75,87 @@ Critic 에이전트는 반드시 다음 JSON 스키마로 평가 결과를 출�
       "score": 22,
       "max": 30,
       "issues": [
-        "Goals가 2개뿐 (최소 3개 필요)",
-        "대안 검토 섹션 누락"
+        "Only 2 Goals (minimum 3 required)",
+        "Alternative review section missing"
       ]
     },
     "specificity": {
       "score": 18,
       "max": 25,
       "issues": [
-        "NFR-002 '높은 가용성'에 수치 기준 없음",
-        "Mermaid 시퀀스 다이어그램 없음"
+        "NFR-002 'high availability' has no numeric target",
+        "No Mermaid sequence diagram"
       ]
     },
     "consistency": {
       "score": 12,
       "max": 15,
       "issues": [
-        "Goal 3 '확장성 확보'가 상세 설계에 미반영"
+        "Goal 3 'ensure scalability' not reflected in detailed design"
       ]
     },
     "feasibility": {
       "score": 10,
       "max": 15,
       "issues": [
-        "Redis 의존성이 의존성 섹션에 미명시"
+        "Redis dependency not specified in dependencies section"
       ]
     },
     "risk": {
       "score": 10,
       "max": 15,
       "issues": [
-        "외부 유형 리스크 없음 (기술/일정/외부 각 1개 이상 필요)"
+        "No external-type risk (need >= 1 each of technical/schedule/external)"
       ]
     }
   },
   "feedback": [
     {
-      "section": "4.2 비기능 요구사항",
+      "section": "4.2 Non-Functional Requirements",
       "severity": "major",
-      "issue": "'높은 가용성'에 수치 기준 없음",
-      "suggestion": "'99.9% 가용성 (연간 다운타임 8.76시간 이내)'으로 구체화"
+      "issue": "'high availability' has no numeric target",
+      "suggestion": "Specify as '99.9% availability (annual downtime <= 8.76 hours)'"
     },
     {
       "section": "2.1 Goals",
       "severity": "minor",
-      "issue": "Goals가 2개만 존재",
-      "suggestion": "핵심 기능 관련 Goal 1개 추가"
+      "issue": "Only 2 Goals exist",
+      "suggestion": "Add 1 more Goal related to core functionality"
     }
   ]
 }
 ```
 
-### 필드 설명
+### Field Descriptions
 
-- `score`: 총점 (0-100)
+- `score`: Total score (0-100)
 - `verdict`: "PASS" | "REVISE" | "FAIL"
-- `categories`: 5개 카테고리별 세부 점수와 이슈 목록
-  - `score`: 해당 카테고리 획득 점수
-  - `max`: 해당 카테고리 만점
-  - `issues`: 감점 사유 배열
-- `feedback`: 구체적 개선 피드백 배열
-  - `section`: 해당 섹션 번호/이름
-  - `severity`: "major" (주요 결함) | "minor" (경미한 결함)
-  - `issue`: 문제 설명
-  - `suggestion`: 구체적 개선 제안
+- `categories`: Per-category scores and issue lists
+  - `score`: Category earned score
+  - `max`: Category max score
+  - `issues`: Array of deduction reasons
+- `feedback`: Array of specific improvement feedback
+  - `section`: Section number/name
+  - `severity`: "major" (critical defect) | "minor" (minor defect)
+  - `issue`: Problem description
+  - `suggestion`: Specific improvement suggestion
 
----
+## Generator's Unresolved Items
 
-## Generator의 미반영 항목 표기
+When Generator cannot apply Critic feedback, mark as `## Unresolved Feedback` section at the end of the spec.
 
-Generator가 Critic의 피드백을 반영할 수 없는 경우, Spec 말미에 `## Unresolved Feedback` 섹션으로 분리하여 표기한다.
-
-항목별 형식:
+Per-item format:
 
 ```markdown
 ## Unresolved Feedback
 
-### [major] 섹션 4.2 비기능 요구사항
-**원본 피드백**: '높은 가용성'에 수치 기준 없음
-**미반영 사유**: 현재 인프라 환경에서 SLA 수치 확정 불가, 운영팀 협의 필요
+### [major] Section 4.2 Non-Functional Requirements
+**Original feedback**: 'high availability' has no numeric target
+**Reason not applied**: Cannot determine SLA numbers in current infra environment, need ops team discussion
 
-### [minor] 섹션 8 마일스톤
-**원본 피드백**: 마일스톤 간 기간 산정 근거 없음
-**미반영 사유**: 팀 리소스 확정 전이라 구체적 기간 산정 불가
+### [minor] Section 8 Milestones
+**Original feedback**: No basis for milestone duration estimates
+**Reason not applied**: Cannot estimate specific durations before team resource confirmation
 ```
 
-최종 출력 시 이 섹션이 존재하면 잔여 이슈로 보고한다.
+Report this section as residual issues in final output if present.

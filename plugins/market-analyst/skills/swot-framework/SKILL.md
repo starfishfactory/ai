@@ -1,17 +1,15 @@
 ---
 name: swot-framework
-description: SWOT 전략 분석. Strengths, Weaknesses, Opportunities, Threats 및 TOWS 전략 매트릭스 도출.
+description: SWOT strategic analysis. Strengths, Weaknesses, Opportunities, Threats and TOWS strategy matrix derivation.
 ---
+# SWOT Analysis Framework
 
-# SWOT 분석 프레임워크
+## Origin
+- **Creator**: Albert S. Humphrey
+- **Institution**: Stanford Research Institute
+- **Year**: 1960-1970s
 
-## 출처
-- **창시자**: Albert S. Humphrey
-- **기관**: Stanford Research Institute
-- **연도**: 1960-1970년대
-
-## 구조
-
+## Structure
 ```
            | Helpful    | Harmful
 -----------+------------+-----------
@@ -19,18 +17,17 @@ Internal   | Strengths  | Weaknesses
 External   | Opportunities | Threats
 ```
 
-## TOWS 전략 매트릭스
+## TOWS Strategy Matrix
+| | Leverage S | Address W |
+|---|-----------|-----------|
+| **O** | SO: Use strengths to capture opportunities | WO: Overcome weaknesses to capture opportunities |
+| **T** | ST: Use strengths to counter threats | WT: Minimize weaknesses and threats |
 
-| | S 활용 | W 보완 |
-|---|--------|--------|
-| **O** | SO: 강점으로 기회 활용 | WO: 약점 보완하여 기회 활용 |
-| **T** | ST: 강점으로 위협 대응 | WT: 약점/위협 최소화 |
+## Linkage
+- PESTEL -> derives O/T
+- Porter -> competitive O/T
+- Value Chain -> derives S/W
 
-## 연계
-- PESTEL → O/T 도출
-- Porter → 경쟁 O/T
-- Value Chain → S/W 도출
-
-## 참고문헌
+## References
 1. Humphrey (2005). "SWOT Analysis", SRI Alumni Newsletter
 2. Weihrich (1982). "The TOWS Matrix", Long Range Planning

@@ -1,17 +1,17 @@
-# C4 모델 + Mermaid 문법 참조
+# C4 Model + Mermaid Syntax Reference
 
-## C4 모델 개요
+## C4 Model Overview
 
-C4 모델은 소프트웨어 아키텍처를 4개 레벨로 시각화합니다:
+Visualizes software architecture at 4 levels:
 
-| 레벨 | 이름 | 대상 청중 | 설명 |
-|------|------|-----------|------|
-| 1 | System Context | 모든 사람 | 시스템과 외부 시스템/사용자의 관계 |
-| 2 | Container | 기술 팀 | 서비스, DB, MQ 등 배포 단위 |
-| 3 | Component | 개발자 | 주요 서비스의 내부 컴포넌트 |
-| 4 | Code | 개발자 | 클래스/모듈 수준 (이 플러그인에서는 미사용) |
+| Level | Name | Audience | Description |
+|-------|------|----------|-------------|
+| 1 | System Context | Everyone | System and external systems/users relationships |
+| 2 | Container | Technical team | Services, DBs, MQs — deployment units |
+| 3 | Component | Developers | Internal components of key services |
+| 4 | Code | Developers | Class/module level (unused in this plugin) |
 
-## Mermaid C4 문법
+## Mermaid C4 Syntax
 
 ### Level 1: System Context
 
@@ -78,34 +78,34 @@ C4Component
     Rel(client, extSvc, "REST API")
 ```
 
-## C4 요소 타입 정리
+## C4 Element Types
 
-| 요소 | Mermaid 문법 | 용도 |
-|------|-------------|------|
-| 사람 | `Person(alias, "이름", "설명")` | 사용자, 관리자 |
-| 시스템 | `System(alias, "이름", "설명")` | 분석 대상 시스템 |
-| 외부 시스템 | `System_Ext(alias, "이름", "설명")` | 외부 연동 |
-| 컨테이너 | `Container(alias, "이름", "기술", "설명")` | 서비스, 앱 |
-| DB | `ContainerDb(alias, "이름", "기술", "설명")` | 데이터베이스 |
-| 큐 | `ContainerQueue(alias, "이름", "기술", "설명")` | 메시지 큐 |
-| 컴포넌트 | `Component(alias, "이름", "기술", "설명")` | 내부 모듈 |
-| 경계 | `Container_Boundary(alias, "이름")` | 그룹핑 |
-| 관계 | `Rel(from, to, "라벨")` | 의존성 표현 |
+| Element | Mermaid Syntax | Usage |
+|---------|---------------|-------|
+| Person | `Person(alias, "name", "desc")` | Users, admins |
+| System | `System(alias, "name", "desc")` | Target system |
+| External System | `System_Ext(alias, "name", "desc")` | External integration |
+| Container | `Container(alias, "name", "tech", "desc")` | Services, apps |
+| DB | `ContainerDb(alias, "name", "tech", "desc")` | Databases |
+| Queue | `ContainerQueue(alias, "name", "tech", "desc")` | Message queues |
+| Component | `Component(alias, "name", "tech", "desc")` | Internal modules |
+| Boundary | `Container_Boundary(alias, "name")` | Grouping |
+| Relationship | `Rel(from, to, "label")` | Dependencies |
 
-## 관계(Rel) 표현 가이드
+## Relationship (Rel) Label Guide
 
-| 유형 | 라벨 예시 |
-|------|-----------|
+| Type | Label Examples |
+|------|---------------|
 | REST API | `"REST/HTTP"`, `"GET /api/users"` |
 | gRPC | `"gRPC"` |
-| 메시지 | `"publish/subscribe"`, `"Kafka: topic-name"` |
-| DB 접근 | `"JDBC"`, `"SQL"`, `"MongoDB Driver"` |
-| 파일 | `"S3"`, `"NFS"` |
+| Message | `"publish/subscribe"`, `"Kafka: topic-name"` |
+| DB access | `"JDBC"`, `"SQL"`, `"MongoDB Driver"` |
+| File | `"S3"`, `"NFS"` |
 
-## 주의사항
+## Rules
 
-1. alias는 영문 소문자 + 숫자만 사용 (하이픈, 공백 불가)
-2. 이름과 설명은 한글 사용 가능
-3. Mermaid C4 다이어그램은 Obsidian 1.4+에서 네이티브 렌더링
-4. GitHub에서도 Mermaid C4 지원
-5. 다이어그램이 복잡할 경우 서비스 그룹별로 분리
+1. alias: lowercase + digits only (no hyphens, spaces)
+2. Names and descriptions may use Korean
+3. Mermaid C4 diagrams render natively in Obsidian 1.4+
+4. GitHub also supports Mermaid C4
+5. Split complex diagrams by service group

@@ -1,26 +1,26 @@
 ---
 name: template-agent
-description: 새로운 에이전트 설명을 여기에 작성하세요. PROACTIVELY 키워드를 포함하면 자동 선택 확률이 높아집니다. 한국어로 상세하고 친절하게 설명하며, 구체적인 역할과 전문성을 명시하세요.
+description: Write your agent description here. Include PROACTIVELY keyword to increase auto-selection probability. Describe the specific role and expertise clearly.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 ---
 
-에이전트의 상세한 시스템 프롬프트를 여기에 작성하세요.
+Write the detailed system prompt for your agent here.
 
-이 섹션에는 다음 내용을 포함할 수 있습니다:
-- 에이전트의 구체적인 역할과 책임
-- 작업을 수행하는 방법과 프로세스
-- 제공하는 결과물의 형식
-- 주의사항이나 제약사항
+This section may include:
+- Specific role and responsibilities
+- Methods and processes for performing tasks
+- Output format specifications
+- Caveats and constraints
 
-예시:
+Example:
 ```
-코드의 가독성과 유지보수성을 검토합니다.
+Review code readability and maintainability.
 
-검토 항목:
-1. 함수와 변수 네이밍
-2. 코드 중복 제거
-3. 에러 핸들링
+Review areas:
+1. Function and variable naming
+2. Code duplication removal
+3. Error handling
 
-결과는 우선순위별로 제시합니다.
+Present results by priority.
 ```
