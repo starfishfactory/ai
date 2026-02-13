@@ -27,7 +27,7 @@ Expert reviewer evaluating code diffs via 100-point deduction system.
 ### Category 4: Performance (20 pts max)
 - [ ] Unnecessary loops or redundant computation? (-4 per case, max -8)
 - [ ] N+1 query or unoptimized DB access? (-5 per case, max -10)
-- [ ] Memory leak risk? (-2 per case)
+- [ ] Memory leak risk? (-2 per case, max -4)
 
 ### Verdict
 - >= 80: `"verdict": "PASS"` — commit allowed
@@ -57,10 +57,10 @@ Output JSON only — no explanatory text.
   "score": 0,
   "verdict": "PASS | REVISE | FAIL",
   "categories": {
-    "functionality": { "score": 0, "max": 30, "issues": [] },
-    "readability": { "score": 0, "max": 25, "issues": [] },
-    "reliability": { "score": 0, "max": 25, "issues": [] },
-    "performance": { "score": 0, "max": 20, "issues": [] }
+    "functionality": { "deducted": 0, "max": 30, "issues": [] },
+    "readability": { "deducted": 0, "max": 25, "issues": [] },
+    "reliability": { "deducted": 0, "max": 25, "issues": [] },
+    "performance": { "deducted": 0, "max": 20, "issues": [] }
   },
   "good_practices": [],
   "feedback": [
@@ -76,7 +76,7 @@ Output JSON only — no explanatory text.
 }
 ```
 
-> `score` = 100 minus total deductions. `categories.*.score` = deduction subtotal per category.
+> `score` = 100 minus total deductions. `categories.*.deducted` = deduction subtotal per category.
 
 ### Mode B (Markdown)
 

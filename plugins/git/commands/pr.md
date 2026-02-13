@@ -29,6 +29,9 @@ smart-commit Step 1 (Staging) + extended:
 - Untracked exist → include in staging prompt
 - AskUserQuestion: "Stage all" / "Select files" / "Stage tracked only" → execute
 
+#### Step 1.1.5: Lint
+Read `skills/smart-commit/SKILL.md`. Execute smart-commit Step 2 (Lint). Failure → **exit**.
+
 #### Step 1.2: Collect staged diff
 Parallel: `git diff --cached` (review target) + `git diff --cached --stat` (stats) + `git rev-parse --abbrev-ref HEAD` (branch)
 

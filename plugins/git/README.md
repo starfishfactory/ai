@@ -25,7 +25,7 @@ Gitmoji + Conventional Commits 기반 스마트 커밋, 브랜치 관리, PR 자
 
 ```bash
 /git:pr [create]      # Staging → Review(GC, max 3) → 커밋 → push → PR
-/git:pr review [123]  # PR diff → 4관점 분석 → Markdown 피드백
+/git:pr review [123]  # PR diff → Mode B 코드리뷰 → Markdown 피드백
 ```
 
 ## 스킬
