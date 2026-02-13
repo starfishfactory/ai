@@ -1,0 +1,10 @@
+{
+  "name": "git",
+  "version": "1.0.0",
+  "description": "Gitmoji 스마트 커밋 + 브랜치 관리 + PR 자동 생성/리뷰",
+  "author": { "name": "starfishfactory" },
+  "license": "MIT",
+  "keywords": ["git", "gitmoji", "commit", "branch", "pull-request", "code-review"],
+  "commands": "./commands/",
+  "skills": "./skills/"
+}
