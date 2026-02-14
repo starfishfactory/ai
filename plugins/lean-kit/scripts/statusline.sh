@@ -1,9 +1,43 @@
 #!/bin/bash
 # Custom Claude Code statusline (1-line compact)
 # Features: account, directory, git, model, context, burnrate, session
-STATUSLINE_VERSION="2.0.0"
+STATUSLINE_VERSION="3.0.0"
 
 input=$(cat)
+
+# ---- statusline.conf 읽기 (화이트리스트 기반) ----
+SHOW_ACCOUNT=1
+SHOW_DIR=1
+SHOW_GIT=1
+SHOW_MODEL=1
+SHOW_CONTEXT=1
+SHOW_COST=1
+SHOW_SESSION=1
+SHOW_PLAN=1
+SHOW_EXTRA_USAGE=1
+PLAN_TYPE=""
+
+CONF_FILE="${STATUSLINE_CONF:-$HOME/.claude/statusline.conf}"
+if [ -f "$CONF_FILE" ]; then
+  while IFS='=' read -r key value; do
+    # 주석과 빈 줄 건너뜀
+    [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
+    key=$(echo "$key" | tr -d '[:space:]')
+    value=$(echo "$value" | tr -d '[:space:]')
+    case "$key" in
+      SHOW_ACCOUNT)     [[ "$value" =~ ^[01]$ ]] && SHOW_ACCOUNT="$value" ;;
+      SHOW_DIR)         [[ "$value" =~ ^[01]$ ]] && SHOW_DIR="$value" ;;
+      SHOW_GIT)         [[ "$value" =~ ^[01]$ ]] && SHOW_GIT="$value" ;;
+      SHOW_MODEL)       [[ "$value" =~ ^[01]$ ]] && SHOW_MODEL="$value" ;;
+      SHOW_CONTEXT)     [[ "$value" =~ ^[01]$ ]] && SHOW_CONTEXT="$value" ;;
+      SHOW_COST)        [[ "$value" =~ ^[01]$ ]] && SHOW_COST="$value" ;;
+      SHOW_SESSION)     [[ "$value" =~ ^[01]$ ]] && SHOW_SESSION="$value" ;;
+      SHOW_PLAN)        [[ "$value" =~ ^[01]$ ]] && SHOW_PLAN="$value" ;;
+      SHOW_EXTRA_USAGE) [[ "$value" =~ ^[01]$ ]] && SHOW_EXTRA_USAGE="$value" ;;
+      PLAN_TYPE)        [[ "$value" =~ ^(Pro|Max|API)$ ]] && PLAN_TYPE="$value" ;;
+    esac
+  done < "$CONF_FILE"
+fi
 
 # ---- check jq availability ----
 HAS_JQ=0
@@ -78,6 +112,12 @@ extract_json_string() {
     echo "$default"
   fi
 }
+
+# ---- plan detection placeholders (Phase 3에서 구현) ----
+detected_plan=""
+extra_usage_enabled="false"
+plan_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;245m'; fi; }  # default gray
+extra_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;220m'; fi; }  # bright gold
 
 # ---- account email from Anthropic auth ----
 account_email=""
@@ -244,24 +284,52 @@ if command -v ccusage >/dev/null 2>&1 && [ "$HAS_JQ" -eq 1 ]; then
 fi
 
 # ---- render statusline (1-line compact) ----
+sep=""  # 첫 요소 앞에는 구분자 없음
+
 # 계정
-if [ -n "$account_email" ]; then
-  printf '👤 %s%s%s' "$(account_color)" "$account_email" "$(rst)"
-  printf '  📁 %s%s%s' "$(dir_color)" "$current_dir" "$(rst)"
-else
-  printf '📁 %s%s%s' "$(dir_color)" "$current_dir" "$(rst)"
+if [ "$SHOW_ACCOUNT" -eq 1 ] && [ -n "$account_email" ]; then
+  printf '%s👤 %s%s%s' "$sep" "$(account_color)" "$account_email" "$(rst)"
+  sep="  "
+fi
+# 디렉토리
+if [ "$SHOW_DIR" -eq 1 ]; then
+  printf '%s📁 %s%s%s' "$sep" "$(dir_color)" "$current_dir" "$(rst)"
+  sep="  "
 fi
 # Git 브랜치
-[ -n "$git_branch" ] && printf '  🌿 %s%s%s' "$(git_color)" "$git_branch" "$(rst)"
+if [ "$SHOW_GIT" -eq 1 ] && [ -n "$git_branch" ]; then
+  printf '%s🌿 %s%s%s' "$sep" "$(git_color)" "$git_branch" "$(rst)"
+  sep="  "
+fi
 # 모델
-printf '  🤖 %s%s%s' "$(model_color)" "$model_name" "$(rst)"
+if [ "$SHOW_MODEL" -eq 1 ]; then
+  printf '%s🤖 %s%s%s' "$sep" "$(model_color)" "$model_name" "$(rst)"
+  sep="  "
+fi
 # 컨텍스트
-[ -n "$context_pct" ] && printf '  🧠 %s%s[%s]%s' "$(context_color)" "$context_pct" "$(progress_bar "$context_remaining_pct" 10)" "$(rst)"
+if [ "$SHOW_CONTEXT" -eq 1 ] && [ -n "$context_pct" ]; then
+  printf '%s🧠 %s%s[%s]%s' "$sep" "$(context_color)" "$context_pct" "$(progress_bar "$context_remaining_pct" 10)" "$(rst)"
+  sep="  "
+fi
 # 비용 + burn rate
-if [ -n "$cost_usd" ] && [[ "$cost_usd" =~ ^[0-9.]+$ ]]; then
-  printf '  💰 %s$%.2f%s' "$(cost_color)" "$cost_usd" "$(rst)"
+if [ "$SHOW_COST" -eq 1 ] && [ -n "$cost_usd" ] && [[ "$cost_usd" =~ ^[0-9.]+$ ]]; then
+  printf '%s💰 %s$%.2f%s' "$sep" "$(cost_color)" "$cost_usd" "$(rst)"
   [ -n "$cost_per_hour" ] && printf '(%s$%.2f/h%s)' "$(burn_color)" "$cost_per_hour" "$(rst)"
+  sep="  "
+fi
+# 플랜
+if [ "$SHOW_PLAN" -eq 1 ] && [ -n "$detected_plan" ]; then
+  printf '%s📋 %s%s%s' "$sep" "$(plan_color)" "$detected_plan" "$(rst)"
+  sep="  "
+fi
+# Extra Usage
+if [ "$SHOW_EXTRA_USAGE" -eq 1 ] && [ "$extra_usage_enabled" = "true" ] && [ "$detected_plan" = "Max" ]; then
+  printf '%s⚡%sExtra%s' "$sep" "$(extra_color)" "$(rst)"
+  sep="  "
 fi
 # 세션 잔여 시간
-[ -n "$session_txt_short" ] && printf '  ⌛ %s%s%s' "$(session_color)" "$session_txt_short" "$(rst)"
+if [ "$SHOW_SESSION" -eq 1 ] && [ -n "$session_txt_short" ]; then
+  printf '%s⌛ %s%s%s' "$sep" "$(session_color)" "$session_txt_short" "$(rst)"
+  sep="  "
+fi
 printf '\n'
