@@ -24,9 +24,18 @@ Gitmoji + Conventional Commits 기반 스마트 커밋, 브랜치 관리, PR 자
 ### `/git:pr` — PR 생성 + 리뷰
 
 ```bash
-/git:pr [create]      # Staging → Review(GC, max 3) → 커밋 → push → PR
+/git:pr [create]      # Auto-stage → Review(GC) → 커밋 → push → PR
 /git:pr review [123]  # PR diff → 4관점 분석 → Markdown 피드백
 ```
+
+**v1.1.0 변경사항**:
+- AskUserQuestion 4+회 → 0-2회 (리뷰 Pass/Fix + 브랜치 Continue/New branch)
+- Phase 0(사전 조건 확인) 제거 → 실패 시 지연 폴백 안내
+- 자동 스테이징 + 민감 파일 감지/자동 언스테이징
+- main/master → 리뷰 후 자동 브랜치 생성 (Branch Ensure)
+- 기존 PR 중복 생성 방지
+- 커밋 메시지/PR 본문 자동 생성 (확인 질문 없음)
+- review 모드: 변경 없음
 
 ## 스킬
 
@@ -43,9 +52,9 @@ branch(타입) ──→ commit(gitmoji) ← gitmoji-convention
                       │
                 smart-commit (SSOT)
                       │
-pr(staging) ──→ pr-reviewer(GC Loop, max 3) ──→ commit ──→ push ──→ PR 생성
+pr(auto-stage) ──→ pr-reviewer(GC Loop, max 3) ──→ auto-commit ──→ push ──→ PR 생성
                     ↑              ↓
-                 재리뷰 ←── 수정 (REVISE/FAIL)
+                 재리뷰 ←── 수정 (REVISE/FAIL, AskUserQ 1회)
                       │
 commit(히스토리) ──→ pr(Summary/Changes) ← pr-template
 branch(이슈번호) ──→ pr(Closes #123)
@@ -60,4 +69,4 @@ claude install-plugin starfishfactory-ai/git
 
 ## 요구사항
 
-- PR 기능: [GitHub CLI (gh)](https://cli.github.com/) 설치 + 인증 필요
+- PR 기능: [GitHub CLI (gh)](https://cli.github.com/) — 미설치/미인증 시 PR 생성 단계에서 안내

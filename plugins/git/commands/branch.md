@@ -1,7 +1,7 @@
 ---
-description: Branch create/switch/cleanup
-allowed-tools: Bash, AskUserQuestion
-argument-hint: "<create|switch|cleanup> [options]"
+description: Branch create/switch/cleanup/ensure
+allowed-tools: Bash, AskUserQuestion, Read, Glob
+argument-hint: "<create|switch|cleanup|ensure> [options]"
 ---
 # Branch Management: $ARGUMENTS
 ## Argument Parsing
@@ -9,6 +9,7 @@ Determine mode from first word of `$ARGUMENTS`:
 - `create` → create mode
 - `switch` → switch mode
 - `cleanup` → cleanup mode
+- `ensure` → ensure mode
 - Empty → AskUserQuestion to select mode
 ## create Mode
 ### Step 1: Select Type
@@ -56,3 +57,39 @@ AskUserQuestion with candidate list:
 - Delete only user-approved branches via `git branch -d <branch>` loop
 - **Deletion failure (unmerged)** → show warning + skip (do NOT force `-D`)
 - Done → print count of deleted branches
+## ensure Mode
+Ensure current branch is a feature branch. Called by `pr.md` after review, before commit.
+Staged changes must be preserved across branch operations.
+### Step 1: Current Branch Detection
+`git rev-parse --abbrev-ref HEAD` → current branch name.
+### Step 2: Branch Routing
+- **Case A — main/master**:
+  1. `git stash push -m "ensure-auto-stash"` (preserve staged changes)
+  2. `git pull origin <current>`
+  3. `git stash pop` (restore staged changes)
+  4. If stash pop conflict → show error + "Resolve conflicts and retry." → **exit**
+  5. → Step 3 (Auto Branch Creation — no AskUserQuestion)
+- **Case B — feature branch**:
+  1. AskUserQuestion: "Continue on `<branch>`?" / "New branch"
+  2. "Continue" → **done** (proceed to caller)
+  3. "New branch" →
+     a. Detect base branch: `git rev-parse --abbrev-ref origin/HEAD 2>/dev/null | sed 's|^origin/||'` → fallback `main`
+     b. `git stash push -m "ensure-auto-stash"` (preserve staged changes)
+     c. `git checkout <base>` + `git pull origin <base>`
+     d. `git stash pop` (restore staged changes)
+     e. If stash pop conflict → show error → **exit**
+     f. → Step 3 (Auto Branch Creation)
+### Step 3: Auto Branch Creation
+Read `skills/gitmoji-convention/SKILL.md`.
+1. **Type inference**:
+   - `git diff --cached --name-only` → staged file list
+   - Match against gitmoji-convention diff file pattern rules → inferred type
+   - No single match → default `feat`
+2. **Description**:
+   - Common parent directory of staged files → kebab-case
+   - e.g. `src/auth/login.ts`, `src/auth/oauth.ts` → `auth`
+3. **Branch name**: `<type>/<description>`
+   - If type == description (e.g. `docs/docs`) → use `<type>/update` instead
+4. `git checkout -b <branch>`
+   - **Failure** → show error → **exit**
+   - **Success** → print "Branch created: `<branch>`" → **done**
