@@ -12,8 +12,6 @@
 - `commands/*.md` — 슬래시 커맨드 프롬프트
 - `agents/*.md` — 에이전트 프롬프트
 - `skills/**/SKILL.md` — 스킬 프롬프트
-- `scripts/*.sh` — 셸 스크립트 (주석, assert 설명)
-- `tests/*.sh` — 테스트 스크립트 (주석, 그룹 헤더, assert 설명)
 
 **스타일**: 영어 명령형/텔레그래픽. 짧은 구문, 불필요한 단어 제거.
 
@@ -33,6 +31,8 @@ assert "No conf: show 📁"
 
 - `README.md` — 사람을 위한 문서
 - `CLAUDE.md` — 프로젝트 지침 (런타임 로드 아님)
+- `scripts/*.sh` — 외부 셸 명령으로 실행 (훅, statusline 등)
+- `tests/*.sh` — 개발자 수동 실행 테스트
 - `*.json` — 설정/매니페스트 (산문 없음)
 - `install.sh` / `uninstall.sh` — 1회성 설치 스크립트
 
@@ -41,5 +41,3 @@ assert "No conf: show 📁"
 - 한국어 문장 → 영어 명령형/리스트 (25-30% 토큰 절감)
 - 테이블 헤더 → 영문 (`아이콘/항목/설명` → `Icon/Item/Description`)
 - 주석 → 간결한 영문 (`# skip blank/comment lines`)
-- assert 설명 → 짧은 영문 (`"No conf: show 📁"`)
-- 그룹 헤더 → 영문 (`[그룹 1] 기본 동작` → `[Group 1] Basic Behavior`)
