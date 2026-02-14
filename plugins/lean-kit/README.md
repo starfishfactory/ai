@@ -34,22 +34,29 @@ export LEAN_KIT_AUTO_PERMIT=1
 4. Edit/Write: 민감 파일 거부 체크 → 자동 승인
 5. 미분류: 기존처럼 사용자에게 질의 (안전한 폴백)
 
-### 3. Statusline - 1줄 컴팩트 statusline
+### 3. Statusline v3 - 1줄 컴팩트 statusline
 
-터미널 하단에 현재 세션 정보를 1줄로 표시합니다.
+터미널 하단에 현재 세션 정보를 1줄로 표시합니다. 플랜 타입을 자동 감지하고, 표시 요소를 사용자가 선택할 수 있습니다.
 
-| 아이콘 | 항목 | 의존성 |
-|--------|------|--------|
-| 👤 | Anthropic 계정 | `~/.claude.json` |
-| 📁 | 작업 디렉토리 | - |
-| 🌿 | Git 브랜치 | git |
-| 🤖 | 모델명 | - |
-| 🧠 | 컨텍스트 잔여율 | jq |
-| 💰 | 비용 + 번레이트 | jq |
-| ⌛ | 세션 잔여시간 | jq + ccusage |
+| 아이콘 | 항목 | 의존성 | 설명 |
+|--------|------|--------|------|
+| 👤 | Anthropic 계정 | `~/.claude.json` | 로그인 이메일 |
+| 📁 | 작업 디렉토리 | - | 현재 프로젝트 경로 |
+| 🌿 | Git 브랜치 | git | 현재 브랜치/커밋 |
+| 🤖 | 모델명 | - | Claude 모델 |
+| 🧠 | 컨텍스트 잔여율 | jq | 프로그레스바 포함 |
+| 💰 | 비용 + 번레이트 | jq | API 사용자용 ($/h) |
+| 📋 | 플랜 타입 | `~/.claude.json` | Pro/Max/API 자동 감지 |
+| ⚡ | Extra Usage | `~/.claude.json` | Max 플랜 전용 |
+| ⌛ | 세션 잔여시간 | jq + ccusage | rate limit 리셋 시간 |
+
+**플랜 자동 감지:**
+- `billingType=stripe_subscription` + `hasExtraUsageEnabled=true` → **Max**
+- `billingType=stripe_subscription` + `hasExtraUsageEnabled=false` → **Pro**
+- oauthAccount 없음 → **API**
 
 **설치별 활성화:**
-- **마켓플레이스**: `/lean-kit:setup-statusline` 슬래시 커맨드 실행
+- **마켓플레이스**: `/lean-kit:setup-statusline` 슬래시 커맨드 실행 (플랜 감지 + 요소 커스터마이즈)
 - **직접 설치**: `install.sh`가 자동으로 `settings.json`에 등록
 
 ### 슬래시 커맨드
@@ -158,6 +165,31 @@ production.yml
 
 > 수정 후 Claude Code 세션을 재시작하면 적용됩니다.
 
+### Statusline 설정 파일
+
+`~/.claude/statusline.conf`로 표시 요소를 제어합니다. `/lean-kit:setup-statusline` 실행 시 자동 생성됩니다.
+
+```bash
+# lean-kit statusline v3.0 설정
+# 0=숨김, 1=표시
+SHOW_ACCOUNT=1       # 👤 계정
+SHOW_DIR=1           # 📁 디렉토리
+SHOW_GIT=1           # 🌿 Git
+SHOW_MODEL=1         # 🤖 모델
+SHOW_CONTEXT=1       # 🧠 컨텍스트
+SHOW_COST=1          # 💰 비용
+SHOW_SESSION=1       # ⌛ 세션
+SHOW_PLAN=1          # 📋 플랜
+SHOW_EXTRA_USAGE=1   # ⚡ Extra usage
+PLAN_TYPE=           # 수동 지정: Pro | Max | API (빈 값이면 자동 감지)
+```
+
+`STATUSLINE_CONF` 환경변수로 경로를 오버라이드할 수 있습니다:
+
+```bash
+STATUSLINE_CONF=/path/to/custom.conf claude
+```
+
 ## 비활성화
 
 ```bash
@@ -181,6 +213,7 @@ unset LEAN_KIT_AUTO_PERMIT
 | `LEAN_KIT_AUTO_PERMIT` | `0` | `1`로 설정하면 퍼미션 자동 승인 활성화 |
 | `LEAN_KIT_PERMIT_CONF` | `~/.claude/hooks/lean-kit-permit.conf` | 설정 파일 경로 오버라이드 |
 | `LEAN_KIT_DEBUG` | `0` | `1`로 설정하면 `~/.claude/hooks/lean-kit-debug.log`에 로그 기록 |
+| `STATUSLINE_CONF` | `~/.claude/statusline.conf` | statusline 설정 파일 경로 오버라이드 |
 
 ```bash
 # 소리 변경
