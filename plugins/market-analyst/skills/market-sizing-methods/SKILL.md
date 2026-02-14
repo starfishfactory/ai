@@ -1,43 +1,41 @@
 ---
 name: market-sizing-methods
-description: TAM/SAM/SOM 시장규모 추정. Top-Down, Bottom-Up 방식과 CAGR 계산, 삼각측량 검증 방법.
+description: TAM/SAM/SOM market sizing. Top-Down and Bottom-Up approaches with CAGR calculation and triangulation validation.
 ---
+# Market Sizing (TAM/SAM/SOM)
 
-# 시장규모 추정 (TAM/SAM/SOM)
+## Definitions
+| Term | Definition |
+|------|-----------|
+| **TAM** | Total Addressable Market |
+| **SAM** | Serviceable Addressable Market |
+| **SOM** | Serviceable Obtainable Market |
 
-## 정의
-
-| 용어 | 정의 |
-|------|------|
-| **TAM** | Total Addressable Market (전체 시장) |
-| **SAM** | Serviceable Addressable Market (접근 가능) |
-| **SOM** | Serviceable Obtainable Market (확보 가능) |
-
-## 추정 방법
+## Methods
 
 ### Top-Down
 ```
-TAM = 산업규모 × 관련비율
+TAM = Industry Size x Relevant Ratio
 ```
 
 ### Bottom-Up
 ```
-TAM = 잠재고객수 × 연간구매액
+TAM = Potential Customers x Annual Spend
 ```
 
-### 산출 체인
+### Derivation Chain
 ```
-TAM → SAM (지역/세그먼트 적용) → SOM (점유율 적용)
+TAM -> SAM (apply region/segment filter) -> SOM (apply market share)
 ```
 
 ## CAGR
 ```
-CAGR = (최종년도/기준년도)^(1/n) - 1
+CAGR = (End Value / Start Value)^(1/n) - 1
 ```
 
-## 검증: 삼각측량
-Top-Down과 Bottom-Up 결과 비교 후 조정
+## Validation: Triangulation
+Compare Top-Down and Bottom-Up results, then reconcile.
 
-## 참고자료
+## References
 - Boston University Market Sizing Guide
 - Toptal TAM Methodology

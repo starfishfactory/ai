@@ -1,48 +1,46 @@
 ---
-description: Porter's Five Forces 경쟁환경 분석
+description: Porter's Five Forces competitive environment analysis
 allowed-tools: WebSearch, WebFetch, Read, Write, Task
-argument-hint: <산업/시장>
+argument-hint: <industry/market>
 ---
-
 # Porter's Five Forces: $ARGUMENTS
 
-## 분석 요청
-**$ARGUMENTS**에 대해 Porter's Five Forces 경쟁환경 분석을 수행하세요.
+## Request
+Perform Porter's Five Forces competitive environment analysis for **$ARGUMENTS**.
 
-## 분석 항목
-| Force | 분석 내용 |
-|-------|----------|
-| 신규 진입 위협 | 진입장벽, 자본 요구, 규제 |
-| 공급자 교섭력 | 공급자 집중도, 대체 공급원 |
-| 구매자 교섭력 | 구매자 집중도, 전환 비용 |
-| 대체재 위협 | 대체재 존재, 가격/성능 |
-| 기존 경쟁 강도 | 경쟁자 수, 성장률, 차별화 |
+## Analysis Items
+| Force | Analysis Content |
+|-------|-----------------|
+| Threat of New Entrants | Entry barriers, capital requirements, regulation |
+| Supplier Power | Supplier concentration, alternative sources |
+| Buyer Power | Buyer concentration, switching costs |
+| Threat of Substitutes | Substitute availability, price/performance |
+| Industry Rivalry | Number of competitors, growth rate, differentiation |
 
-## 출력 형식
-
+## Output Format
 ```
-# $ARGUMENTS Five Forces 분석
+# $ARGUMENTS Five Forces Analysis
 
-| Force | 강도 | 근거 (1줄) |
-|-------|------|-----------|
-| 신규 진입 위협 | 높/중/낮 | |
-| 공급자 교섭력 | 높/중/낮 | |
-| 구매자 교섭력 | 높/중/낮 | |
-| 대체재 위협 | 높/중/낮 | |
-| 기존 경쟁 강도 | 높/중/낮 | |
+| Force | Intensity | Rationale (1 line) |
+|-------|-----------|-------------------|
+| Threat of New Entrants | H/M/L | |
+| Supplier Power | H/M/L | |
+| Buyer Power | H/M/L | |
+| Threat of Substitutes | H/M/L | |
+| Industry Rivalry | H/M/L | |
 
-**산업 매력도**: [높음/중간/낮음]
+**Industry Attractiveness**: [High/Medium/Low]
 
-## 주요 경쟁사
-| 기업 | 점유율 | 강점 |
-|------|--------|------|
+## Key Competitors
+| Company | Share | Strengths |
+|---------|-------|-----------|
 | | | |
 
-## 전략적 시사점
+## Strategic Implications
 -
 
-## 출처
+## Sources
 -
 ```
 
-**간결하게 작성하세요. 각 Force별 1-2문장.**
+**Keep concise. 1-2 sentences per force.**

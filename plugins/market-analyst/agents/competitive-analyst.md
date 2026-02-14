@@ -1,33 +1,32 @@
-# Competitive Analyst (경쟁환경 분석가)
+# Competitive Analyst
+Porter's Five Forces industry competition structure analysis specialist.
 
-Porter's Five Forces 기반 산업 경쟁구조 분석 전문가
+## Role
+- Analyze 5 competitive forces
+- Evaluate industry attractiveness
+- Benchmark competitors
 
-## 역할
-- 5가지 경쟁요인 분석
-- 산업 매력도 평가
-- 경쟁사 벤치마킹
+## Analysis Process
+1. Define industry scope
+2. Analyze Five Forces
+   - Threat of New Entrants
+   - Supplier Power
+   - Buyer Power
+   - Threat of Substitutes
+   - Industry Rivalry
+3. Rate intensity (High/Medium/Low)
+4. Synthesize industry attractiveness
 
-## 분석 프로세스
-1. 산업 범위 정의
-2. Five Forces 분석
-   - 신규 진입 위협
-   - 공급자 교섭력
-   - 구매자 교섭력
-   - 대체재 위협
-   - 기존 경쟁 강도
-3. 강도 평가 (높/중/낮)
-4. 산업 매력도 종합
+## Output
+| Force | Intensity | Rationale |
+|-------|-----------|-----------|
+| Threat of New Entrants | H/M/L | |
+| Supplier Power | H/M/L | |
+| Buyer Power | H/M/L | |
+| Threat of Substitutes | H/M/L | |
+| Industry Rivalry | H/M/L | |
 
-## 출력
-| Force | 강도 | 근거 |
-|-------|------|------|
-| 신규 진입 위협 | 높/중/낮 | |
-| 공급자 교섭력 | 높/중/낮 | |
-| 구매자 교섭력 | 높/중/낮 | |
-| 대체재 위협 | 높/중/낮 | |
-| 기존 경쟁 강도 | 높/중/낮 | |
+**Industry Attractiveness**: High/Medium/Low
 
-**산업 매력도**: 높음/중간/낮음
-
-## 참조
+## Reference
 - Porter, M.E. (1979). "How Competitive Forces Shape Strategy", HBR

@@ -1,156 +1,139 @@
 ---
 name: spec-examples
-description: 좋은/나쁜 Tech Spec 작성 패턴 예시 (Goals/Non-Goals, NFR, 리스크, 다이어그램)
+description: Good/bad Tech Spec writing pattern examples (Goals/Non-Goals, NFR, risks, diagrams)
 user-invocable: false
 ---
 
-# Tech Spec 작성 패턴 예시
+# Tech Spec Writing Pattern Examples
 
-이 스킬은 Tech Spec 작성 시 자주 발생하는 좋은 패턴과 나쁜 패턴을 예시로 제공한다.
-
----
+Reference examples of common good and bad patterns in Tech Spec writing.
 
 ## 1. Goals & Non-Goals
 
-### 나쁜 예
+### Bad Example
 
 ```markdown
 ### Goals
-1. 좋은 사용자 경험 제공
-2. 시스템 성능 개선
+1. Provide good user experience
+2. Improve system performance
 ```
 
-**문제점**:
-- "좋은", "개선" 등 모호한 형용사 사용
-- 측정 불가능한 목표
-- Goals가 2개뿐 (최소 3개 필요)
+**Problems**: Vague adjectives ("good", "improve"), unmeasurable goals, only 2 Goals (minimum 3 required).
 
-### 좋은 예
+### Good Example
 
 ```markdown
 ### Goals
-1. 사용자 로그인 시 JWT 기반 인증을 도입하여 세션 관리 비용을 제거한다
-2. 로그인 API 응답시간을 p99 기준 200ms 이내로 유지한다
-3. 소셜 로그인(Google, Apple) 연동으로 회원가입 전환율을 30% 향상한다
+1. Introduce JWT-based auth on user login to eliminate session management cost
+2. Maintain login API response time under 200ms at p99
+3. Increase signup conversion rate by 30% via social login (Google, Apple) integration
 
 ### Non-Goals
-1. 기존 세션 기반 인증을 즉시 제거하지 않는다 (점진적 마이그레이션)
-2. 생체 인증(Face ID, 지문)은 이번 범위에 포함하지 않는다
+1. Do not immediately remove existing session-based auth (gradual migration)
+2. Biometric auth (Face ID, fingerprint) is out of scope
 ```
 
-**포인트**:
-- 구체적이고 측정 가능한 목표
-- 기술적 결정과 기대 효과를 명시
-- Non-Goals로 범위를 명확히 제한
+**Key points**: Specific and measurable goals, technical decisions with expected effects stated, scope clearly bounded by Non-Goals.
 
----
+## 2. NFR Concretization Patterns
 
-## 2. NFR 구체화 패턴
+### Bad > Good Conversion
 
-### 나쁜 예 → 좋은 예 변환
-
-| 나쁜 예 | 좋은 예 |
+| Bad | Good |
 |---------|---------|
-| 높은 가용성 | 99.9% 가용성 (연간 다운타임 8.76시간 이내) |
-| 빠른 응답시간 | p95 응답시간 100ms 이내, p99 200ms 이내 |
-| 대량 처리 가능 | 초당 10,000건 이상 이벤트 처리 (피크 시 50,000건) |
-| 안전한 데이터 저장 | AES-256 암호화, 전송 시 TLS 1.3 적용 |
-| 쉬운 확장 | 수평 확장 시 노드당 처리량 선형 증가 (최대 10노드) |
-| 적절한 로깅 | ERROR 이상 로그 100% 수집, 보관 기간 90일 |
+| High availability | 99.9% availability (annual downtime <= 8.76 hours) |
+| Fast response time | p95 response time <= 100ms, p99 <= 200ms |
+| Handle large volume | >= 10,000 events/sec (peak 50,000) |
+| Secure data storage | AES-256 encryption at rest, TLS 1.3 in transit |
+| Easy scaling | Linear throughput increase per node on horizontal scale (max 10 nodes) |
+| Appropriate logging | 100% collection of ERROR+ logs, 90-day retention |
 
-### NFR 작성 템플릿
+### NFR Writing Template
 
 ```markdown
-| ID | 카테고리 | 요구사항 | 목표 수치 |
+| ID | Category | Requirement | Target Metric |
 |----|---------|---------|----------|
-| NFR-001 | 성능 | API 응답시간 | p95 < 100ms, p99 < 200ms |
-| NFR-002 | 가용성 | 서비스 가용률 | 99.9% (월간 다운타임 43분 이내) |
-| NFR-003 | 처리량 | 동시 접속자 수 | 10,000명 (피크 시 30,000명) |
-| NFR-004 | 보안 | 데이터 암호화 | 저장: AES-256, 전송: TLS 1.3 |
-| NFR-005 | 확장성 | 수평 확장 | 노드 추가 시 처리량 선형 증가 |
+| NFR-001 | Performance | API response time | p95 < 100ms, p99 < 200ms |
+| NFR-002 | Availability | Service uptime | 99.9% (monthly downtime <= 43 min) |
+| NFR-003 | Throughput | Concurrent users | 10,000 (peak 30,000) |
+| NFR-004 | Security | Data encryption | At rest: AES-256, In transit: TLS 1.3 |
+| NFR-005 | Scalability | Horizontal scaling | Linear throughput increase on node addition |
 ```
 
----
+## 3. Risk Matrix Example
 
-## 3. 리스크 매트릭스 작성 예시
-
-### 나쁜 예
+### Bad Example
 
 ```markdown
-## 리스크
-- 일정이 지연될 수 있다
-- 기술적 문제가 발생할 수 있다
+## Risks
+- Schedule may be delayed
+- Technical issues may occur
 ```
 
-**문제점**:
-- 유형 구분 없음
-- 확률/영향도 평가 없음
-- 완화 전략 없음
+**Problems**: No type classification, no probability/impact assessment, no mitigation strategy.
 
-### 좋은 예
+### Good Example
 
 ```markdown
-## 7. 리스크 & 완화 전략
+## 7. Risks & Mitigation
 
-| ID | 리스크 | 유형 | 확률 | 영향도 | 완화 전략 |
+| ID | Risk | Type | Probability | Impact | Mitigation |
 |----|--------|------|------|--------|----------|
-| R-001 | Redis Cluster 장애 시 인증 토큰 검증 불가 | 기술 | 하 | 상 | 로컬 캐시 폴백 (TTL 5분) + Circuit Breaker 패턴 적용 |
-| R-002 | OAuth 제공자(Google) API 변경으로 소셜 로그인 중단 | 외부 | 중 | 상 | Provider Adapter 패턴으로 격리, API 버전 고정 + 변경 모니터링 알림 |
-| R-003 | JWT 시크릿 키 유출 시 전체 토큰 무효화 필요 | 기술 | 하 | 상 | 키 로테이션 자동화 (분기별), Key ID(kid) 기반 다중 키 지원 |
-| R-004 | 마이그레이션 기간 중 세션/JWT 이중 인증 부하 증가 | 일정 | 상 | 중 | 단계적 마이그레이션 (서비스별 순차 전환), 부하 테스트 선행 |
-| R-005 | Apple 로그인 Private Email Relay로 사용자 식별 불가 | 외부 | 중 | 중 | 내부 사용자 ID 기반 매핑, email 의존 로직 제거 |
+| R-001 | Redis Cluster failure makes auth token verification impossible | Technical | L | H | Local cache fallback (TTL 5min) + Circuit Breaker pattern |
+| R-002 | OAuth provider (Google) API change breaks social login | External | M | H | Provider Adapter pattern for isolation, pin API version + change monitoring alerts |
+| R-003 | JWT secret key leak requires full token invalidation | Technical | L | H | Automated key rotation (quarterly), Key ID (kid) based multi-key support |
+| R-004 | Dual session/JWT auth load increase during migration | Schedule | H | M | Phased migration (sequential per-service rollout), load testing first |
+| R-005 | Apple Login Private Email Relay makes user identification impossible | External | M | M | Internal user ID-based mapping, remove email-dependent logic |
 ```
 
-### 리스크 유형 분류 기준
+### Risk Type Classification
 
-- **기술**: 기술 선택, 구현 난이도, 성능, 장애 관련
-- **일정**: 리소스 부족, 일정 지연, 의존성 지연 관련
-- **외부**: 외부 서비스, 규제 변경, 시장 변화 관련
+- **Technical**: Technology choices, implementation difficulty, performance, failures
+- **Schedule**: Resource shortage, schedule delays, dependency delays
+- **External**: External services, regulatory changes, market changes
 
----
+## 4. Mermaid Diagram Patterns
 
-## 4. Mermaid 다이어그램 패턴
-
-### 시퀀스 다이어그램
+### Sequence Diagram
 
 ```mermaid
 sequenceDiagram
-    participant Client as 클라이언트
+    participant Client
     participant Gateway as API Gateway
-    participant Auth as 인증 서비스
-    participant DB as 사용자 DB
+    participant Auth as Auth Service
+    participant DB as User DB
     participant Cache as Redis Cache
 
     Client->>Gateway: POST /auth/login (email, password)
-    Gateway->>Auth: 인증 요청 전달
-    Auth->>DB: 사용자 조회
-    DB-->>Auth: 사용자 정보
-    Auth->>Auth: 비밀번호 검증 (bcrypt)
-    Auth->>Auth: JWT 토큰 생성
+    Gateway->>Auth: Forward auth request
+    Auth->>DB: Query user
+    DB-->>Auth: User info
+    Auth->>Auth: Verify password (bcrypt)
+    Auth->>Auth: Generate JWT token
 
-    alt 인증 성공
-        Auth->>Cache: 리프레시 토큰 저장 (TTL: 7d)
+    alt Auth Success
+        Auth->>Cache: Store refresh token (TTL: 7d)
         Auth-->>Gateway: 200 OK + {accessToken, refreshToken}
-        Gateway-->>Client: 인증 성공 응답
-    else 인증 실패
+        Gateway-->>Client: Auth success response
+    else Auth Failure
         Auth-->>Gateway: 401 Unauthorized
-        Gateway-->>Client: 인증 실패 응답
+        Gateway-->>Client: Auth failure response
     end
 ```
 
-### 아키텍처 다이어그램
+### Architecture Diagram
 
 ```mermaid
 graph TD
     subgraph Client Layer
-        Web[웹 클라이언트]
-        Mobile[모바일 앱]
+        Web[Web Client]
+        Mobile[Mobile App]
     end
 
     subgraph API Layer
         GW[API Gateway]
-        Auth[인증 서비스]
-        User[사용자 서비스]
+        Auth[Auth Service]
+        User[User Service]
     end
 
     subgraph Data Layer
@@ -169,74 +152,70 @@ graph TD
     Auth --> MQ
 ```
 
-### 상태 다이어그램
+### State Diagram
 
 ```mermaid
 stateDiagram-v2
-    [*] --> 미인증
-    미인증 --> 로그인중: 로그인 요청
-    로그인중 --> 인증됨: 인증 성공
-    로그인중 --> 미인증: 인증 실패
-    인증됨 --> 토큰갱신중: 토큰 만료
-    토큰갱신중 --> 인증됨: 갱신 성공
-    토큰갱신중 --> 미인증: 갱신 실패
-    인증됨 --> 미인증: 로그아웃
-    인증됨 --> [*]
+    [*] --> Unauthenticated
+    Unauthenticated --> LoggingIn: Login request
+    LoggingIn --> Authenticated: Auth success
+    LoggingIn --> Unauthenticated: Auth failure
+    Authenticated --> TokenRefreshing: Token expired
+    TokenRefreshing --> Authenticated: Refresh success
+    TokenRefreshing --> Unauthenticated: Refresh failure
+    Authenticated --> Unauthenticated: Logout
+    Authenticated --> [*]
 ```
 
----
+## 5. Alternative Review Patterns
 
-## 5. 대안 검토 작성 패턴
-
-### 나쁜 예
+### Bad Example
 
 ```markdown
-## 대안 검토
-JWT를 선택했다. 세션 방식보다 좋기 때문이다.
+## Alternative Review
+Chose JWT. Because it's better than sessions.
 ```
 
-### 좋은 예
+### Good Example
 
 ```markdown
-## 9. 대안 검토
+## 9. Alternative Review
 
-### 9.1 검토한 대안
+### 9.1 Reviewed Alternatives
 
-#### 대안 A: 세션 기반 인증 (현행 유지)
-- **설명**: 서버 측 세션 스토어에 인증 상태 저장
-- **장점**: 구현 단순, 즉시 무효화 가능, 기존 코드 재사용
-- **단점**: 수평 확장 시 세션 동기화 필요 (Sticky Session 또는 Redis), 서버 상태 관리 부담
+#### Alternative A: Session-based Auth (maintain current)
+- **Description**: Store auth state in server-side session store
+- **Pros**: Simple implementation, instant invalidation, reuse existing code
+- **Cons**: Session sync needed on horizontal scale (Sticky Session or Redis), server state management burden
 
-#### 대안 B: JWT + Refresh Token (선택)
-- **설명**: Stateless 토큰 기반 인증, 리프레시 토큰으로 갱신
-- **장점**: 수평 확장 용이, 서버 상태 무관, 마이크로서비스 간 전파 용이
-- **단점**: 토큰 즉시 무효화 어려움 (블랙리스트 필요), 토큰 크기
+#### Alternative B: JWT + Refresh Token (selected)
+- **Description**: Stateless token-based auth, renewal via refresh token
+- **Pros**: Easy horizontal scaling, server-state independent, easy propagation across microservices
+- **Cons**: Difficult instant token invalidation (blacklist needed), token size
 
-#### 대안 C: OAuth 2.0 + OIDC 위임 (외부 IdP)
-- **설명**: Auth0, Cognito 등 외부 IdP에 인증 위임
-- **장점**: 구현 최소화, 보안 책임 분산, 다양한 인증 방식 지원
-- **단점**: 외부 서비스 의존, 비용 증가, 커스터마이징 제한
+#### Alternative C: OAuth 2.0 + OIDC Delegation (external IdP)
+- **Description**: Delegate auth to external IdP like Auth0, Cognito
+- **Pros**: Minimal implementation, distributed security responsibility, diverse auth method support
+- **Cons**: External service dependency, cost increase, customization limitations
 
-### 9.2 선택 근거
-대안 B를 선택한다. 이유:
-1. 현재 아키텍처가 마이크로서비스로 전환 중이며, stateless 인증이 서비스 간 토큰 전파에 유리하다
-2. 리프레시 토큰을 Redis에 저장하여 즉시 무효화 문제를 해결할 수 있다
-3. 외부 IdP 대비 비용 절감 및 커스터마이징 자유도가 높다
+### 9.2 Selection Rationale
+Select Alternative B because:
+1. Current architecture is transitioning to microservices; stateless auth is advantageous for inter-service token propagation
+2. Storing refresh tokens in Redis solves the instant invalidation problem
+3. Lower cost and higher customization freedom compared to external IdP
 ```
 
----
+## 6. Acceptance Criteria Patterns (Given/When/Then)
 
-## 6. 수용 기준 작성 패턴 (Given/When/Then)
-
-### 나쁜 예
+### Bad Example
 
 ```markdown
-| FR-001 | 로그인 기능 | 로그인이 되어야 함 | P0 |
+| FR-001 | Login feature | Login should work | P0 |
 ```
 
-### 좋은 예
+### Good Example
 
 ```markdown
-| FR-001 | 이메일/비밀번호 로그인 | Given: 가입된 사용자, When: 올바른 이메일+비밀번호로 POST /auth/login, Then: 200 OK + JWT 토큰 반환 (accessToken 만료: 1h, refreshToken 만료: 7d) | P0 |
-| FR-002 | 로그인 실패 처리 | Given: 가입된 사용자, When: 잘못된 비밀번호로 5회 시도, Then: 계정 잠금 (30분) + 429 응답 + 잠금 해제 시각 포함 | P0 |
+| FR-001 | Email/password login | Given: Registered user, When: POST /auth/login with correct email+password, Then: 200 OK + JWT token returned (accessToken expiry: 1h, refreshToken expiry: 7d) | P0 |
+| FR-002 | Login failure handling | Given: Registered user, When: 5 attempts with wrong password, Then: Account locked (30min) + 429 response + unlock time included | P0 |
 ```

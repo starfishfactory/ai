@@ -1,7 +1,7 @@
 {
   "name": "market-analyst",
   "version": "1.0.0",
-  "description": "학술적 방법론 기반 시장분석 전문가 플러그인 (Porter, PESTEL, SWOT, TAM/SAM/SOM)",
+  "description": "Academic methodology-based market analysis expert plugin (Porter, PESTEL, SWOT, TAM/SAM/SOM)",
   "author": {
     "name": "starfishfactory"
   },

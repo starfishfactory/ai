@@ -1,38 +1,36 @@
 ---
 name: porter-five-forces
-description: Porter's Five Forces 산업 경쟁구조 분석. 신규진입, 공급자, 구매자, 대체재, 기존경쟁 5가지 요인으로 산업 매력도 평가.
+description: Porter's Five Forces industry competition analysis. Evaluate industry attractiveness across 5 factors - new entrants, suppliers, buyers, substitutes, rivalry.
 ---
-
 # Porter's Five Forces
 
-## 출처
-- **창시자**: Michael E. Porter
-- **기관**: Harvard Business School
-- **연도**: 1979년
-- **원문**: "How Competitive Forces Shape Strategy", HBR
+## Origin
+- **Creator**: Michael E. Porter
+- **Institution**: Harvard Business School
+- **Year**: 1979
+- **Source**: "How Competitive Forces Shape Strategy", HBR
 
-## 5가지 경쟁요인
-
+## 5 Competitive Forces
 ```
-        [신규 진입 위협]
-              ↓
-[공급자] ← [기존 경쟁] → [구매자]
-              ↑
-        [대체재 위협]
+        [Threat of New Entrants]
+              |
+[Suppliers] <- [Industry Rivalry] -> [Buyers]
+              |
+        [Threat of Substitutes]
 ```
 
-| 요인 | 핵심 질문 |
-|------|----------|
-| 신규 진입 | 진입장벽 높이는? |
-| 공급자 교섭력 | 공급자 집중도? 대체 공급원? |
-| 구매자 교섭력 | 구매자 집중도? 전환비용? |
-| 대체재 | 가격/성능 비율? 전환 트렌드? |
-| 기존 경쟁 | 경쟁자 수? 성장률? 차별화? |
+| Force | Key Question |
+|-------|-------------|
+| New Entrants | How high are entry barriers? |
+| Supplier Power | Supplier concentration? Alternative sources? |
+| Buyer Power | Buyer concentration? Switching costs? |
+| Substitutes | Price/performance ratio? Switching trends? |
+| Industry Rivalry | Number of competitors? Growth rate? Differentiation? |
 
-## 산업 매력도
-5가지 요인 강도 종합 → 높음/중간/낮음
+## Industry Attractiveness
+Aggregate 5 forces intensity -> High / Medium / Low
 
-## 참고문헌
+## References
 1. Porter (1979). HBR
 2. Porter (2008). "The Five Competitive Forces", HBR
 3. Porter (1980). "Competitive Strategy", Free Press
