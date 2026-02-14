@@ -21,7 +21,10 @@ CLAUDE_DIR="$HOME/.claude"
 HOOKS_DIR="$CLAUDE_DIR/hooks"
 SETTINGS="$CLAUDE_DIR/settings.json"
 TARGET_SCRIPT="$HOOKS_DIR/lean-kit-notify.sh"
+TARGET_PERMIT="$HOOKS_DIR/lean-kit-auto-permit.sh"
+TARGET_CONF="$HOOKS_DIR/lean-kit-permit.conf"
 DEBUG_LOG="$HOOKS_DIR/lean-kit-debug.log"
+TARGET_STATUSLINE="$CLAUDE_DIR/statusline.sh"
 
 # === 스크립트 삭제 ===
 if [ -f "$TARGET_SCRIPT" ]; then
@@ -29,6 +32,28 @@ if [ -f "$TARGET_SCRIPT" ]; then
   info "스크립트 삭제: $TARGET_SCRIPT"
 else
   warn "스크립트가 이미 없습니다: $TARGET_SCRIPT"
+fi
+
+# === auto-permit 스크립트 삭제 ===
+if [ -f "$TARGET_PERMIT" ]; then
+  rm "$TARGET_PERMIT"
+  info "스크립트 삭제: $TARGET_PERMIT"
+else
+  warn "auto-permit 스크립트가 이미 없습니다: $TARGET_PERMIT"
+fi
+
+# === statusline 삭제 ===
+if [ -f "$TARGET_STATUSLINE" ]; then
+  rm "$TARGET_STATUSLINE"
+  info "스크립트 삭제: $TARGET_STATUSLINE"
+else
+  warn "statusline이 이미 없습니다: $TARGET_STATUSLINE"
+fi
+
+# === 설정 파일 안내 (사용자 커스터마이징 보존) ===
+if [ -f "$TARGET_CONF" ]; then
+  warn "설정 파일을 보존합니다 (사용자 수정이 있을 수 있음): $TARGET_CONF"
+  warn "수동 삭제: rm $TARGET_CONF"
 fi
 
 # === 디버그 로그 삭제 ===
@@ -43,6 +68,10 @@ if [ -f "/tmp/lean-kit-last-notify" ]; then
   info "쿨다운 파일 삭제"
 fi
 
+# === statusline 캐시 정리 ===
+rm -f /tmp/ccusage_statusline.cache /tmp/ccusage_statusline.pid 2>/dev/null
+rmdir /tmp/ccusage_statusline.lock 2>/dev/null
+
 # === settings.json에서 훅 제거 ===
 if [ -f "$SETTINGS" ] && command -v jq &> /dev/null; then
   # JSON 유효성 확인
@@ -54,8 +83,9 @@ if [ -f "$SETTINGS" ] && command -v jq &> /dev/null; then
   # 백업
   cp "$SETTINGS" "$SETTINGS.bak"
 
-  # lean-kit 관련 훅만 제거 (다른 Notification 훅 보존)
+  # lean-kit 관련 훅만 제거 (다른 훅 보존)
   jq '
+    # Notification 훅 제거
     if .hooks.Notification then
       .hooks.Notification |= [
         .[] | select(
@@ -64,10 +94,27 @@ if [ -f "$SETTINGS" ] && command -v jq &> /dev/null; then
       ] |
       if .hooks.Notification | length == 0 then
         del(.hooks.Notification)
-      else . end |
-      if .hooks | length == 0 then
-        del(.hooks)
       else . end
+    else . end |
+    # PermissionRequest 훅 제거
+    if .hooks.PermissionRequest then
+      .hooks.PermissionRequest |= [
+        .[] | select(
+          (.hooks // []) | all(.command | test("lean-kit-auto-permit\\.sh$") | not)
+        )
+      ] |
+      if .hooks.PermissionRequest | length == 0 then
+        del(.hooks.PermissionRequest)
+      else . end
+    else . end |
+    # statusLine 제거 (lean-kit의 statusline.sh만)
+    if .statusLine.command then
+      if (.statusLine.command | test("statusline\\.sh$")) then del(.statusLine)
+      else . end
+    else . end |
+    # hooks 객체가 비었으면 제거
+    if .hooks and (.hooks | length == 0) then
+      del(.hooks)
     else . end
   ' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
 
