@@ -1,9 +1,42 @@
 #!/bin/bash
 # Custom Claude Code statusline (1-line compact)
 # Features: account, directory, git, model, context, burnrate, session
-STATUSLINE_VERSION="2.0.0"
+STATUSLINE_VERSION="3.0.0"
 
 input=$(cat)
+
+# ---- statusline.conf (whitelist-based) ----
+SHOW_ACCOUNT=1
+SHOW_DIR=1
+SHOW_GIT=1
+SHOW_MODEL=1
+SHOW_CONTEXT=1
+SHOW_COST=1
+SHOW_SESSION=1
+SHOW_PLAN=1
+SHOW_EXTRA_USAGE=1
+PLAN_TYPE=""
+
+CONF_FILE="${STATUSLINE_CONF:-$HOME/.claude/statusline.conf}"
+if [ -f "$CONF_FILE" ]; then
+  while IFS='=' read -r key value; do
+    [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
+    key=$(echo "$key" | tr -d '[:space:]')
+    value=$(echo "$value" | tr -d '[:space:]')
+    case "$key" in
+      SHOW_ACCOUNT)     [[ "$value" =~ ^[01]$ ]] && SHOW_ACCOUNT="$value" ;;
+      SHOW_DIR)         [[ "$value" =~ ^[01]$ ]] && SHOW_DIR="$value" ;;
+      SHOW_GIT)         [[ "$value" =~ ^[01]$ ]] && SHOW_GIT="$value" ;;
+      SHOW_MODEL)       [[ "$value" =~ ^[01]$ ]] && SHOW_MODEL="$value" ;;
+      SHOW_CONTEXT)     [[ "$value" =~ ^[01]$ ]] && SHOW_CONTEXT="$value" ;;
+      SHOW_COST)        [[ "$value" =~ ^[01]$ ]] && SHOW_COST="$value" ;;
+      SHOW_SESSION)     [[ "$value" =~ ^[01]$ ]] && SHOW_SESSION="$value" ;;
+      SHOW_PLAN)        [[ "$value" =~ ^[01]$ ]] && SHOW_PLAN="$value" ;;
+      SHOW_EXTRA_USAGE) [[ "$value" =~ ^[01]$ ]] && SHOW_EXTRA_USAGE="$value" ;;
+      PLAN_TYPE)        [[ "$value" =~ ^(Pro|Max|API)$ ]] && PLAN_TYPE="$value" ;;
+    esac
+  done < "$CONF_FILE"
+fi
 
 # ---- check jq availability ----
 HAS_JQ=0
@@ -79,10 +112,77 @@ extract_json_string() {
   fi
 }
 
+# ---- plan detection ----
+detected_plan=""
+extra_usage_enabled="false"
+plan_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;245m'; fi; }  # default gray (API)
+extra_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;220m'; fi; }  # bright gold
+
+# Pure bash boolean extractor (true/false)
+extract_json_bool() {
+  local json="$1"
+  local key="$2"
+  local default="${3:-false}"
+  local field="${key##*.}"
+  local value=$(echo "$json" | grep -o "\"${field}\"[[:space:]]*:[[:space:]]*\(true\|false\)" | head -1 | sed 's/.*:[[:space:]]*\(true\|false\).*/\1/')
+  if [ -n "$value" ]; then
+    echo "$value"
+  else
+    echo "$default"
+  fi
+}
+
+# Plan detection from ~/.claude.json
+if [ -n "$PLAN_TYPE" ]; then
+  detected_plan="$PLAN_TYPE"
+  if [ -f "$HOME/.claude.json" ]; then
+    if [ "$HAS_JQ" -eq 1 ]; then
+      extra_usage_enabled=$(jq -r '.oauthAccount.hasExtraUsageEnabled // false' "$HOME/.claude.json" 2>/dev/null)
+    else
+      claude_json=$(cat "$HOME/.claude.json" 2>/dev/null)
+      extra_usage_enabled=$(extract_json_bool "$claude_json" "hasExtraUsageEnabled" "false")
+    fi
+  fi
+elif [ -f "$HOME/.claude.json" ]; then
+  if [ "$HAS_JQ" -eq 1 ]; then
+    billing_type=$(jq -r '.oauthAccount.billingType // ""' "$HOME/.claude.json" 2>/dev/null)
+    extra_usage_enabled=$(jq -r '.oauthAccount.hasExtraUsageEnabled // false' "$HOME/.claude.json" 2>/dev/null)
+    has_oauth=$(jq -r '.oauthAccount // empty' "$HOME/.claude.json" 2>/dev/null)
+  else
+    claude_json=$(cat "$HOME/.claude.json" 2>/dev/null)
+    billing_type=$(extract_json_string "$claude_json" "billingType" "")
+    extra_usage_enabled=$(extract_json_bool "$claude_json" "hasExtraUsageEnabled" "false")
+    has_oauth=$(echo "$claude_json" | grep -o '"oauthAccount"' | head -1)
+  fi
+
+  if [ "$billing_type" = "stripe_subscription" ]; then
+    if [ "$extra_usage_enabled" = "true" ]; then
+      detected_plan="Max"
+    else
+      detected_plan="Pro"
+    fi
+  elif [ -n "$has_oauth" ] && [ "$has_oauth" != "null" ]; then
+    detected_plan="Pro"
+  else
+    detected_plan="API"
+  fi
+fi
+
+# Plan color
+case "$detected_plan" in
+  Max) plan_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;183m'; fi; } ;;  # light purple
+  Pro) plan_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;111m'; fi; } ;;  # blue
+  API) plan_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;245m'; fi; } ;;  # gray
+esac
+
 # ---- account email from Anthropic auth ----
 account_email=""
-if [ "$HAS_JQ" -eq 1 ] && [ -f "$HOME/.claude.json" ]; then
-  account_email=$(jq -r '.oauthAccount.emailAddress // ""' "$HOME/.claude.json" 2>/dev/null)
+if [ -f "$HOME/.claude.json" ]; then
+  if [ "$HAS_JQ" -eq 1 ]; then
+    account_email=$(jq -r '.oauthAccount.emailAddress // ""' "$HOME/.claude.json" 2>/dev/null)
+  else
+    account_email=$(extract_json_string "$(cat "$HOME/.claude.json" 2>/dev/null)" "emailAddress" "")
+  fi
 fi
 
 # ---- basics ----
@@ -244,24 +344,52 @@ if command -v ccusage >/dev/null 2>&1 && [ "$HAS_JQ" -eq 1 ]; then
 fi
 
 # ---- render statusline (1-line compact) ----
+sep=""  # no separator before first element
+
 # Account
-if [ -n "$account_email" ]; then
-  printf '👤 %s%s%s' "$(account_color)" "$account_email" "$(rst)"
-  printf '  📁 %s%s%s' "$(dir_color)" "$current_dir" "$(rst)"
-else
-  printf '📁 %s%s%s' "$(dir_color)" "$current_dir" "$(rst)"
+if [ "$SHOW_ACCOUNT" -eq 1 ] && [ -n "$account_email" ]; then
+  printf '%s👤 %s%s%s' "$sep" "$(account_color)" "$account_email" "$(rst)"
+  sep="  "
+fi
+# Directory
+if [ "$SHOW_DIR" -eq 1 ]; then
+  printf '%s📁 %s%s%s' "$sep" "$(dir_color)" "$current_dir" "$(rst)"
+  sep="  "
 fi
 # Git branch
-[ -n "$git_branch" ] && printf '  🌿 %s%s%s' "$(git_color)" "$git_branch" "$(rst)"
+if [ "$SHOW_GIT" -eq 1 ] && [ -n "$git_branch" ]; then
+  printf '%s🌿 %s%s%s' "$sep" "$(git_color)" "$git_branch" "$(rst)"
+  sep="  "
+fi
 # Model
-printf '  🤖 %s%s%s' "$(model_color)" "$model_name" "$(rst)"
+if [ "$SHOW_MODEL" -eq 1 ]; then
+  printf '%s🤖 %s%s%s' "$sep" "$(model_color)" "$model_name" "$(rst)"
+  sep="  "
+fi
 # Context
-[ -n "$context_pct" ] && printf '  🧠 %s%s[%s]%s' "$(context_color)" "$context_pct" "$(progress_bar "$context_remaining_pct" 10)" "$(rst)"
+if [ "$SHOW_CONTEXT" -eq 1 ] && [ -n "$context_pct" ]; then
+  printf '%s🧠 %s%s[%s]%s' "$sep" "$(context_color)" "$context_pct" "$(progress_bar "$context_remaining_pct" 10)" "$(rst)"
+  sep="  "
+fi
 # Cost + burn rate
-if [ -n "$cost_usd" ] && [[ "$cost_usd" =~ ^[0-9.]+$ ]]; then
-  printf '  💰 %s$%.2f%s' "$(cost_color)" "$cost_usd" "$(rst)"
+if [ "$SHOW_COST" -eq 1 ] && [ -n "$cost_usd" ] && [[ "$cost_usd" =~ ^[0-9.]+$ ]]; then
+  printf '%s💰 %s$%.2f%s' "$sep" "$(cost_color)" "$cost_usd" "$(rst)"
   [ -n "$cost_per_hour" ] && printf '(%s$%.2f/h%s)' "$(burn_color)" "$cost_per_hour" "$(rst)"
+  sep="  "
+fi
+# Plan
+if [ "$SHOW_PLAN" -eq 1 ] && [ -n "$detected_plan" ]; then
+  printf '%s📋 %s%s%s' "$sep" "$(plan_color)" "$detected_plan" "$(rst)"
+  sep="  "
+fi
+# Extra Usage
+if [ "$SHOW_EXTRA_USAGE" -eq 1 ] && [ "$extra_usage_enabled" = "true" ] && [ "$detected_plan" = "Max" ]; then
+  printf '%s⚡%sExtra%s' "$sep" "$(extra_color)" "$(rst)"
+  sep="  "
 fi
 # Session remaining time
-[ -n "$session_txt_short" ] && printf '  ⌛ %s%s%s' "$(session_color)" "$session_txt_short" "$(rst)"
+if [ "$SHOW_SESSION" -eq 1 ] && [ -n "$session_txt_short" ]; then
+  printf '%s⌛ %s%s%s' "$sep" "$(session_color)" "$session_txt_short" "$(rst)"
+  sep="  "
+fi
 printf '\n'
