@@ -113,16 +113,79 @@ extract_json_string() {
   fi
 }
 
-# ---- plan detection placeholders (Phase 3에서 구현) ----
+# ---- plan detection ----
 detected_plan=""
 extra_usage_enabled="false"
-plan_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;245m'; fi; }  # default gray
+plan_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;245m'; fi; }  # default gray (API)
 extra_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;220m'; fi; }  # bright gold
+
+# Pure bash boolean extractor (true/false)
+extract_json_bool() {
+  local json="$1"
+  local key="$2"
+  local default="${3:-false}"
+  local field="${key##*.}"
+  local value=$(echo "$json" | grep -o "\"${field}\"[[:space:]]*:[[:space:]]*\(true\|false\)" | head -1 | sed 's/.*:[[:space:]]*\(true\|false\).*/\1/')
+  if [ -n "$value" ]; then
+    echo "$value"
+  else
+    echo "$default"
+  fi
+}
+
+# Plan detection from ~/.claude.json
+if [ -n "$PLAN_TYPE" ]; then
+  # conf에서 수동 오버라이드된 경우
+  detected_plan="$PLAN_TYPE"
+  # 수동 오버라이드 시 extra_usage_enabled도 claude.json에서 읽기 시도
+  if [ -f "$HOME/.claude.json" ]; then
+    if [ "$HAS_JQ" -eq 1 ]; then
+      extra_usage_enabled=$(jq -r '.oauthAccount.hasExtraUsageEnabled // false' "$HOME/.claude.json" 2>/dev/null)
+    else
+      claude_json=$(cat "$HOME/.claude.json" 2>/dev/null)
+      extra_usage_enabled=$(extract_json_bool "$claude_json" "hasExtraUsageEnabled" "false")
+    fi
+  fi
+elif [ -f "$HOME/.claude.json" ]; then
+  if [ "$HAS_JQ" -eq 1 ]; then
+    billing_type=$(jq -r '.oauthAccount.billingType // ""' "$HOME/.claude.json" 2>/dev/null)
+    extra_usage_enabled=$(jq -r '.oauthAccount.hasExtraUsageEnabled // false' "$HOME/.claude.json" 2>/dev/null)
+    has_oauth=$(jq -r '.oauthAccount // empty' "$HOME/.claude.json" 2>/dev/null)
+  else
+    claude_json=$(cat "$HOME/.claude.json" 2>/dev/null)
+    billing_type=$(extract_json_string "$claude_json" "billingType" "")
+    extra_usage_enabled=$(extract_json_bool "$claude_json" "hasExtraUsageEnabled" "false")
+    has_oauth=$(echo "$claude_json" | grep -o '"oauthAccount"' | head -1)
+  fi
+
+  if [ "$billing_type" = "stripe_subscription" ]; then
+    if [ "$extra_usage_enabled" = "true" ]; then
+      detected_plan="Max"
+    else
+      detected_plan="Pro"
+    fi
+  elif [ -n "$has_oauth" ] && [ "$has_oauth" != "null" ]; then
+    detected_plan="Pro"
+  else
+    detected_plan="API"
+  fi
+fi
+
+# Plan 색상 설정
+case "$detected_plan" in
+  Max) plan_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;183m'; fi; } ;;  # 연보라
+  Pro) plan_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;111m'; fi; } ;;  # 파란
+  API) plan_color() { if [ "$use_color" -eq 1 ]; then printf '\033[38;5;245m'; fi; } ;;  # 회색
+esac
 
 # ---- account email from Anthropic auth ----
 account_email=""
-if [ "$HAS_JQ" -eq 1 ] && [ -f "$HOME/.claude.json" ]; then
-  account_email=$(jq -r '.oauthAccount.emailAddress // ""' "$HOME/.claude.json" 2>/dev/null)
+if [ -f "$HOME/.claude.json" ]; then
+  if [ "$HAS_JQ" -eq 1 ]; then
+    account_email=$(jq -r '.oauthAccount.emailAddress // ""' "$HOME/.claude.json" 2>/dev/null)
+  else
+    account_email=$(extract_json_string "$(cat "$HOME/.claude.json" 2>/dev/null)" "emailAddress" "")
+  fi
 fi
 
 # ---- basics ----
