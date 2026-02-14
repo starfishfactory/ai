@@ -1,85 +1,85 @@
 ---
-description: 1줄 컴팩트 statusline v3 설치 (플랜 감지 + 요소 커스터마이즈)
+description: Install statusline v3 (plan detection + element customization)
 allowed-tools: Read, Bash, Edit, Glob, AskUserQuestion, Write
 ---
 
 # Setup Statusline v3
 
-lean-kit의 1줄 컴팩트 statusline을 설치하고, 플랜 타입에 맞는 최적 설정을 구성합니다.
+Install lean-kit 1-line compact statusline and configure optimal settings for your plan type.
 
-## 절차
+## Procedure
 
-### Step 1: statusline.sh 복사
+### Step 1: Copy statusline.sh
 
-이 플러그인의 `scripts/statusline.sh`를 `~/.claude/statusline.sh`로 복사합니다.
+Copy `scripts/statusline.sh` from this plugin to `~/.claude/statusline.sh`.
 
-1. Glob으로 `scripts/statusline.sh` 경로 확인
-2. Bash 실행:
+1. Glob to find `scripts/statusline.sh` absolute path
+2. Run Bash:
    ```bash
-   cp <확인된_절대경로> ~/.claude/statusline.sh && chmod +x ~/.claude/statusline.sh
+   cp <absolute_path> ~/.claude/statusline.sh && chmod +x ~/.claude/statusline.sh
    ```
 
-### Step 2: 플랜 자동 감지
+### Step 2: Auto-detect Plan
 
-`~/.claude.json`에서 플랜 타입을 감지합니다:
+Detect plan type from `~/.claude.json`:
 - `billingType=stripe_subscription` + `hasExtraUsageEnabled=true` → **Max**
 - `billingType=stripe_subscription` + `hasExtraUsageEnabled=false` → **Pro**
-- oauthAccount 없음 → **API**
+- No oauthAccount → **API**
 
-감지 결과를 AskUserQuestion으로 확인/수정:
+Confirm/override via AskUserQuestion:
 ```
-감지된 플랜: {detected_plan}
-이 플랜이 맞습니까?
-옵션: [맞습니다] [Pro] [Max] [API]
+Detected plan: {detected_plan}
+Is this correct?
+Options: [Yes] [Pro] [Max] [API]
 ```
 
-### Step 3: 표시 요소 선택
+### Step 3: Select Display Elements
 
-플랜별 기본 추천값을 제시하고 사용자 커스터마이즈를 받습니다.
+Present plan-specific defaults and accept user customization.
 
-**기본 추천값:**
-- **Pro**: 💰 비용 OFF, 나머지 ON
-- **Max**: 💰 비용 OFF, ⚡ Extra ON, 나머지 ON
-- **API**: ⚡ Extra OFF, 나머지 ON
+**Recommended defaults:**
+- **Pro**: Cost OFF, rest ON
+- **Max**: Cost OFF, Extra ON, rest ON
+- **API**: Extra OFF, rest ON
 
-AskUserQuestion(multiSelect)으로 OFF할 요소를 선택:
+AskUserQuestion(multiSelect) to select elements to turn OFF:
 ```
-추천 설정을 기반으로, 추가로 끄고 싶은 요소가 있나요?
-옵션 (multiSelect):
-[ ] 👤 계정 (SHOW_ACCOUNT)
-[ ] 📁 디렉토리 (SHOW_DIR)
+Based on recommended defaults, any additional elements to disable?
+Options (multiSelect):
+[ ] 👤 Account (SHOW_ACCOUNT)
+[ ] 📁 Directory (SHOW_DIR)
 [ ] 🌿 Git (SHOW_GIT)
-[ ] 🤖 모델 (SHOW_MODEL)
-[ ] 🧠 컨텍스트 (SHOW_CONTEXT)
-[ ] 💰 비용 (SHOW_COST)
-[ ] 📋 플랜 (SHOW_PLAN)
+[ ] 🤖 Model (SHOW_MODEL)
+[ ] 🧠 Context (SHOW_CONTEXT)
+[ ] 💰 Cost (SHOW_COST)
+[ ] 📋 Plan (SHOW_PLAN)
 [ ] ⚡ Extra (SHOW_EXTRA_USAGE)
-[ ] ⌛ 세션 (SHOW_SESSION)
+[ ] ⌛ Session (SHOW_SESSION)
 ```
 
-### Step 4: statusline.conf 생성
+### Step 4: Generate statusline.conf
 
-사용자 선택을 반영한 `~/.claude/statusline.conf` 파일을 Write로 생성:
+Write `~/.claude/statusline.conf` reflecting user selections:
 ```bash
-# lean-kit statusline v3.0 설정
-# 0=숨김, 1=표시
+# lean-kit statusline v3.0 config
+# 0=hide, 1=show
 SHOW_ACCOUNT=1
 SHOW_DIR=1
 SHOW_GIT=1
 SHOW_MODEL=1
 SHOW_CONTEXT=1
-SHOW_COST=0          # Pro/Max 추천: OFF
+SHOW_COST=0          # Pro/Max recommended: OFF
 SHOW_SESSION=1
 SHOW_PLAN=1
 SHOW_EXTRA_USAGE=1
-PLAN_TYPE=           # 빈 값이면 자동 감지
+PLAN_TYPE=           # Empty = auto-detect
 ```
 
-### Step 5: settings.json 설정
+### Step 5: Configure settings.json
 
-`~/.claude/settings.json`을 Read로 읽음:
-- `statusLine` 필드가 이미 있으면 → AskUserQuestion으로 교체 확인
-- 없거나 동의 → Edit으로 추가:
+Read `~/.claude/settings.json`:
+- If `statusLine` field exists → AskUserQuestion to confirm replacement
+- If absent or agreed → Edit to add:
   ```json
   "statusLine": {
     "type": "command",
@@ -87,31 +87,31 @@ PLAN_TYPE=           # 빈 값이면 자동 감지
     "padding": 0
   }
   ```
-- 다른 필드는 절대 수정하지 않음
+- Do not modify any other fields
 
-### Step 6: 검증
+### Step 6: Verify
 
 ```bash
 echo '{"cwd":"/tmp","model":{"display_name":"Opus"}}' | ~/.claude/statusline.sh
 ```
 
-1줄 출력에 설정한 요소가 표시되면 성공. Claude Code 재시작 시 적용.
+Success if 1-line output shows configured elements. Takes effect on Claude Code restart.
 
-## 출력 항목
+## Display Items
 
-| 아이콘 | 항목 | 설명 |
-|--------|------|------|
-| 👤 | Anthropic 계정 | ~/.claude.json의 이메일 |
-| 📁 | 작업 디렉토리 | 현재 프로젝트 경로 |
-| 🌿 | Git 브랜치 | 현재 브랜치/커밋 |
-| 🤖 | 모델명 | Claude 모델 |
-| 🧠 | 컨텍스트 잔여율 | 프로그레스바 포함 |
-| 💰 | 비용 + 번레이트 | API 사용자용 ($/h) |
-| 📋 | 플랜 타입 | Pro/Max/API |
-| ⚡ | Extra Usage | Max 플랜 전용 |
-| ⌛ | 세션 잔여시간 | ccusage 연동 |
+| Icon | Item | Description |
+|------|------|-------------|
+| 👤 | Account | Email from ~/.claude.json |
+| 📁 | Directory | Current project path |
+| 🌿 | Git branch | Current branch/commit |
+| 🤖 | Model | Claude model name |
+| 🧠 | Context remaining | With progress bar |
+| 💰 | Cost + burn rate | For API users ($/h) |
+| 📋 | Plan type | Pro/Max/API |
+| ⚡ | Extra Usage | Max plan only |
+| ⌛ | Session remaining | ccusage integration |
 
-## 설정 파일
+## Config File
 
-`~/.claude/statusline.conf`로 표시 요소를 제어합니다.
-`STATUSLINE_CONF` 환경변수로 경로를 오버라이드할 수 있습니다.
+`~/.claude/statusline.conf` controls display elements.
+`STATUSLINE_CONF` env var overrides the config path.
