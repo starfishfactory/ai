@@ -4,104 +4,76 @@ allowed-tools: Read, Bash, Task, AskUserQuestion, Glob, Edit
 argument-hint: "[create|review [PR_number]]"
 ---
 # PR: $ARGUMENTS
-
-## Argument Parsing
-Parse `$ARGUMENTS`:
-- Empty or `create` → **create mode**
-- `review` → **review mode** (auto-detect current branch PR)
-- `review <number>` → **review mode** (specified PR number)
+## Arg Parse
+- Empty / `create` → **create mode**
+- `review` → **review mode** (auto-detect PR)
+- `review <N>` → **review mode** (PR #N)
 
 ## create Mode
 
-### Phase 1: Staging + Pre-Commit Review (GC Loop, max 3 iterations)
+### Phase 1: Staging + Review (GC Loop, max 3)
 
-#### Step 1.0: Check for changes
-`git status --porcelain` → no output → check unpushed: `git rev-list --count @{u}..HEAD 2>/dev/null`
-- Unpushed exist → **skip to Phase 3**
-- No unpushed → check if PR already exists: `gh pr view --json url --jq '.url' 2>/dev/null` → exists → print PR URL → **exit**. Not exists → "No changes and no PR. Nothing to do." → **exit**
+#### 1.0 Check changes
+`git status --porcelain` → empty:
+- `git rev-list --count @{u}..HEAD 2>/dev/null` → unpushed? → **skip to Phase 3**
+- No unpushed → `gh pr view --json url --jq '.url' 2>/dev/null` → exists: print URL+exit. None: "Nothing to do."+exit
 
-#### Step 1.1: Auto-staging
-- `git add -A` — stage all changes automatically
-- Print: "Staged all changes for review."
+#### 1.1 Auto-stage
+`git add -A`. Print "Staged all changes."
 
-#### Step 1.1b: Sensitive file check
-- `git diff --cached --name-only` → scan **filenames only** (not directory paths) for patterns: `.env*`, `*.key`, `*.pem`, `credentials*`, `*secret*`, `*.p12`, `*.pfx`
-- If matched → print warning with file list → `git reset HEAD <file>` for each sensitive file → print: "Unstaged N sensitive file(s). Add to .gitignore if unintentional."
+#### 1.1b Sensitive file check
+`git diff --cached --name-only` → scan **filenames only** for: `.env*`, `*.key`, `*.pem`, `credentials*`, `*secret*`, `*.p12`, `*.pfx`
+Match → `git reset HEAD <file>` each + warn. Print "Unstaged N sensitive file(s)."
 
-#### Step 1.2: Collect review target diff
+#### 1.2 Collect diff
 Parallel:
-- `git diff --cached` → staged diff (primary review target)
-- `git diff --cached --stat` → change statistics
-- `git rev-parse --abbrev-ref HEAD` → current branch
-- Base branch detection: `git rev-parse --abbrev-ref origin/HEAD 2>/dev/null | sed 's|^origin/||'` → fallback: `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2>/dev/null` → fallback: `main`
+- `git diff --cached` → staged diff
+- `git diff --cached --stat` → stats
+- `git rev-parse --abbrev-ref HEAD` → branch
+- Base: `git rev-parse --abbrev-ref origin/HEAD 2>/dev/null | sed 's|^origin/||'` → fallback `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'` → fallback `main`
 
-If commits already ahead of base (`git rev-list --count origin/<base>..HEAD 2>/dev/null` > 0):
-- Also collect: `git diff origin/<base>..HEAD` → combine with staged diff for full-scope review
-- Print: "Review includes N prior commit(s) + staged changes."
+If `git rev-list --count origin/<base>..HEAD` > 0:
+- Also `git diff origin/<base>..HEAD` → combine for full-scope review
+- Print "Review includes N prior commit(s) + staged."
 
-Set iteration counter: N = 1.
+N = 1.
 
-#### Iteration N (N = 1, 2, 3):
+#### Iteration N (1..3):
 
-##### Step 1.N.1: Invoke pr-reviewer (Mode A)
+##### 1.N.1 Invoke pr-reviewer (Mode A)
 1. Read `agents/pr-reviewer.md`
-2. Task(subagent_type: `general-purpose`):
-   - System prompt: pr-reviewer.md content
-   - Directive: "PRE-COMMIT review (Mode A). Output JSON only."
-   - Context: branch name, diff stats, iteration N
-   - Input N=1: full diff | N>1: full diff + previous review JSON
-   - Request: "Evaluate changes per Mode A. Output JSON."
+2. Task(general-purpose): system=pr-reviewer.md, directive="PRE-COMMIT Mode A, JSON only", context=branch+stats+N, input=diff (N>1: +prev JSON)
 
-##### Step 1.N.2: Verdict handling
-Parse JSON → `score` + `verdict`:
+##### 1.N.2 Verdict
+Parse JSON → score + verdict:
+- **PASS (>=80)**: Print "Review passed (score/100)" + good_practices → **Guard**
+- **REVISE/FAIL**: Show score+breakdown+feedback. AskUserQuestion: "Pass"/"Fix"
+  - Pass → **Guard**
+  - Fix → show feedback → user fixes with Edit/Read → confirms done → `git add -A` → N++ → back to 1.2
 
-- **PASS (>= 80)**:
-  Print: "Review passed (score/100)" + good_practices summary.
-  → **Guard: Branch Ensure** (no AskUserQuestion)
-
-- **REVISE (60-79)** or **FAIL (< 60)**:
-  Display: score, category breakdown, feedback items (Critical first → Important → Nice-to-have).
-  AskUserQuestion: "Pass" / "Fix"
-  - **"Pass"** → **Guard: Branch Ensure**
-  - **"Fix"** →
-    1. Display feedback items for user reference
-    2. User and Claude fix code collaboratively (normal conversation using Edit/Read tools)
-    3. When user explicitly confirms fixes are done (e.g., "done", "ready", "re-review"):
-       - `git add -A` re-stage all changes
-       - Increment iteration counter: N = N + 1
-       - Go to **Step 1.2** (re-collect diff) → continue to **Step 1.N.1** (re-invoke reviewer)
-
-##### After 3 iterations without PASS
-Print last score + remaining issues.
-→ Auto-proceed to **Guard: Branch Ensure** with warning: "Proceeding after 3 review iterations (score: N/100)."
+##### After 3 iterations
+Print score+issues → **Guard** with warning "Proceeding after 3 iterations (score: N/100)."
 
 ### Guard: Branch Ensure (post-review, pre-commit)
-Read `commands/branch.md`. Execute **ensure mode**.
-This ensures commit happens on a feature branch, not main/master.
-Staged changes are preserved across `git checkout -b`.
+Read `commands/branch.md` → execute **ensure mode**.
+Ensures commit on feature branch. Staged changes preserved across `checkout -b`.
 
 ### Phase 2: Auto-Commit
-
 Read `skills/smart-commit/SKILL.md` + `skills/gitmoji-convention/SKILL.md`.
-Execute smart-commit **Steps 2-4 only** (Step 1 staging already completed in Phase 1).
-**Override for Step 3**: Skip AskUserQuestion for message confirmation — generate and commit without user review.
+Execute smart-commit Steps 2-4 only (Step 1 done in Phase 1). **No AskUserQuestion** for message.
 
-#### Step 2.1: Lint (smart-commit Step 2)
-- `package.json` has `scripts.lint` → `npm run lint`
-- `Makefile` has `lint` target → `make lint`
-- Neither → skip
-- Failure → "Fix lint errors and retry." → **exit**
+#### 2.1 Lint
+`package.json` has `scripts.lint` → `npm run lint`. `Makefile` has `lint` → `make lint`. Neither → skip. Fail → exit.
 
-#### Step 2.2: Commit message generation (smart-commit Step 3, no AskUserQuestion)
-1. **Type**: gitmoji-convention priority (current branch name post-ensure → diff pattern). If ambiguous → use branch type.
-2. **Gitmoji**: map type → emoji
-3. **Scope**: common parent directory of changed files (optional)
-4. **Subject**: imperative summary, max 50 chars
-5. **Body**: list major changes when 3+ files changed
-6. **Format**: `<gitmoji> <type>(<scope>): <subject>`
-- Print generated message — **no AskUserQuestion** (override smart-commit Step 3)
+#### 2.2 Message gen
+1. Type: gitmoji-convention (branch name post-ensure → diff pattern). Ambiguous → branch type
+2. Gitmoji: type → emoji
+3. Scope: common parent dir (optional)
+4. Subject: imperative, max 50 chars
+5. Body: list changes if 3+ files
+6. Format: `<gitmoji> <type>(<scope>): <subject>`
 
-#### Step 2.3: Commit execution (smart-commit Step 4)
+#### 2.3 Commit
 ```
 git commit -m "$(cat <<'EOF'
 <gitmoji> <type>(<scope>): <subject>
@@ -112,80 +84,56 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```
-- Failure → show error → **exit**
-- Success → `git log -1 --oneline` to display result
+Fail → error+exit. Ok → `git log -1 --oneline`
 
 ### Phase 3: Push
-- `git rev-list --count @{u}..HEAD 2>/dev/null || echo "no-upstream"` → check unpushed
-- Unpushed or no-upstream → `git push -u origin $(git rev-parse --abbrev-ref HEAD)`
-- Push failure:
-  - Rejection (non-fast-forward) → "Run `git pull --rebase` and retry." → **exit**
-  - Other → show error → **exit**
+`git rev-list --count @{u}..HEAD 2>/dev/null || echo "no-upstream"` → unpushed/no-upstream: `git push -u origin $(git rev-parse --abbrev-ref HEAD)`
+Reject(non-ff) → "Run `git pull --rebase`"+exit. Other → error+exit.
 
 ### Phase 4: PR Creation
 
-#### Step 4.0: Check existing PR
-- `gh pr view --json number,url 2>/dev/null` → if PR exists → print "PR already exists: <url>" → **exit**
+#### 4.0 Existing PR check
+`gh pr view --json number,url 2>/dev/null` → exists: print URL+exit
 
-#### Step 4.1: Collect PR metadata (parallel)
-- `git rev-parse --abbrev-ref HEAD` → current branch
-- Base branch: `git rev-parse --abbrev-ref origin/HEAD 2>/dev/null | sed 's|^origin/||'` → fallback: `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2>/dev/null` → fallback: `main`
-- `git log origin/<base>..HEAD --oneline` → commit history
-- `git diff origin/<base>..HEAD --stat` → diff statistics
-- Branch regex `/(\d+)-/` → issue number → `gh issue view <number> --json title,body` (failure → ignore)
+#### 4.1 Collect metadata (parallel)
+- Branch: `git rev-parse --abbrev-ref HEAD`
+- Base: `git rev-parse --abbrev-ref origin/HEAD 2>/dev/null | sed 's|^origin/||'` → fallback `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'` → `main`
+- `git log origin/<base>..HEAD --oneline`
+- `git diff origin/<base>..HEAD --stat`
+- Branch regex `/(\d+)-/` → issue# → `gh issue view <N> --json title,body` (fail → ignore)
 
-#### Step 4.2: PR title
-- 1 commit → commit subject (remove gitmoji, max 70 chars)
-- Multiple commits → branch name → kebab-to-space + capitalize first letter (max 70 chars)
+#### 4.2 Title
+1 commit → subject (no gitmoji, max 70). Multiple → branch name → kebab-to-space, capitalize.
 
-#### Step 4.3: PR body generation
-Read `skills/pr-template/SKILL.md`.
+#### 4.3 Body
+Read `skills/pr-template/SKILL.md`. Detect project template → found: fill per skill mapping / not: built-in.
+Auto-fill: Summary, Changes (top 5), Test Plan, Related Issue (`Closes #N`), Breaking Changes.
+Footer: `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
+No AskUserQuestion.
 
-Detect project PR template (search order per pr-template skill):
-- Found → auto-fill matching sections per skill mapping
-- Not found → use built-in template
-
-Auto-fill: Summary (commit history), Changes (diff stat top 5), Test Plan (test file detection), Related Issue (`Closes #N`), Breaking Changes.
-Append footer: `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
-
-Print generated title + body — **no AskUserQuestion**
-
-#### Step 4.4: Create PR
+#### 4.4 Create
 ```bash
 gh pr create --base <base> --title "<title>" --body "$(cat <<'EOF'
 <body>
 EOF
 )"
 ```
-- Success → print PR URL
-- Failure → detect cause:
-  - `gh: command not found` → "gh CLI required. Install: `brew install gh`"
-  - `not logged` / `auth` → "Run `gh auth login` first."
-  - Other → show error + "Try `gh pr create --web` for browser-based creation."
+Ok → print URL. Fail: `gh: command not found` → "Install: `brew install gh`" / `not logged`|`auth` → "`gh auth login`" / other → error + "Try `gh pr create --web`"
 
 ---
 
 ## review Mode
 
 ### Phase 1: Identify PR
-- `$ARGUMENTS` has number → use it
-- Otherwise → `gh pr view --json number --jq '.number'`
-- Failure → "No PR found. Specify PR number." → **exit**
+`$ARGUMENTS` has number → use it. Else `gh pr view --json number --jq '.number'`. Fail → "No PR found."+exit
 
-### Phase 2: Collect PR Info + Diff
-`gh pr view <number> --json title,body,files,additions,deletions` + `gh pr diff <number>`
+### Phase 2: Collect
+`gh pr view <N> --json title,body,files,additions,deletions` + `gh pr diff <N>`
 
-### Phase 3: Invoke pr-reviewer Agent
+### Phase 3: pr-reviewer (Mode B)
 1. Read `agents/pr-reviewer.md`
-2. Task(subagent_type: `general-purpose`):
-   - System prompt: pr-reviewer.md content
-   - Directive: "PR review (Mode B). Output Markdown."
-   - Context: PR metadata (title, body, files, additions, deletions)
-   - Input: `gh pr diff` output
-   - Request: "Analyze per Mode B. Produce Markdown feedback."
+2. Task(general-purpose): system=pr-reviewer.md, directive="PR review Mode B, Markdown", context=PR metadata, input=diff
 
-### Phase 4: Output Results
-- Display review feedback
-- AskUserQuestion: "Post review comment to PR?" / "Skip"
-  - Post → `gh pr comment <number> --body "<review markdown>"`
-  - Skip → end
+### Phase 4: Output
+Display feedback. AskUserQuestion: "Post comment?"/"Skip"
+Post → `gh pr comment <N> --body "<markdown>"` / Skip → end
