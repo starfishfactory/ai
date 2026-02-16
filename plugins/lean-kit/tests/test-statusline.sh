@@ -279,6 +279,94 @@ out=$(HOME="$MOCK_HOME_MAX" STATUSLINE_CONF="$CONF_ALL_ON" run_statusline "$FULL
 line_count=$(echo "$out" | wc -l | tr -d ' ')
 assert_equals "모든 요소 활성화 시 1줄 출력" "$line_count" "1"
 
+# ─────────────────────────────────────────────
+# 그룹 8: jq 없는 환경에서 Plan 감지 (bash fallback)
+# ─────────────────────────────────────────────
+printf "\n${CYAN}${BOLD}[그룹 8] jq 없는 환경에서 Plan 감지${RESET}\n"
+
+# jq를 PATH에서 제거하는 헬퍼
+run_statusline_nojq() {
+  local json="$1"
+  shift
+  # PATH에서 jq가 있는 디렉토리를 제거하지 않고, 존재하지 않는 jq로 오버라이드
+  # PATH를 최소한으로 제한하여 jq 접근 차단
+  local restricted_path="/usr/bin:/bin:/usr/sbin:/sbin"
+  # jq가 /usr/bin이나 /bin에 있을 수 있으므로 임시 디렉토리에 가짜 PATH 구성
+  local fake_bin="$TEST_TMP/fake-bin"
+  mkdir -p "$fake_bin"
+  # 필요한 명령어만 심볼릭 링크 (jq 제외)
+  for cmd in bash grep sed head cat date stat tr wc awk printf mkdir rmdir rm cp echo chmod; do
+    local cmd_path=$(command -v "$cmd" 2>/dev/null)
+    [ -n "$cmd_path" ] && [ ! -e "$fake_bin/$cmd" ] && ln -sf "$cmd_path" "$fake_bin/$cmd" 2>/dev/null
+  done
+  # git도 링크 (git branch 표시용)
+  local git_path=$(command -v git 2>/dev/null)
+  [ -n "$git_path" ] && [ ! -e "$fake_bin/git" ] && ln -sf "$git_path" "$fake_bin/$cmd" 2>/dev/null
+  # python3 링크 (to_epoch fallback)
+  local py_path=$(command -v python3 2>/dev/null)
+  [ -n "$py_path" ] && [ ! -e "$fake_bin/python3" ] && ln -sf "$py_path" "$fake_bin/python3" 2>/dev/null
+
+  env PATH="$fake_bin" "$@" bash "$SCRIPT_UNDER_TEST" <<< "$json" 2>/dev/null || true
+}
+
+# 8-1: jq 없이 Max 감지 (minified JSON)
+MOCK_HOME_NOJQ_MAX="$TEST_TMP/home-nojq-max"
+mkdir -p "$MOCK_HOME_NOJQ_MAX"
+cat > "$MOCK_HOME_NOJQ_MAX/.claude.json" << 'CJSON'
+{"oauthAccount":{"emailAddress":"max@example.com","billingType":"stripe_subscription","hasExtraUsageEnabled":true}}
+CJSON
+out=$(run_statusline_nojq "$FULL_JSON" HOME="$MOCK_HOME_NOJQ_MAX" STATUSLINE_CONF="$TEST_TMP/nonexistent.conf")
+assert_contains "jq 없이 Max 플랜 감지" "$out" "Max"
+
+# 8-2: jq 없이 Pro 감지
+MOCK_HOME_NOJQ_PRO="$TEST_TMP/home-nojq-pro"
+mkdir -p "$MOCK_HOME_NOJQ_PRO"
+cat > "$MOCK_HOME_NOJQ_PRO/.claude.json" << 'CJSON'
+{"oauthAccount":{"emailAddress":"pro@example.com","billingType":"stripe_subscription","hasExtraUsageEnabled":false}}
+CJSON
+out=$(run_statusline_nojq "$FULL_JSON" HOME="$MOCK_HOME_NOJQ_PRO" STATUSLINE_CONF="$TEST_TMP/nonexistent.conf")
+assert_contains "jq 없이 Pro 플랜 감지" "$out" "Pro"
+
+# 8-3: jq 없이 Extra Usage 표시
+out=$(run_statusline_nojq "$FULL_JSON" HOME="$MOCK_HOME_NOJQ_MAX" STATUSLINE_CONF="$TEST_TMP/nonexistent.conf")
+assert_contains "jq 없이 Extra Usage 표시" "$out" "Extra"
+
+# 8-4: jq 없이 pretty-printed JSON에서 Max 감지
+MOCK_HOME_NOJQ_PRETTY="$TEST_TMP/home-nojq-pretty"
+mkdir -p "$MOCK_HOME_NOJQ_PRETTY"
+cat > "$MOCK_HOME_NOJQ_PRETTY/.claude.json" << 'CJSON'
+{
+  "oauthAccount": {
+    "emailAddress": "max@example.com",
+    "billingType": "stripe_subscription",
+    "hasExtraUsageEnabled": true
+  }
+}
+CJSON
+out=$(run_statusline_nojq "$FULL_JSON" HOME="$MOCK_HOME_NOJQ_PRETTY" STATUSLINE_CONF="$TEST_TMP/nonexistent.conf")
+assert_contains "jq 없이 pretty-printed JSON에서 Max 감지" "$out" "Max"
+
+# 8-5: jq 없이 API 감지 (oauthAccount 없음)
+MOCK_HOME_NOJQ_API="$TEST_TMP/home-nojq-api"
+mkdir -p "$MOCK_HOME_NOJQ_API"
+echo '{}' > "$MOCK_HOME_NOJQ_API/.claude.json"
+out=$(run_statusline_nojq "$FULL_JSON" HOME="$MOCK_HOME_NOJQ_API" STATUSLINE_CONF="$TEST_TMP/nonexistent.conf")
+assert_contains "jq 없이 API 플랜 감지" "$out" "API"
+
+# ─────────────────────────────────────────────
+# 그룹 9: Graceful Degradation
+# ─────────────────────────────────────────────
+printf "\n${CYAN}${BOLD}[그룹 9] Graceful Degradation${RESET}\n"
+
+# 9-1: jq/ccusage 없어도 크래시 없이 기본 표시
+out=$(run_statusline_nojq '{"cwd":"/tmp/test-dir","model":{"display_name":"Opus"}}' HOME="$TEST_TMP/home-empty" STATUSLINE_CONF="$TEST_TMP/nonexistent.conf")
+assert_contains "jq 없어도 디렉토리 표시" "$out" "test-dir"
+assert_contains "jq 없어도 모델명 표시" "$out" "Opus"
+
+# 9-2: jq 없을 때 ⌛ 세션 미표시 (ccusage+jq 필요)
+out=$(run_statusline_nojq "$FULL_JSON" HOME="$MOCK_HOME_NOJQ_MAX" STATUSLINE_CONF="$TEST_TMP/nonexistent.conf")
+assert_not_contains "jq 없을 때 ⌛ 미표시" "$out" "⌛"
+
 # === 결과 요약 ===
 printf "\n${BOLD}════════════════════════════════════════${RESET}\n"
 printf "${BOLD}결과: ${GREEN}%d 통과${RESET} / ${RED}%d 실패${RESET} / 총 %d개\n" "$PASS" "$FAIL" "$TOTAL"

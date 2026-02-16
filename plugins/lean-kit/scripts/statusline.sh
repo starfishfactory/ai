@@ -1,7 +1,7 @@
 #!/bin/bash
 # Custom Claude Code statusline (1-line compact)
 # Features: account, directory, git, model, context, burnrate, session
-STATUSLINE_VERSION="3.0.0"
+STATUSLINE_VERSION="3.1.0"
 
 input=$(cat)
 
@@ -124,7 +124,7 @@ extract_json_bool() {
   local key="$2"
   local default="${3:-false}"
   local field="${key##*.}"
-  local value=$(echo "$json" | grep -o "\"${field}\"[[:space:]]*:[[:space:]]*\(true\|false\)" | head -1 | sed 's/.*:[[:space:]]*\(true\|false\).*/\1/')
+  local value=$(echo "$json" | grep -oE "\"${field}\"[[:space:]]*:[[:space:]]*(true|false)" | head -1 | sed -E 's/.*:[[:space:]]*(true|false).*/\1/')
   if [ -n "$value" ]; then
     echo "$value"
   else

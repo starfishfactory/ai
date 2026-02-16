@@ -19,6 +19,17 @@ Copy `scripts/statusline.sh` from this plugin to `~/.claude/statusline.sh`.
    cp <absolute_path> ~/.claude/statusline.sh && chmod +x ~/.claude/statusline.sh
    ```
 
+### Step 1.5: Check Dependencies
+
+#### Required: jq
+- `command -v jq` → OK/MISSING
+- MISSING → AskUserQuestion: install via `brew install jq`? or skip (some features disabled: context window, cost display)
+
+#### Optional: ccusage (⌛ session time)
+- `command -v ccusage` → OK/MISSING
+- MISSING + Pro/Max plan → AskUserQuestion: install via `npm install -g ccusage`? (recommended for session tracking)
+- MISSING + API plan → skip silently
+
 ### Step 2: Auto-detect Plan
 
 Detect plan type from `~/.claude.json`:
