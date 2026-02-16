@@ -384,7 +384,7 @@ if [ "$SHOW_PLAN" -eq 1 ] && [ -n "$detected_plan" ]; then
 fi
 # Extra Usage
 if [ "$SHOW_EXTRA_USAGE" -eq 1 ] && [ "$extra_usage_enabled" = "true" ] && [ "$detected_plan" = "Max" ]; then
-  printf '%s⚡%sExtra%s' "$sep" "$(extra_color)" "$(rst)"
+  printf '%s⚡ %sExtra%s' "$sep" "$(extra_color)" "$(rst)"
   sep="  "
 fi
 # Session remaining time
