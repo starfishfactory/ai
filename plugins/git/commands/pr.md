@@ -1,6 +1,6 @@
 ---
 description: Automated PR creation with pre-commit review and code review
-allowed-tools: Read, Bash, Task, AskUserQuestion, Glob, Edit
+allowed-tools: Read, Bash, AskUserQuestion, Glob, Grep, Edit
 argument-hint: "[create|review [PR_number]]"
 ---
 # PR: $ARGUMENTS
@@ -40,16 +40,16 @@ N = 1.
 
 #### Iteration N (1..3):
 
-##### 1.N.1 Invoke pr-reviewer (Mode A)
-1. Read `agents/pr-reviewer.md`
-2. Task(general-purpose): system=pr-reviewer.md, directive="PRE-COMMIT Mode A, JSON only", context=branch+stats+N, input=diff (N>1: +prev JSON)
+##### 1.N.1 Invoke review (diff mode, inline)
+1. Read `commands/review.md` + `skills/review-criteria/SKILL.md`
+2. Execute review.md diff mode inline. Input=staged diff (N>1: +prev review JSON for iteration context)
 
 ##### 1.N.2 Verdict
-Parse JSON → score + verdict:
+Parse review JSON → score + verdict:
 - **PASS (>=80)**: Print "Review passed (score/100)" + good_practices → **Guard**
-- **REVISE/FAIL**: Show score+breakdown+feedback. AskUserQuestion: "Pass"/"Fix"
+- **REVISE/FAIL**: Show score+breakdown+high-confidence feedback (medium/low collapsed). AskUserQuestion: "Pass"/"Fix"
   - Pass → **Guard**
-  - Fix → show feedback → user fixes with Edit/Read → confirms done → `git add -A` → N++ → back to 1.2
+  - Fix → show actionable feedback → user fixes with Edit/Read → confirms done → `git add -A` → N++ → back to 1.2 (pass prev JSON for iteration context)
 
 ##### After 3 iterations
 Print score+issues → **Guard** with warning "Proceeding after 3 iterations (score: N/100)."
@@ -130,9 +130,9 @@ Ok → print URL. Fail: `gh: command not found` → "Install: `brew install gh`"
 ### Phase 2: Collect
 `gh pr view <N> --json title,body,files,additions,deletions` + `gh pr diff <N>`
 
-### Phase 3: pr-reviewer (Mode B)
-1. Read `agents/pr-reviewer.md`
-2. Task(general-purpose): system=pr-reviewer.md, directive="PR review Mode B, Markdown", context=PR metadata, input=diff
+### Phase 3: Review (pr mode, inline)
+1. Read `commands/review.md` + `skills/review-criteria/SKILL.md`
+2. Execute review.md pr mode inline. Input=PR diff + metadata
 
 ### Phase 4: Output
 Display feedback. AskUserQuestion: "Post comment?"/"Skip"

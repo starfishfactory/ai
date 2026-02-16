@@ -1,11 +1,12 @@
 # PR Flow Test Scenarios
 
-Verify `pr.md` create mode redesign: AskUserQuestion 4+→0-2, pre-commit review GC loop, branch ensure, auto-commit/push/PR.
+Verify `pr.md` create mode redesign: AskUserQuestion 4+→0-2, pre-commit review GC loop (via `review.md` inline delegation), branch ensure, auto-commit/push/PR.
 
 ## Preconditions (all scenarios)
 - Git repository with remote origin
 - Any branch (Guard: Branch Ensure handles main/master → auto-branch after review)
 - `plugins/git/commands/pr.md` loaded
+- `plugins/git/commands/review.md` + `plugins/git/skills/review-criteria/SKILL.md` accessible
 
 ---
 
@@ -19,8 +20,8 @@ Verify `pr.md` create mode redesign: AskUserQuestion 4+→0-2, pre-commit review
    - `git add -A` auto-stages (no AskUserQuestion)
    - Sensitive file check runs (no matches → proceed)
    - `git diff --cached` collected for review
-   - pr-reviewer agent invoked (Mode A, JSON)
-   - Review result displayed (score + feedback)
+   - `review.md` diff mode executed inline (via review-criteria SKILL, JSON output)
+   - Review result displayed (score + feedback + confidence levels)
    - **AskUserQuestion**: "Pass" / "Fix" (only user interaction in review)
    - User selects "Pass"
 2. Guard: Branch Ensure (리뷰 후, 커밋 전):
@@ -63,7 +64,7 @@ Verify `pr.md` create mode redesign: AskUserQuestion 4+→0-2, pre-commit review
 
 **Verify**:
 - [ ] No AskUserQuestion at all
-- [ ] No pr-reviewer invocation
+- [ ] No review.md invocation
 - [ ] Phase 3 push includes all unpushed commits
 - [ ] PR title derived from branch name (multiple commits)
 
@@ -84,7 +85,7 @@ Verify `pr.md` create mode redesign: AskUserQuestion 4+→0-2, pre-commit review
    - When fixes confirmed: `git add -A` re-stages, iteration counter increments
 3. Phase 1 iteration 2:
    - Re-collect diff (Step 1.2)
-   - Re-review with updated diff + previous review JSON
+   - Re-review with updated diff + previous review JSON (resolved_from_previous tracking)
    - Score 85 (PASS)
    - Display "Review passed (85/100)"
 4. Phase 2-4: commit → push → PR (normal flow)
@@ -148,7 +149,7 @@ Verify `pr.md` create mode redesign: AskUserQuestion 4+→0-2, pre-commit review
    - `git status --porcelain` detects uncommitted changes
    - `git add -A` auto-stages
    - Review diff includes: `git diff --cached` (uncommitted) + `git diff origin/<base>..HEAD` (committed)
-   - pr-reviewer reviews full scope
+   - review.md reviews full scope
 2. Phase 2: new commit for staged changes
 3. Phase 3: push all commits (previous + new)
 4. Phase 4: PR covers all commits
@@ -165,14 +166,14 @@ Verify `pr.md` create mode redesign: AskUserQuestion 4+→0-2, pre-commit review
 **Given**: `feat/existing` branch, PR #42 already exists
 **When**: `/git:pr review 42`
 **Then**:
-1. review mode Phase 1-4 executes as v1.0.0
-2. pr-reviewer invoked in Mode B (Markdown output)
-3. Review feedback displayed
-4. AskUserQuestion: "Post review comment to PR?" / "Skip" (preserved from v1.0.0)
+1. review mode Phase 1-4 executes
+2. `review.md` pr mode executed inline (Markdown output via review-criteria SKILL)
+3. Review feedback displayed (with confidence levels)
+4. AskUserQuestion: "Post review comment to PR?" / "Skip"
 
 **Verify**:
-- [ ] review mode logic preserved from v1.0.0
-- [ ] Mode B output format unchanged
+- [ ] review mode logic uses review.md pr mode (inline delegation)
+- [ ] Markdown output format with confidence levels
 - [ ] AskUserQuestion for comment posting retained
 - [ ] No interference from create mode changes
 
@@ -186,7 +187,7 @@ Verify `pr.md` create mode redesign: AskUserQuestion 4+→0-2, pre-commit review
 1. Phase 1 실행 (main에서도 정상 동작):
    - `git add -A` auto-stage
    - Sensitive file check
-   - pr-reviewer invoked → score 85 (PASS)
+   - review.md invoked → score 85 (PASS)
    - "Review passed (85/100)" 출력
 2. Guard: Branch Ensure (리뷰 통과 후, 커밋 전):
    - `git rev-parse --abbrev-ref HEAD` → `main` 감지
@@ -255,7 +256,7 @@ Verify `pr.md` create mode redesign: AskUserQuestion 4+→0-2, pre-commit review
 **Then**:
 1. Phase 1 실행:
    - `git add -A` auto-stage
-   - pr-reviewer invoked → score 82 (PASS)
+   - review.md invoked → score 82 (PASS)
    - "Review passed (82/100)" 출력
 2. Guard: Branch Ensure (리뷰 통과 후, 커밋 전):
    - `git rev-parse --abbrev-ref HEAD` → `feat/old-feature` (피처 브랜치)
@@ -284,15 +285,20 @@ Verify `pr.md` create mode redesign: AskUserQuestion 4+→0-2, pre-commit review
 
 ## Acceptance Criteria (global)
 
-| Metric | v1.0.0 | v1.1.0 Target |
-|--------|--------|---------------|
-| AskUserQuestion (create, happy path PASS, main) | 4+ | **0** (auto-branch, no AskUserQ) |
-| AskUserQuestion (create, happy path PASS, feature) | 4+ | **1** (Continue/New branch) |
-| AskUserQuestion (create, happy path REVISE/FAIL) | 4+ | **2** (Pass/Fix + Continue/New branch) |
-| AskUserQuestion (create, fix loop) | 6+ | 1 per review iter + 1 branch ensure |
-| Pre-commit review | Yes (GC max 3) | Yes (GC max 3) |
-| Phase 0 pre-check | Yes | No (lazy fallback) |
-| Branch ensure (post-review) | No | Yes (auto-branch from main, AskUserQ on feature) |
-| Sensitive file protection | No | Yes (auto-unstage) |
-| PR duplicate check | No | Yes (existing PR detection) |
-| review mode changes | N/A | Preserved (AskUserQuestion for comment posting retained) |
+| Metric | v1.0.0 | v1.1.0 | v1.2.0 Target |
+|--------|--------|--------|---------------|
+| AskUserQuestion (create, happy path PASS, main) | 4+ | **0** | **0** (unchanged) |
+| AskUserQuestion (create, happy path PASS, feature) | 4+ | **1** | **1** (unchanged) |
+| AskUserQuestion (create, happy path REVISE/FAIL) | 4+ | **2** | **2** (unchanged) |
+| AskUserQuestion (create, fix loop) | 6+ | 1/iter + 1 | 1/iter + 1 (unchanged) |
+| Pre-commit review | GC max 3 | GC max 3 | GC max 3 (review.md inline) |
+| Review invocation | Task(pr-reviewer) | Task(pr-reviewer) | **Inline review.md** (no Task) |
+| Confidence filtering | No | No | **Yes** (high/medium/low) |
+| Actionable suggestions | Partial | Partial | **Enforced** (every issue) |
+| Iteration context | No | No | **Yes** (resolved_from_previous) |
+| Standalone review | No | No | **Yes** (`/git:review`) |
+| Phase 0 pre-check | Yes | No | No |
+| Branch ensure | No | Yes | Yes |
+| Sensitive file protection | No | Yes | Yes |
+| PR duplicate check | No | Yes | Yes |
+| review mode changes | N/A | Preserved | Uses review.md pr mode |
