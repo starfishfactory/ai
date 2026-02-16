@@ -52,6 +52,8 @@ Per `skills/review-criteria/SKILL.md` JSON schema:
 gh pr view <N> --json title,body,files,additions,deletions
 gh pr diff <N>
 ```
+Either fails → "Cannot fetch PR #N. Verify: `gh pr view <N>`" + exit.
+Empty diff → "PR #N has no file changes." + exit.
 
 ### Step 3: Assess scope
 Same as diff mode Step 2.

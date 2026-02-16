@@ -50,19 +50,30 @@ user-invocable: false
 
 ## Confidence Levels
 
-Every feedback item MUST include confidence:
+| Level | Criteria | Score impact |
+|-------|----------|-------------|
+| **high** | Can cite exact code line proving the issue. Fix is deterministic | Deducted |
+| **medium** | Likely issue but depends on runtime context or external state | Shown, no deduction |
+| **low** | Stylistic, speculative, or uncertain. "I'm not sure" is valid | Collapsed, no deduction |
 
-| Level | Meaning | Display |
-|-------|---------|---------|
-| **high** | Definite issue, verifiable from code | Primary display |
-| **medium** | Likely issue, needs context to confirm | Secondary display |
-| **low** | Possible issue, stylistic or speculative | Collapsed/dimmed |
+Downgrade triggers (never assign `high` if any apply):
+- Cannot point to specific line → max `medium`
+- Depends on config/env not visible in diff → max `medium`
+- "Might" / "could" / "possibly" reasoning → `low`
+- Unfamiliar language/framework patterns → `low`
 
-Rule: Only `high` confidence items contribute to score deductions. `medium`/`low` items appear in feedback but do NOT affect score.
+## Auto-Filter Rules
 
-## Actionable Suggestion Rule
+Skip — do NOT report:
+1. **Pre-existing**: issue in unchanged lines (before this diff)
+2. **Lint-detectable**: formatting, unused imports, trailing whitespace — skip if project has linter
+3. **Speculative**: "might cause issues" without concrete evidence in current diff
 
-Every feedback item MUST include a specific code fix suggestion. Abstract advice ("consider refactoring", "improve naming") is NOT acceptable. Provide exact code change or clear before/after.
+When uncertain → assign `low`, never `high`.
+
+## Suggestion Rule
+
+Concrete code fix per item — no abstract advice. Provide before/after or exact change.
 
 ## Iteration Context
 
@@ -140,12 +151,12 @@ Output JSON only — no explanatory text.
 - Important Issues: minor severity + high confidence
 - Nice-to-have: medium/low confidence (any severity)
 
-## Review Principles
+## Principles
 
-1. **Constructive**: solutions, not just problems
-2. **Prioritized**: critical-first ordering
-3. **Balanced**: acknowledge good parts
-4. **Actionable**: concrete code fix per issue — no abstract advice
-5. **Context-aware**: understand scope; out-of-scope → Nice-to-have
-6. **Confidence-honest**: only deduct for verified issues (high confidence)
-7. **Iteration-aware**: track previous feedback resolution on re-reviews
+1. Solutions over problems
+2. Critical-first order
+3. Acknowledge good patterns
+4. Concrete fix per issue
+5. Out-of-scope → Nice-to-have
+6. Deduct verified only (high)
+7. Track previous resolution

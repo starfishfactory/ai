@@ -144,6 +144,46 @@
 
 ---
 
+## Scenario 5: Auto-filter로 false positive 방지
+
+**Given**: `feat/add-feature` branch, staged changes exist, diff 외 라인에 기존 이슈 존재 (예: 변경하지 않은 파일의 미사용 import)
+**When**: `/git:review`
+**Then**:
+1. diff 모드 실행
+2. 리뷰 평가 시 Auto-Filter Rules 적용:
+   - Pre-existing: diff에 포함되지 않은 라인의 이슈 스킵
+   - Lint-detectable: 프로젝트에 linter 있으면 포매팅/unused import 스킵
+   - Speculative: 구체적 증거 없는 "might cause" 이슈 스킵
+3. JSON 출력의 feedback 배열에 필터된 항목 미포함
+
+**Verify**:
+- [ ] feedback이 모두 diff 범위 내 라인만 참조
+- [ ] lint가 잡을 수 있는 이슈(포매팅, unused import 등) 미포함 (linter 존재 시)
+- [ ] "might cause issues" 류의 근거 없는 추측 이슈 미포함
+
+---
+
+## Scenario 6: Confidence downgrade 검증
+
+**Given**: `feat/api-wrapper` branch, staged diff에 외부 라이브러리 래퍼 코드 (해당 라이브러리 문서 없이 정확성 판단 불가)
+**When**: `/git:review`
+**Then**:
+1. diff 모드 실행
+2. Confidence downgrade trigger 적용:
+   - 특정 라인을 인용할 수 없으면 → max `medium`
+   - config/env에 의존하면 → max `medium`
+   - "might"/"could"/"possibly" 추론 → `low`
+   - 익숙하지 않은 프레임워크 패턴 → `low`
+3. JSON 출력에서 해당 이슈가 `high`가 아님
+4. `score` 계산에 medium/low 항목 감점 미반영
+
+**Verify**:
+- [ ] downgrade trigger 해당 이슈가 `high` confidence가 아님
+- [ ] `score`에 medium/low confidence 이슈의 감점 미반영
+- [ ] feedback 항목의 `deduction` 값이 medium/low인 경우 0
+
+---
+
 ## Acceptance Criteria
 
 | Metric | Expected |
@@ -155,3 +195,5 @@
 | empty diff | early exit + 메시지 |
 | 재리뷰 | resolved_from_previous 필드 |
 | allowed-tools | Read, Bash, Glob, Grep (Task 없음) |
+| auto-filter | pre-existing + lint 이슈 미포함 |
+| confidence downgrade | 불확실 이슈에 low 할당 |
