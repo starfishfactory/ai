@@ -55,6 +55,33 @@ if ! command -v jq &> /dev/null; then
   fi
 fi
 
+# === ccusage optional dependency check ===
+if ! command -v ccusage &> /dev/null; then
+  # Detect plan type to decide recommendation
+  _plan_hint=""
+  if [ -f "$HOME/.claude.json" ] && command -v jq &> /dev/null; then
+    _billing=$(jq -r '.oauthAccount.billingType // ""' "$HOME/.claude.json" 2>/dev/null)
+    [ "$_billing" = "stripe_subscription" ] && _plan_hint="subscription"
+  fi
+
+  if [ "$_plan_hint" = "subscription" ]; then
+    warn "ccusage is not installed (optional: enables ⌛ session time tracking)"
+    if [ -t 0 ] && command -v npm &> /dev/null; then
+      read -rp "[lean-kit] Install ccusage via npm? (y/N) " cc_answer || cc_answer="n"
+      if [[ "${cc_answer:-n}" =~ ^[Yy]$ ]]; then
+        info "Installing ccusage..."
+        if npm install -g ccusage; then
+          info "ccusage installed successfully"
+        else
+          warn "ccusage installation failed. Install manually: npm install -g ccusage"
+        fi
+      fi
+    elif [ -t 0 ]; then
+      warn "Install manually for session tracking: npm install -g ccusage"
+    fi
+  fi
+fi
+
 # === Path setup ===
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"

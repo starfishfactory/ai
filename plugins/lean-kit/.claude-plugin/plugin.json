@@ -1,6 +1,6 @@
 {
   "name": "lean-kit",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Lightweight essential utilities - macOS notifications + permission auto-approval + 1-line compact statusline",
   "author": { "name": "starfishfactory" },
   "license": "MIT",
