@@ -61,6 +61,37 @@ detect_plan() {
   echo "$detected"
 }
 
+# === 의존성 자동설치 ===
+ensure_deps() {
+  local changed=0
+
+  if ! command -v jq >/dev/null 2>&1; then
+    info "jq 설치 중 (필수: context, cost, settings.json 편집)..."
+    if command -v brew >/dev/null 2>&1; then
+      brew install jq || { error "jq 설치 실패. 수동 설치: brew install jq"; exit 1; }
+      changed=1
+    else
+      error "jq 필수인데 brew가 없습니다."
+      error "Homebrew 설치: /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+      error "그 후: brew install jq"
+      exit 1
+    fi
+  fi
+
+  if ! command -v ccusage >/dev/null 2>&1; then
+    info "ccusage 설치 중 (⌛ 세션 추적)..."
+    if command -v npm >/dev/null 2>&1; then
+      npm install -g ccusage || warn "ccusage 설치 실패. 수동: npm install -g ccusage"
+      changed=1
+    else
+      warn "ccusage 설치 불가 (npm 미설치). ⌛ 세션 추적 비활성."
+      warn "수동 설치: npm install -g ccusage"
+    fi
+  fi
+
+  [ "$changed" -eq 1 ] && info "의존성 설치 완료"
+}
+
 # === 인자 파싱 ===
 MODE=""
 PLAN=""
@@ -90,6 +121,11 @@ if [ "$MODE" = "detect" ]; then
   has_ccusage=0; command -v ccusage >/dev/null 2>&1 && has_ccusage=1
   echo "PLAN=${plan:-unknown} JQ=$has_jq CCUSAGE=$has_ccusage"
   exit 0
+fi
+
+# === 의존성 자동설치 ===
+if [ "$NO_DEPS" -eq 0 ] && [ "$DRY_RUN" -eq 0 ]; then
+  ensure_deps
 fi
 
 # === Plan 결정 ===
@@ -200,28 +236,6 @@ if [ "$MODE" = "interactive" ]; then
   SHOW_MODEL=${VALS[3]}; SHOW_CONTEXT=${VALS[4]}; SHOW_COST=${VALS[5]}
   SHOW_PLAN=${VALS[6]}; SHOW_EXTRA_USAGE=${VALS[7]}; SHOW_SESSION=${VALS[8]}
   echo ""
-fi
-
-# === Dependency check ===
-if [ "$NO_DEPS" -eq 0 ] && [ "$DRY_RUN" -eq 0 ] && [ "$MODE" = "interactive" ]; then
-  if ! command -v jq >/dev/null 2>&1; then
-    warn "jq 미설치 (일부 기능 제한: context, cost)"
-    if [ -t 0 ] && command -v brew >/dev/null 2>&1; then
-      read -rp "[lean-kit] brew install jq 실행? (Y/n): " jq_answer
-      if [[ "${jq_answer:-Y}" =~ ^[Yy]$ ]]; then
-        brew install jq
-      fi
-    fi
-  fi
-  if ! command -v ccusage >/dev/null 2>&1 && [[ "$PLAN" =~ ^(Pro|Max)$ ]]; then
-    warn "ccusage 미설치 (⌛ 세션 추적 비활성)"
-    if [ -t 0 ] && command -v npm >/dev/null 2>&1; then
-      read -rp "[lean-kit] npm install -g ccusage 실행? (y/N): " cc_answer
-      if [[ "${cc_answer:-n}" =~ ^[Yy]$ ]]; then
-        npm install -g ccusage
-      fi
-    fi
-  fi
 fi
 
 # === Dry-run ===
