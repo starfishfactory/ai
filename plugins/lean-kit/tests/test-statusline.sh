@@ -367,6 +367,98 @@ assert_contains "jq 없어도 모델명 표시" "$out" "Opus"
 out=$(run_statusline_nojq "$FULL_JSON" HOME="$MOCK_HOME_NOJQ_MAX" STATUSLINE_CONF="$TEST_TMP/nonexistent.conf")
 assert_not_contains "jq 없을 때 ⌛ 미표시" "$out" "⌛"
 
+# ─────────────────────────────────────────────
+# 그룹 10: setup-statusline.sh 설치 스크립트
+# ─────────────────────────────────────────────
+printf "\n${CYAN}${BOLD}[그룹 10] setup-statusline.sh 설치 스크립트${RESET}\n"
+
+SETUP_SCRIPT="$SCRIPT_DIR/../scripts/setup-statusline.sh"
+
+if [ ! -f "$SETUP_SCRIPT" ]; then
+  printf "  ${RED}✗${RESET} setup-statusline.sh not found at $SETUP_SCRIPT\n"
+  FAIL=$((FAIL + 1))
+  TOTAL=$((TOTAL + 1))
+else
+
+# Helper: run setup in isolated HOME
+run_setup() {
+  local tmp_home="$1"
+  shift
+  HOME="$tmp_home" bash "$SETUP_SCRIPT" "$@" 2>/dev/null
+}
+
+# 10-1: --plan Max --hide COST → conf에 SHOW_COST=0
+SETUP_TMP_1="$TEST_TMP/setup-1"
+mkdir -p "$SETUP_TMP_1/.claude"
+echo '{}' > "$SETUP_TMP_1/.claude/settings.json"
+run_setup "$SETUP_TMP_1" --plan Max --hide COST
+conf_1=$(cat "$SETUP_TMP_1/.claude/statusline.conf" 2>/dev/null || echo "")
+assert_contains "10-1: --hide COST → SHOW_COST=0" "$conf_1" "SHOW_COST=0"
+assert_contains "10-1: --plan Max → PLAN_TYPE=Max" "$conf_1" "PLAN_TYPE=Max"
+
+# 10-2: --plan Pro → 기본값 SHOW_COST=0
+SETUP_TMP_2="$TEST_TMP/setup-2"
+mkdir -p "$SETUP_TMP_2/.claude"
+echo '{}' > "$SETUP_TMP_2/.claude/settings.json"
+run_setup "$SETUP_TMP_2" --plan Pro
+conf_2=$(cat "$SETUP_TMP_2/.claude/statusline.conf" 2>/dev/null || echo "")
+assert_contains "10-2: Pro 기본값 → SHOW_COST=0" "$conf_2" "SHOW_COST=0"
+
+# 10-3: --plan API → 기본값 SHOW_EXTRA_USAGE=0
+SETUP_TMP_3="$TEST_TMP/setup-3"
+mkdir -p "$SETUP_TMP_3/.claude"
+echo '{}' > "$SETUP_TMP_3/.claude/settings.json"
+run_setup "$SETUP_TMP_3" --plan API
+conf_3=$(cat "$SETUP_TMP_3/.claude/statusline.conf" 2>/dev/null || echo "")
+assert_contains "10-3: API 기본값 → SHOW_EXTRA_USAGE=0" "$conf_3" "SHOW_EXTRA_USAGE=0"
+
+# 10-4: --detect → PLAN/JQ/CCUSAGE 상태 출력
+SETUP_TMP_4="$TEST_TMP/setup-4"
+mkdir -p "$SETUP_TMP_4"
+cat > "$SETUP_TMP_4/.claude.json" << 'CJSON'
+{"oauthAccount":{"emailAddress":"test@example.com","billingType":"stripe_subscription","hasExtraUsageEnabled":true}}
+CJSON
+detect_out=$(run_setup "$SETUP_TMP_4" --detect)
+assert_contains "10-4: --detect → PLAN= 포함" "$detect_out" "PLAN="
+assert_contains "10-4: --detect → JQ= 포함" "$detect_out" "JQ="
+assert_contains "10-4: --detect → CCUSAGE= 포함" "$detect_out" "CCUSAGE="
+assert_contains "10-4: Max 감지" "$detect_out" "PLAN=Max"
+
+# 10-5: --dry-run → 파일 미생성 확인
+SETUP_TMP_5="$TEST_TMP/setup-5"
+mkdir -p "$SETUP_TMP_5/.claude"
+echo '{}' > "$SETUP_TMP_5/.claude/settings.json"
+run_setup "$SETUP_TMP_5" --plan Max --dry-run
+TOTAL=$((TOTAL + 1))
+if [ ! -f "$SETUP_TMP_5/.claude/statusline.conf" ]; then
+  PASS=$((PASS + 1))
+  printf "  ${GREEN}✓${RESET} 10-5: --dry-run → statusline.conf 미생성\n"
+else
+  FAIL=$((FAIL + 1))
+  printf "  ${RED}✗${RESET} 10-5: --dry-run → statusline.conf 생성됨 (미생성이어야 함)\n"
+fi
+
+# 10-6: statusline.sh 복사 확인
+assert_equals "10-6: statusline.sh 복사됨" "$([ -f "$SETUP_TMP_1/.claude/statusline.sh" ] && echo "yes" || echo "no")" "yes"
+
+# 10-7: settings.json에 statusLine 등록 확인
+if command -v jq >/dev/null 2>&1; then
+  sl_type=$(jq -r '.statusLine.type // ""' "$SETUP_TMP_1/.claude/settings.json" 2>/dev/null)
+  assert_equals "10-7: settings.json statusLine 등록" "$sl_type" "command"
+fi
+
+# 10-8: --hide COST,SESSION → 복수 항목 비활성화
+SETUP_TMP_8="$TEST_TMP/setup-8"
+mkdir -p "$SETUP_TMP_8/.claude"
+echo '{}' > "$SETUP_TMP_8/.claude/settings.json"
+run_setup "$SETUP_TMP_8" --plan Max --hide COST,SESSION
+conf_8=$(cat "$SETUP_TMP_8/.claude/statusline.conf" 2>/dev/null || echo "")
+assert_contains "10-8: --hide COST,SESSION → SHOW_COST=0" "$conf_8" "SHOW_COST=0"
+assert_contains "10-8: --hide COST,SESSION → SHOW_SESSION=0" "$conf_8" "SHOW_SESSION=0"
+assert_contains "10-8: 나머지 DIR은 ON" "$conf_8" "SHOW_DIR=1"
+
+fi  # end setup-statusline.sh existence check
+
 # === 결과 요약 ===
 printf "\n${BOLD}════════════════════════════════════════${RESET}\n"
 printf "${BOLD}결과: ${GREEN}%d 통과${RESET} / ${RED}%d 실패${RESET} / 총 %d개\n" "$PASS" "$FAIL" "$TOTAL"
