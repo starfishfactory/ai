@@ -1,14 +1,14 @@
 ---
 name: review-criteria
-description: Code review 100-point deduction criteria, verdict thresholds, confidence levels, and output schemas
+description: 100-pt deduction review criteria, thresholds, confidence, output schemas
 user-invocable: false
 ---
 
 # Code Review Criteria
 
-100-point deduction system. Evaluate across 4 categories.
+100-pt deduction, 4 categories.
 
-## Category 1: Functionality (30 pts max)
+## Functionality (30 pts max)
 
 | Check | Deduction |
 |-------|-----------|
@@ -16,7 +16,7 @@ user-invocable: false
 | Unhandled edge case | -3/each, max -9 |
 | Missing error handling (external calls) | -3/each, max -6 |
 
-## Category 2: Readability (25 pts max)
+## Readability (25 pts max)
 
 | Check | Deduction |
 |-------|-----------|
@@ -24,7 +24,7 @@ user-invocable: false
 | Complex logic without comments | -4/block, max -8 |
 | Inconsistent code style | -2/each, max -8 |
 
-## Category 3: Reliability (25 pts max)
+## Reliability (25 pts max)
 
 | Check | Deduction |
 |-------|-----------|
@@ -32,7 +32,7 @@ user-invocable: false
 | Resource leak (unclosed connection/file) | -5/each, max -10 |
 | Debug/test code left (console.log, print, TODO, debugger) | -3/each, max -7 |
 
-## Category 4: Performance (20 pts max)
+## Performance (20 pts max)
 
 | Check | Deduction |
 |-------|-----------|
@@ -52,38 +52,23 @@ user-invocable: false
 
 | Level | Criteria | Score impact |
 |-------|----------|-------------|
-| **high** | Can cite exact code line proving the issue. Fix is deterministic | Deducted |
-| **medium** | Likely issue but depends on runtime context or external state | Shown, no deduction |
-| **low** | Stylistic, speculative, or uncertain. "I'm not sure" is valid | Collapsed, no deduction |
+| **high** | Exact line citeable, fix deterministic | Deducted |
+| **medium** | Likely but context/env-dependent | Shown, not deducted |
+| **low** | Stylistic/speculative/uncertain | Collapsed, not deducted |
 
-Downgrade triggers (never assign `high` if any apply):
-- Cannot point to specific line → max `medium`
-- Depends on config/env not visible in diff → max `medium`
-- "Might" / "could" / "possibly" reasoning → `low`
-- Unfamiliar language/framework patterns → `low`
+Downgrade — never `high` if: no specific line → `medium`; invisible config/env → `medium`; "might"/"could" → `low`; unfamiliar lang/framework → `low`.
 
-## Auto-Filter Rules
+## Auto-Filter
 
-Skip — do NOT report:
-1. **Pre-existing**: issue in unchanged lines (before this diff)
-2. **Lint-detectable**: formatting, unused imports, trailing whitespace — skip if project has linter
-3. **Speculative**: "might cause issues" without concrete evidence in current diff
+Skip: (1) pre-existing issues in unchanged lines, (2) lint-detectable formatting/imports/whitespace, (3) speculative w/o evidence in diff. Uncertain → `low`.
 
-When uncertain → assign `low`, never `high`.
-
-## Suggestion Rule
-
-Concrete code fix per item — no abstract advice. Provide before/after or exact change.
+**Suggestion**: concrete code fix per item — before/after or exact change.
 
 ## Iteration Context
 
-When previous review JSON is provided:
-1. Compare previous feedback items against current diff
-2. Mark resolved items in `resolved_from_previous` array
-3. Focus deductions on NEW issues only
-4. Previously reported but unresolved items: re-report with same deduction
+Previous review JSON provided → compare items, resolved → `resolved_from_previous` array, deduct NEW only, re-report unresolved same deduction.
 
-## JSON Output Schema (diff mode)
+## JSON Schema (diff mode)
 
 Output JSON only — no explanatory text.
 
@@ -113,16 +98,9 @@ Output JSON only — no explanatory text.
 }
 ```
 
-### Field Rules
-- `score`: 100 minus total deductions (high-confidence only)
-- `verdict`: per threshold table
-- `resolved_from_previous`: array of "{file:line} - {resolution}" strings. Empty array if no previous review
-- `categories.*.score`: deduction subtotal per category (high-confidence only)
-- `categories.*.issues`: description strings
-- `feedback[].deduction`: 0 for medium/low confidence items
-- `good_practices`: highlight positive patterns found
+Fields: `score`=100−high deductions. `verdict` per table. `resolved_from_previous`: "{file:line} - {resolution}" strings, empty if none. `categories.*.score`: high-confidence subtotal. `feedback[].deduction`: 0 for medium/low. `good_practices`: positive patterns.
 
-## Markdown Output Template (pr mode)
+## Markdown Template (pr mode)
 
 ```markdown
 ## Overall Assessment
@@ -146,14 +124,7 @@ Output JSON only — no explanatory text.
 {same format, medium/low confidence items here}
 ```
 
-### Severity Classification
-- **major**: deduction >= 4 per instance
-- **minor**: deduction <= 3 per instance
-
-### Section Mapping
-- Critical Issues: major severity + high confidence
-- Important Issues: minor severity + high confidence
-- Nice-to-have: medium/low confidence (any severity)
+Severity mapping: **major** (≥4 pts) → Critical Issues (high), **minor** (≤3 pts) → Important Issues (high), medium/low confidence → Nice-to-have.
 
 ## Principles
 

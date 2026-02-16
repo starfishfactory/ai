@@ -1,5 +1,5 @@
 ---
-description: Code review with 100-point deduction scoring
+description: 100-pt deduction code review
 allowed-tools: Read, Bash, Glob, Grep
 argument-hint: "[pr [N]]"
 ---
@@ -9,71 +9,38 @@ argument-hint: "[pr [N]]"
 - `pr` → **pr mode** (auto-detect PR, Markdown output)
 - `pr <N>` → **pr mode** (PR #N, Markdown output)
 
-## Load Criteria
-Read `skills/review-criteria/SKILL.md` → scoring rules, confidence levels, output schema.
+Read `skills/review-criteria/SKILL.md` for scoring rules + output schema.
 
 ## diff mode
 
-### Step 0: Iteration context
-If invoked with previous review JSON (iteration context from pr.md GC loop):
-- Parse previous feedback items for `resolved_from_previous` comparison in Step 5
-- Previous JSON is provided inline by the calling command, not via arguments
+**0. Iteration context**: If previous review JSON provided inline, parse for `resolved_from_previous` in Step 5.
 
-### Step 1: Collect diff
+**1. Collect diff**
 ```bash
 git diff --cached
 git diff --cached --stat
 ```
-Empty diff → print "No staged changes to review." → **exit**.
+Empty → "No staged changes to review." → **exit**.
 
-### Step 2: Assess scope
-- File count + line count from stat
-- 500+ lines → note "Consider splitting" in feedback
+**2. Assess scope**: File + line count. 500+ lines → note "Consider splitting".
 
-### Step 3: Identify good practices
-Scan diff for: clear function separation, proper error handling, tests added, consistent style, appropriate abstraction.
+**3. Good practices**: Scan for clear separation, error handling, tests, consistent style, appropriate abstraction.
 
-### Step 4: Category evaluation
-For each category (Functionality → Readability → Reliability → Performance):
-1. Check each item in criteria table
-2. Assign confidence level per finding (high/medium/low)
-3. Deduct only for **high confidence** items
-4. Every issue MUST include specific code fix suggestion
+**4. Category eval**: Per criteria table (Functionality→Readability→Reliability→Performance) — assign confidence, deduct **high** only, every issue needs concrete fix.
 
-### Step 5: Build JSON
-Per `skills/review-criteria/SKILL.md` JSON schema:
-- Calculate `score` = 100 - sum(high-confidence deductions)
-- Set `verdict` per threshold (PASS ≥80 / REVISE 60-79 / FAIL <60)
-- `resolved_from_previous`: if previous review JSON provided as context, compare and list resolved items. Otherwise empty array.
-- Output **JSON only** — no explanatory text before or after.
+**5. Build JSON**: Per SKILL.md schema. `score`=100-deductions, `verdict` per threshold, `resolved_from_previous` from context. **JSON only**.
 
 ## pr mode
 
-### Step 1: Identify PR
-`$ARGUMENTS` has number → use it. Else `gh pr view --json number --jq '.number'`. Fail → "No PR found." + exit.
+**1. Identify PR**: `$ARGUMENTS` number or `gh pr view --json number --jq '.number'`. Fail → exit.
 
-### Step 2: Collect PR data
+**2. Collect PR data**
 ```bash
 gh pr view <N> --json title,body,files,additions,deletions
 gh pr diff <N>
 ```
-Either fails → "Cannot fetch PR #N. Verify: `gh pr view <N>`" + exit.
-Empty diff → "PR #N has no file changes." + exit.
+Fail → "Cannot fetch PR #N." + exit. Empty diff → "No file changes." + exit.
 
-### Step 3: Assess scope
-Same as diff mode Step 2.
+**3-5**: Same as diff mode Steps 2-4.
 
-### Step 4: Identify good practices
-Same as diff mode Step 3.
-
-### Step 5: Category evaluation
-Same as diff mode Step 4.
-
-### Step 6: Build Markdown
-Per `skills/review-criteria/SKILL.md` Markdown template:
-- Overall Assessment with score
-- Good Practices list
-- Critical Issues (major + high confidence)
-- Important Issues (minor + high confidence)
-- Nice-to-have (medium/low confidence)
-- Output **Markdown only**.
+**6. Build Markdown**: Per SKILL.md template — Assessment, Good Practices, Critical/Important/Nice-to-have. **Markdown only**.
