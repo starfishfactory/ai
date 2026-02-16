@@ -38,7 +38,7 @@ user-invocable: false
 |-------|-----------|
 | Unnecessary loop / redundant computation | -4/each, max -8 |
 | N+1 query / unoptimized DB access | -5/each, max -10 |
-| Memory leak risk | -2/each |
+| Memory leak risk | -2/each, max -4 |
 
 ## Verdict
 
@@ -145,6 +145,10 @@ Output JSON only — no explanatory text.
 ## Nice-to-have
 {same format, medium/low confidence items here}
 ```
+
+### Severity Classification
+- **major**: deduction >= 4 per instance
+- **minor**: deduction <= 3 per instance
 
 ### Section Mapping
 - Critical Issues: major severity + high confidence

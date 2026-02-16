@@ -14,6 +14,11 @@ Read `skills/review-criteria/SKILL.md` → scoring rules, confidence levels, out
 
 ## diff mode
 
+### Step 0: Iteration context
+If invoked with previous review JSON (iteration context from pr.md GC loop):
+- Parse previous feedback items for `resolved_from_previous` comparison in Step 5
+- Previous JSON is provided inline by the calling command, not via arguments
+
 ### Step 1: Collect diff
 ```bash
 git diff --cached
