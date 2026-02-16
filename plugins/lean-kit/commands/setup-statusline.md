@@ -16,6 +16,8 @@ bash <plugin_root>/scripts/setup-statusline.sh --detect
 
 Output format: `PLAN=Max JQ=1 CCUSAGE=1`
 
+If JQ=0 or CCUSAGE=0 in output, inform user: missing deps will be auto-installed in Step 2.
+
 Parse result, then AskUserQuestion:
 
 **Q1 — Plan confirm** (single select):

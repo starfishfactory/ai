@@ -391,7 +391,7 @@ run_setup() {
 SETUP_TMP_1="$TEST_TMP/setup-1"
 mkdir -p "$SETUP_TMP_1/.claude"
 echo '{}' > "$SETUP_TMP_1/.claude/settings.json"
-run_setup "$SETUP_TMP_1" --plan Max --hide COST
+run_setup "$SETUP_TMP_1" --plan Max --hide COST --no-deps
 conf_1=$(cat "$SETUP_TMP_1/.claude/statusline.conf" 2>/dev/null || echo "")
 assert_contains "10-1: --hide COST → SHOW_COST=0" "$conf_1" "SHOW_COST=0"
 assert_contains "10-1: --plan Max → PLAN_TYPE=Max" "$conf_1" "PLAN_TYPE=Max"
@@ -400,7 +400,7 @@ assert_contains "10-1: --plan Max → PLAN_TYPE=Max" "$conf_1" "PLAN_TYPE=Max"
 SETUP_TMP_2="$TEST_TMP/setup-2"
 mkdir -p "$SETUP_TMP_2/.claude"
 echo '{}' > "$SETUP_TMP_2/.claude/settings.json"
-run_setup "$SETUP_TMP_2" --plan Pro
+run_setup "$SETUP_TMP_2" --plan Pro --no-deps
 conf_2=$(cat "$SETUP_TMP_2/.claude/statusline.conf" 2>/dev/null || echo "")
 assert_contains "10-2: Pro 기본값 → SHOW_COST=0" "$conf_2" "SHOW_COST=0"
 
@@ -408,7 +408,7 @@ assert_contains "10-2: Pro 기본값 → SHOW_COST=0" "$conf_2" "SHOW_COST=0"
 SETUP_TMP_3="$TEST_TMP/setup-3"
 mkdir -p "$SETUP_TMP_3/.claude"
 echo '{}' > "$SETUP_TMP_3/.claude/settings.json"
-run_setup "$SETUP_TMP_3" --plan API
+run_setup "$SETUP_TMP_3" --plan API --no-deps
 conf_3=$(cat "$SETUP_TMP_3/.claude/statusline.conf" 2>/dev/null || echo "")
 assert_contains "10-3: API 기본값 → SHOW_EXTRA_USAGE=0" "$conf_3" "SHOW_EXTRA_USAGE=0"
 
@@ -451,11 +451,37 @@ fi
 SETUP_TMP_8="$TEST_TMP/setup-8"
 mkdir -p "$SETUP_TMP_8/.claude"
 echo '{}' > "$SETUP_TMP_8/.claude/settings.json"
-run_setup "$SETUP_TMP_8" --plan Max --hide COST,SESSION
+run_setup "$SETUP_TMP_8" --plan Max --hide COST,SESSION --no-deps
 conf_8=$(cat "$SETUP_TMP_8/.claude/statusline.conf" 2>/dev/null || echo "")
 assert_contains "10-8: --hide COST,SESSION → SHOW_COST=0" "$conf_8" "SHOW_COST=0"
 assert_contains "10-8: --hide COST,SESSION → SHOW_SESSION=0" "$conf_8" "SHOW_SESSION=0"
 assert_contains "10-8: 나머지 DIR은 ON" "$conf_8" "SHOW_DIR=1"
+
+# Helper: run setup with restricted PATH (no jq)
+run_setup_nojq() {
+  local tmp_home="$1"
+  shift
+  local fake_bin="$TEST_TMP/fake-bin-setup"
+  mkdir -p "$fake_bin"
+  for cmd in bash grep sed head cat date stat tr wc awk printf mkdir rmdir rm cp echo chmod dirname cd pwd; do
+    local cmd_path=$(command -v "$cmd" 2>/dev/null)
+    [ -n "$cmd_path" ] && [ ! -e "$fake_bin/$cmd" ] && ln -sf "$cmd_path" "$fake_bin/$cmd" 2>/dev/null
+  done
+  local git_path=$(command -v git 2>/dev/null)
+  [ -n "$git_path" ] && [ ! -e "$fake_bin/git" ] && ln -sf "$git_path" "$fake_bin/git" 2>/dev/null
+
+  HOME="$tmp_home" env PATH="$fake_bin" bash "$SETUP_SCRIPT" "$@" 2>/dev/null || true
+}
+
+# 10-9: --no-deps + jq 없는 환경 → conf 생성, settings.json statusLine 미등록
+SETUP_TMP_9="$TEST_TMP/setup-9"
+mkdir -p "$SETUP_TMP_9/.claude"
+echo '{}' > "$SETUP_TMP_9/.claude/settings.json"
+run_setup_nojq "$SETUP_TMP_9" --plan Max --no-deps
+conf_9=$(cat "$SETUP_TMP_9/.claude/statusline.conf" 2>/dev/null || echo "")
+assert_contains "10-9: --no-deps jq없이 → conf 생성" "$conf_9" "PLAN_TYPE=Max"
+settings_9=$(cat "$SETUP_TMP_9/.claude/settings.json" 2>/dev/null || echo "")
+assert_not_contains "10-9: --no-deps jq없이 → statusLine 미등록" "$settings_9" "statusLine"
 
 fi  # end setup-statusline.sh existence check
 
