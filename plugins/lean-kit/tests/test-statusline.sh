@@ -106,12 +106,12 @@ assert_contains "display_name 입력 시 모델명 표시" "$out" "Sonnet"
 printf "\n${CYAN}${BOLD}[그룹 2] jq 의존 기능${RESET}\n"
 
 if command -v jq >/dev/null 2>&1; then
-  # 2-1: 컨텍스트 → [0-9]+% 패턴
-  out=$(run_statusline '{"cwd":"/tmp","model":{"display_name":"Opus"},"context_window":{"context_window_size":200000,"current_usage":{"input_tokens":50000,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}')
+  # 2-1: 컨텍스트 → [0-9]+% 패턴 (STATUSLINE_CONF 격리: 유저 conf 영향 방지)
+  out=$(run_statusline '{"cwd":"/tmp","model":{"display_name":"Opus"},"context_window":{"context_window_size":200000,"current_usage":{"input_tokens":50000,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}' STATUSLINE_CONF=/nonexistent)
   assert_contains "컨텍스트 잔여율 표시" "$out" "[0-9]+%"
 
-  # 2-2: 비용 → $ 포함
-  out=$(run_statusline '{"cwd":"/tmp","model":{"display_name":"Opus"},"cost":{"total_cost_usd":1.23,"total_duration_ms":3600000}}')
+  # 2-2: 비용 → $ 포함 (STATUSLINE_CONF 격리: Max 기본 SHOW_COST=0 방지)
+  out=$(run_statusline '{"cwd":"/tmp","model":{"display_name":"Opus"},"cost":{"total_cost_usd":1.23,"total_duration_ms":3600000}}' STATUSLINE_CONF=/nonexistent)
   assert_contains "비용 표시 시 \$ 포함" "$out" '\$'
 else
   printf "  ${CYAN}-${RESET} jq 미설치: 컨텍스트/비용 테스트 건너뜀\n"
