@@ -1,5 +1,7 @@
 ---
+name: msa-analysis
 description: MSA environment Agent Teams parallel analysis + cross-validation + C4 report generation
+context: fork
 allowed-tools: Read, Grep, Glob, Bash, Write, AskUserQuestion
 argument-hint: <project path>
 ---

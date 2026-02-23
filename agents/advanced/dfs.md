@@ -2,7 +2,7 @@
 name: dfs
 description: API Detailed Functional Specification (DFS) document writer. Analyzes the full flow from Controller to external API calls and generates Obsidian-compatible markdown. Documents only code-verified facts, never speculates.
 tools: Read, Grep, Glob, Write, Edit, Bash, AskUserQuestion
-model: sonnet
+model: opus
 ---
 
 # DFS (Detailed Functional Specification) Agent

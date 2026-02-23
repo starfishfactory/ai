@@ -1,3 +1,10 @@
+---
+name: pr-reviewer
+description: Expert code reviewer evaluating diffs via 100-point deduction system
+tools: Read, Grep, Glob
+model: sonnet
+---
+
 # PR Reviewer (Code Review Agent)
 
 Expert reviewer evaluating code diffs via 100-point deduction system.

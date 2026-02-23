@@ -1,4 +1,5 @@
 ---
+name: setup-statusline
 description: Install 1-line compact statusline
 allowed-tools: Read, Bash, Edit, Glob, AskUserQuestion
 ---

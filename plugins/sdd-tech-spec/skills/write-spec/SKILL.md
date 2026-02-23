@@ -1,5 +1,7 @@
 ---
+name: write-spec
 description: Write a Tech Spec using SDD methodology (Generator-Critic loop)
+context: fork
 allowed-tools: Read, Write, Glob, Grep, Bash, Task, AskUserQuestion
 argument-hint: <Spec topic/feature description>
 ---

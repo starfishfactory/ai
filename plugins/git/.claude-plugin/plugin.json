@@ -5,6 +5,5 @@
   "author": { "name": "starfishfactory" },
   "license": "MIT",
   "keywords": ["git", "gitmoji", "commit", "branch", "pull-request", "code-review"],
-  "commands": "./commands/",
   "skills": "./skills/"
 }

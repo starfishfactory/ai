@@ -1,4 +1,5 @@
 ---
+name: branch
 description: Branch create/switch/cleanup
 allowed-tools: Bash, AskUserQuestion
 argument-hint: "<create|switch|cleanup> [options]"

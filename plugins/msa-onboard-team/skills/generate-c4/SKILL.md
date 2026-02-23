@@ -1,4 +1,5 @@
 ---
+name: generate-c4
 description: Generate C4 model Mermaid diagrams from analysis results (standalone)
 allowed-tools: Read, Grep, Glob, Bash, Write, AskUserQuestion
 argument-hint: <project path>
