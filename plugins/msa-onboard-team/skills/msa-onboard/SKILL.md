@@ -12,9 +12,9 @@ Not user-invocable. Provides reference files for `msa-onboard` command and Agent
 
 | File | Purpose | Consumer |
 |------|---------|----------|
-| `c4-mermaid-reference.md` | C4 level Mermaid syntax + element types | Lead (Phase 3: report generation) |
-| `output-templates.md` | Markdown templates per output file (Obsidian-compatible) | Lead (Phase 3: report generation) |
-| `verification-standards.md` | Cross-validation 5 steps + report verification 4 steps | Lead (Phase 2, 4: verification) |
+| `references/c4-mermaid-reference.md` | C4 level Mermaid syntax + element types | Lead (Phase 3: report generation) |
+| `references/output-templates.md` | Markdown templates per output file (Obsidian-compatible) | Lead (Phase 3: report generation) |
+| `references/verification-standards.md` | Cross-validation 5 steps + report verification 4 steps | Lead (Phase 2, 4: verification) |
 
 ## Analysis Architecture
 
