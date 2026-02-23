@@ -30,6 +30,17 @@ if (!prompt) {
 }
 
 /**
+ * Match keyword against text with word-boundary awareness.
+ * Korean keywords: simple includes (Korean has natural spacing boundaries).
+ * English keywords: word boundary regex to avoid false positives (e.g., "pr" in "print").
+ */
+function matchKeyword(text, keyword) {
+  if (/[가-힣]/.test(keyword)) return text.includes(keyword);
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`\\b${escaped}\\b`, 'i').test(text);
+}
+
+/**
  * Keyword → skill mapping table.
  * Each entry: { keywords: string[], skill: string, description: string }
  */
@@ -40,7 +51,12 @@ const mappings = [
     description: 'Gitmoji smart commit'
   },
   {
-    keywords: ['pr', '풀리퀘', 'pull request', '풀 리퀘스트', 'pr 만들', 'pr 생성', 'pr 리뷰'],
+    keywords: ['코드 리뷰', 'code review', '코드리뷰', '코드 검토'],
+    skill: '/git:review',
+    description: 'Standalone code review'
+  },
+  {
+    keywords: ['풀리퀘', 'pull request', '풀 리퀘스트', 'pr 만들', 'pr 생성', 'pr 리뷰', 'pr 올려', 'create pr', 'open pr'],
     skill: '/git:pr',
     description: 'PR creation/review'
   },
@@ -75,7 +91,7 @@ const mappings = [
 const matches = [];
 for (const mapping of mappings) {
   for (const keyword of mapping.keywords) {
-    if (prompt.includes(keyword)) {
+    if (matchKeyword(prompt, keyword)) {
       matches.push(mapping);
       break;
     }

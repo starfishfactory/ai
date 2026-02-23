@@ -1,6 +1,7 @@
 ---
 name: setup
 description: Verify plugin installation, check dependencies, show catalog
+model: sonnet
 allowed-tools: Read, Bash, Glob, AskUserQuestion
 argument-hint: "[--check | --force]"
 ---

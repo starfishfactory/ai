@@ -1,8 +1,9 @@
 ---
 name: discover-services
 description: Identify microservices in an MSA project (standalone)
+context: fork
 allowed-tools: Read, Grep, Glob, Bash, Write, AskUserQuestion
-argument-hint: <project path>
+argument-hint: "<project path>"
 ---
 
 # Service Discovery: $ARGUMENTS

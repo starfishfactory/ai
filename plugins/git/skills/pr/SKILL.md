@@ -40,11 +40,11 @@ Parallel: `git diff --cached` (review target) + `git diff --cached --stat` (stat
 #### Iteration N (N = 1, 2, 3):
 
 ##### Step 1.N.3: Invoke pr-reviewer (Mode A)
-1. Read `agents/pr-reviewer.md`
+1. Read `agents/pr-reviewer.md` + `skills/review-criteria/SKILL.md`
 2. Task(subagent_type: `general-purpose`):
    - System prompt: pr-reviewer.md content
+   - Context: review-criteria content, branch, diff stats, iteration N
    - Directive: "PRE-COMMIT review (Mode A). Output JSON only."
-   - Context: branch, diff stats, iteration N
    - Input N=1: `git diff --cached` | N>1: + previous review JSON
    - Request: "Evaluate staged changes per Mode A. Output JSON."
 
@@ -106,11 +106,11 @@ None → `.github/PULL_REQUEST_TEMPLATE/` dir (1→auto, 2+→AskUserQuestion). 
 `gh pr view <number> --json title,body,files,additions,deletions` + `gh pr diff <number>`
 
 ### Phase 3: Invoke pr-reviewer Agent
-1. Read `agents/pr-reviewer.md`
+1. Read `agents/pr-reviewer.md` + `skills/review-criteria/SKILL.md`
 2. Task(subagent_type: `general-purpose`):
    - System prompt: pr-reviewer.md content
+   - Context: review-criteria content, PR metadata (title, body, files, additions, deletions)
    - Directive: "PR review (Mode B). Output Markdown."
-   - Context: PR metadata (title, body, files, additions, deletions)
    - Input: `gh pr diff` output
    - Request: "Analyze per Mode B. Produce Markdown feedback."
 
