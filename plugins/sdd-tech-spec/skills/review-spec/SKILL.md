@@ -2,7 +2,7 @@
 name: review-spec
 description: SDD quality review of an existing Tech Spec (read-only)
 allowed-tools: Read, Grep, Glob, Task
-argument-hint: <Spec file path>
+argument-hint: "<Spec file path>"
 ---
 
 # Tech Spec Review: $ARGUMENTS

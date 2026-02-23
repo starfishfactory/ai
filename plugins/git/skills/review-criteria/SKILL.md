@@ -4,134 +4,105 @@ description: 100-pt deduction review criteria, thresholds, confidence, output sc
 user-invocable: false
 ---
 
-# Code Review Criteria
+# Code Review Quality Criteria
 
-100-pt deduction, 4 categories.
+100-point deduction system. Evaluate across 4 categories; deduct per item within each category's max limit.
 
-## Functionality (30 pts max)
+## Category 1: Functionality (30 pts max)
 
-| Check | Deduction |
-|-------|-----------|
-| Logic error / incorrect behavior | -5/each, max -15 |
-| Unhandled edge case | -3/each, max -9 |
-| Missing error handling (external calls) | -3/each, max -6 |
+| Check Item | Deduction |
+|------------|-----------|
+| Logic errors or incorrect behavior | -5/each (max -15) |
+| Edge cases not handled | -3/each (max -9) |
+| Missing error handling for external calls | -3/each (max -6) |
 
-## Readability (25 pts max)
+## Category 2: Readability (25 pts max)
 
-| Check | Deduction |
-|-------|-----------|
-| Unclear variable/function name | -3/each, max -9 |
-| Complex logic without comments | -4/block, max -8 |
-| Inconsistent code style | -2/each, max -8 |
+| Check Item | Deduction |
+|------------|-----------|
+| Unclear variable/function names | -3/each (max -9) |
+| Overly complex logic without comments | -4/each (max -8) |
+| Inconsistent code style | -2/each (max -8) |
 
-## Reliability (25 pts max)
+## Category 3: Reliability (25 pts max)
 
-| Check | Deduction |
-|-------|-----------|
-| Null/undefined unchecked | -4/each, max -8 |
-| Resource leak (unclosed connection/file) | -5/each, max -10 |
-| Debug/test code left (console.log, print, TODO, debugger) | -3/each, max -7 |
+| Check Item | Deduction |
+|------------|-----------|
+| Null/undefined not checked | -4/each (max -8) |
+| Resource leak risk (unclosed connections, files) | -5/each (max -10) |
+| Debug/test code left in (console.log, TODO, debugger) | -3/each (max -7) |
 
-## Performance (20 pts max)
+## Category 4: Performance (20 pts max)
 
-| Check | Deduction |
-|-------|-----------|
-| Unnecessary loop / redundant computation | -4/each, max -8 |
-| N+1 query / unoptimized DB access | -5/each, max -10 |
-| Memory leak risk | -2/each, max -4 |
+| Check Item | Deduction |
+|------------|-----------|
+| Unnecessary loops or redundant computation | -4/each (max -8) |
+| N+1 query or unoptimized DB access | -5/each (max -10) |
+| Memory leak risk | -2/each (max -4) |
 
-## Verdict
+## Verdict Criteria
 
 | Score | Verdict | Action |
 |-------|---------|--------|
-| >= 80 | **PASS** | Commit allowed |
-| 60-79 | **REVISE** | Revision recommended |
-| < 60 | **FAIL** | Revision required |
+| >= 80 | **PASS** | End loop, proceed |
+| 60-79 | **REVISE** | Next iteration |
+| < 60 | **FAIL** | Ask user to choose: continue/fix/cancel |
 
-## Confidence Levels
+## Mode A: JSON Output Format
 
-| Level | Criteria | Score impact |
-|-------|----------|-------------|
-| **high** | Exact line citeable, fix deterministic | Deducted |
-| **medium** | Likely but context/env-dependent | Shown, not deducted |
-| **low** | Stylistic/speculative/uncertain | Collapsed, not deducted |
-
-Downgrade — never `high` if: no specific line → `medium`; invisible config/env → `medium`; "might"/"could" → `low`; unfamiliar lang/framework → `low`.
-
-## Auto-Filter
-
-Skip: (1) pre-existing issues in unchanged lines, (2) lint-detectable formatting/imports/whitespace, (3) speculative w/o evidence in diff. Uncertain → `low`.
-
-**Suggestion**: concrete code fix per item — before/after or exact change.
-
-## Iteration Context
-
-Previous review JSON provided → compare items, resolved → `resolved_from_previous` array, deduct NEW only, re-report unresolved same deduction.
-
-## JSON Schema (diff mode)
-
-Output JSON only — no explanatory text.
+Reviewer agent MUST output evaluation results in this JSON schema:
 
 ```json
 {
-  "score": 0,
-  "verdict": "PASS | REVISE | FAIL",
-  "resolved_from_previous": [],
+  "score": 85,
+  "verdict": "PASS",
   "categories": {
-    "functionality": { "score": 0, "max": 30, "issues": [] },
-    "readability": { "score": 0, "max": 25, "issues": [] },
-    "reliability": { "score": 0, "max": 25, "issues": [] },
-    "performance": { "score": 0, "max": 20, "issues": [] }
+    "functionality": { "deducted": 5, "max": 30, "issues": ["Edge case: empty input not handled in parseArgs()"] },
+    "readability": { "deducted": 3, "max": 25, "issues": ["Variable 'x' in processData() is unclear"] },
+    "reliability": { "deducted": 4, "max": 25, "issues": ["console.log left in auth.js:42"] },
+    "performance": { "deducted": 3, "max": 20, "issues": [] }
   },
-  "good_practices": [],
+  "good_practices": ["Proper error handling in API layer", "Tests added for new features"],
   "feedback": [
     {
-      "file": "file:line",
-      "category": "functionality|readability|reliability|performance",
-      "severity": "major|minor",
-      "confidence": "high|medium|low",
-      "deduction": 0,
-      "issue": "Problem description",
-      "suggestion": "Specific code fix"
+      "file": "src/auth.js:42",
+      "category": "reliability",
+      "severity": "major",
+      "deduction": 3,
+      "issue": "console.log left in production code",
+      "suggestion": "Remove or replace with structured logger"
     }
   ]
 }
 ```
 
-Fields: `score`=100−high deductions. `verdict` per table. `resolved_from_previous`: "{file:line} - {resolution}" strings, empty if none. `categories.*.score`: high-confidence subtotal. `feedback[].deduction`: 0 for medium/low. `good_practices`: positive patterns.
+### Field Descriptions
 
-## Markdown Template (pr mode)
+- `score`: 100 minus total deductions
+- `verdict`: "PASS" | "REVISE" | "FAIL"
+- `categories`: Per-category deduction totals and issue lists
+  - `deducted`: Points deducted in this category
+  - `max`: Category max score
+  - `issues`: Array of deduction reasons
+- `good_practices`: Array of positive observations
+- `feedback`: Array of specific improvement items
+  - `file`: `file:line` location
+  - `category`: functionality | readability | reliability | performance
+  - `severity`: "major" | "minor"
+  - `deduction`: Points deducted for this item
+  - `issue`: Problem description
+  - `suggestion`: Specific fix suggestion
+
+## Mode B: Markdown Output Format
+
+Sections: Overall Assessment (2-3 sentence summary) → Good Practices → Critical Issues → Important Issues → Nice-to-have.
+
+Per issue:
 
 ```markdown
-## Overall Assessment
-{2-3 sentence summary}. Score: {score}/100 ({verdict})
-
-## Good Practices
-- {practice}
-
-## Critical Issues
-### {title}
+### {issue title}
 - **File**: `{file:line}`
 - **Category**: {category}
-- **Confidence**: {confidence}
 - **Description**: {problem}
-- **Suggestion**: {specific fix}
-
-## Important Issues
-{same format}
-
-## Nice-to-have
-{same format, medium/low confidence items here}
+- **Suggestion**: {improvement}
 ```
-
-Severity mapping: **major** (≥4 pts) → Critical Issues (high), **minor** (≤3 pts) → Important Issues (high), medium/low confidence → Nice-to-have.
-
-## Principles
-
-1. Solutions over problems
-2. Critical-first order
-3. Acknowledge good patterns
-4. Concrete fix per issue
-5. Out-of-scope → Nice-to-have
-6. Deduct verified only (high)
-7. Track previous resolution
