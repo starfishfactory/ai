@@ -1,5 +1,7 @@
 ---
+name: refine-spec
 description: Apply feedback to an existing Tech Spec for one-pass improvement
+context: fork
 allowed-tools: Read, Write, Glob, Grep, Task, AskUserQuestion
 argument-hint: <Spec file path>
 ---

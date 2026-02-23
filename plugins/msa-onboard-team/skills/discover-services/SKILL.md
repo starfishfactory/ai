@@ -1,4 +1,5 @@
 ---
+name: discover-services
 description: Identify microservices in an MSA project (standalone)
 allowed-tools: Read, Grep, Glob, Bash, Write, AskUserQuestion
 argument-hint: <project path>

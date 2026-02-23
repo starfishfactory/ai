@@ -1,5 +1,7 @@
 ---
+name: pr
 description: Automated PR creation with pre-commit review and code review
+context: fork
 allowed-tools: Read, Bash, Task, AskUserQuestion, Glob
 argument-hint: "[create|review [PR_number]]"
 ---

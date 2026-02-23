@@ -5,5 +5,5 @@
   "author": { "name": "starfishfactory" },
   "license": "MIT",
   "keywords": ["notification", "macos", "osascript", "productivity", "permission", "auto-permit", "statusline"],
-  "commands": "./commands/"
+  "skills": "./skills/"
 }

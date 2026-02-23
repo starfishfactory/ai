@@ -5,6 +5,5 @@
   "author": { "name": "starfishfactory" },
   "license": "MIT",
   "keywords": ["sdd", "tech-spec", "specification-driven-development"],
-  "commands": "./commands/",
   "skills": "./skills/"
 }

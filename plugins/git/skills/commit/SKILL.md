@@ -1,4 +1,5 @@
 ---
+name: commit
 description: Gitmoji + Conventional Commits smart commit
 allowed-tools: Read, Bash, AskUserQuestion, Glob
 argument-hint: "[commit message (optional, auto-generated if omitted)]"

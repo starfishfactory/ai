@@ -1,4 +1,5 @@
 ---
+name: guide
 description: Show lean-kit feature overview and activation status
 allowed-tools: Read, Bash
 ---
