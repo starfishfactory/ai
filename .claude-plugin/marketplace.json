@@ -27,6 +27,11 @@
       "name": "git",
       "source": "./plugins/git",
       "description": "Gitmoji smart commit + branch management + automated PR creation/review"
+    },
+    {
+      "name": "conventions",
+      "source": "./plugins/conventions",
+      "description": "Team coding conventions and standards"
     }
   ]
 }
