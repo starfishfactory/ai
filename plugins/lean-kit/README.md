@@ -1,12 +1,12 @@
 # lean-kit
 
-Claude Code를 위한 경량 유틸리티 플러그인. macOS 네이티브 알림, 퍼미션 자동 승인, 1줄 컴팩트 statusline을 지원합니다.
+Claude Code를 위한 경량 유틸리티 플러그인. macOS 네이티브 알림, 퍼미션 자동 승인, 1줄 컴팩트 statusline을 지원한다.
 
 ## 기능
 
 ### 1. Notification - macOS 데스크톱 알림
 
-사용자 입력이 필요할 때 macOS 네이티브 알림으로 알려줍니다.
+사용자 입력이 필요할 때 macOS 네이티브 알림으로 알려준다.
 
 | 이벤트 | 설명 | 알림 제목 |
 |--------|------|-----------|
@@ -16,8 +16,8 @@ Claude Code를 위한 경량 유틸리티 플러그인. macOS 네이티브 알�
 
 ### 2. Auto-permit - 퍼미션 자동 승인
 
-`PermissionRequest` 훅을 사용하여 안전한 도구/명령어를 자동 승인합니다.
-세션마다 반복되는 퍼미션 질의를 줄여줍니다.
+`PermissionRequest` 훅을 사용하여 안전한 도구/명령어를 자동 승인한다.
+세션마다 반복되는 퍼미션 질의를 줄여준다.
 
 **활성화 방법:**
 
@@ -25,7 +25,7 @@ Claude Code를 위한 경량 유틸리티 플러그인. macOS 네이티브 알�
 export LEAN_KIT_AUTO_PERMIT=1
 ```
 
-> 기본값은 비활성화(opt-in). 환경변수를 설정해야만 작동합니다.
+> 기본값은 비활성화(opt-in). 환경변수를 설정해야만 작동한다.
 
 **동작 원리:**
 1. 퍼미션 다이얼로그 표시 직전에 훅 실행
@@ -36,7 +36,7 @@ export LEAN_KIT_AUTO_PERMIT=1
 
 ### 3. Statusline v3 - 1줄 컴팩트 statusline
 
-터미널 하단에 현재 세션 정보를 1줄로 표시합니다. 플랜 타입을 자동 감지하고, 표시 요소를 사용자가 선택할 수 있습니다.
+터미널 하단에 현재 세션 정보를 1줄로 표시한다. 플랜 타입을 자동 감지하고, 표시 요소를 사용자가 선택할 수 있다.
 
 | 아이콘 | 항목 | 의존성 | 설명 |
 |--------|------|--------|------|
@@ -61,13 +61,13 @@ export LEAN_KIT_AUTO_PERMIT=1
 
 ### 4. Daily Report - 일일 활동 리포트
 
-Claude CLI 세션 데이터를 수집·분석하여 한국어 일일 활동 리포트를 자동 생성합니다.
+Claude CLI 세션 데이터를 수집·분석하여 한국어 일일 활동 리포트를 자동 생성한다.
 
 - Node.js 스크립트로 JSONL 세션 데이터 파싱 (LLM 토큰 소비 0)
 - Generator-Critic 루프로 정확도 검증
 - 9개 섹션: 개요, 일감 상세, 메타데이터, 비용 분석, 세션 흐름, 키워드, 도구 사용, 트렌드, 개선 제안
 
-> 자세한 사용법은 [daily-report README](skills/daily-report/README.md)를 참고하세요.
+> 자세한 사용법은 [daily-report README](skills/daily-report/README.md)를 참고하라.
 
 ### 슬래시 커맨드
 
@@ -81,18 +81,18 @@ Claude CLI 세션 데이터를 수집·분석하여 한국어 일일 활동 리�
 
 ### 방법 1: 마켓플레이스 (권장)
 
-클론 없이 Claude Code 안에서 바로 설치합니다.
+클론 없이 Claude Code 안에서 바로 설치한다.
 
 ```shell
 /plugin marketplace add starfishfactory/ai
 /plugin install lean-kit@starfishfactory-ai
 ```
 
-> **Private repo**: `gh auth login`으로 GitHub 인증이 되어 있으면 동작합니다.
+> **Private repo**: `gh auth login`으로 GitHub 인증이 되어 있으면 동작한다.
 
 ### 방법 2: 플러그인 모드
 
-repo를 클론한 후 로컬 경로를 지정합니다.
+repo를 클론한 후 로컬 경로를 지정한다.
 
 ```bash
 claude --plugin-dir ./plugins/lean-kit
@@ -100,30 +100,30 @@ claude --plugin-dir ./plugins/lean-kit
 
 ### 방법 3: 직접 설치 (standalone)
 
-`~/.claude/settings.json`에 훅을 직접 등록합니다. jq가 없으면 brew를 통한 설치를 안내합니다.
+`~/.claude/settings.json`에 훅을 직접 등록한다. jq가 없으면 brew를 통한 설치를 안내한다.
 
 ```bash
 ./plugins/lean-kit/install.sh
 ```
 
-설치 후 Claude Code를 재시작하세요.
+설치 후 Claude Code를 재시작하라.
 
 ## 업데이트
 
 ### 마켓플레이스
 
-마켓플레이스 갱신 후 플러그인을 업데이트합니다:
+마켓플레이스 갱신 후 플러그인을 업데이트한다:
 
 ```shell
 /plugin marketplace update starfishfactory-ai
 ```
 
-> 자동 업데이트를 활성화하면 마켓플레이스 갱신과 플러그인 업데이트가 Claude Code 시작 시 자동으로 수행됩니다:
+> 자동 업데이트를 활성화하면 마켓플레이스 갱신과 플러그인 업데이트가 Claude Code 시작 시 자동으로 수행된다:
 > `/plugin` 실행 → **Marketplaces** 탭 → `starfishfactory-ai` 선택 → **Enable auto-update**
 
 ### 플러그인 모드
 
-로컬 저장소를 pull하고 Claude Code를 재시작하면 됩니다.
+로컬 저장소를 pull하고 Claude Code를 재시작하면 된다.
 
 ```bash
 git pull origin main
@@ -131,20 +131,20 @@ git pull origin main
 
 ### 직접 설치
 
-로컬 저장소를 pull한 후 install.sh를 재실행합니다. 스크립트는 최신으로 덮어쓰고, 훅 중복은 자동 방지되며, 사용자 설정 파일은 보존됩니다.
+로컬 저장소를 pull한 후 install.sh를 재실행한다. 스크립트는 최신으로 덮어쓰고, 훅 중복은 자동 방지되며, 사용자 설정 파일은 보존된다.
 
 ```bash
 git pull origin main
 ./plugins/lean-kit/install.sh
 ```
 
-> 모든 방식에서 업데이트 후 Claude Code 세션 재시작이 필요합니다.
+> 모든 방식에서 업데이트 후 Claude Code 세션 재시작이 필요하다.
 
 ## 설정 파일
 
-기본 규칙이 스크립트에 내장되어 있어 설정 파일 없이도 작동합니다.
-설정 파일(`~/.claude/hooks/lean-kit-permit.conf`)은 기본 규칙을 오버라이드할 때만 필요합니다.
-파일에 포함된 섹션만 오버라이드되고, 나머지는 기본값이 사용됩니다.
+기본 규칙이 스크립트에 내장되어 있어 설정 파일 없이도 작동한다.
+설정 파일(`~/.claude/hooks/lean-kit-permit.conf`)은 기본 규칙을 오버라이드할 때만 필요하다.
+파일에 포함된 섹션만 오버라이드되고, 나머지는 기본값이 사용된다.
 
 ### 섹션 설명
 
@@ -174,11 +174,11 @@ mcp__slack__post*
 production.yml
 ```
 
-> 수정 후 Claude Code 세션을 재시작하면 적용됩니다.
+> 수정 후 Claude Code 세션을 재시작하면 적용된다.
 
 ### Statusline 설정 파일
 
-`~/.claude/statusline.conf`로 표시 요소를 제어합니다. `/lean-kit:setup-statusline` 실행 시 자동 생성됩니다.
+`~/.claude/statusline.conf`로 표시 요소를 제어한다. `/lean-kit:setup-statusline` 실행 시 자동 생성된다.
 
 ```bash
 # lean-kit statusline v3.0 설정
@@ -195,7 +195,7 @@ SHOW_EXTRA_USAGE=1   # ⚡ Extra usage
 PLAN_TYPE=           # 수동 지정: Pro | Max | API (빈 값이면 자동 감지)
 ```
 
-`STATUSLINE_CONF` 환경변수로 경로를 오버라이드할 수 있습니다:
+`STATUSLINE_CONF` 환경변수로 경로를 오버라이드할 수 있다:
 
 ```bash
 STATUSLINE_CONF=/path/to/custom.conf claude
@@ -208,7 +208,7 @@ STATUSLINE_CONF=/path/to/custom.conf claude
 unset LEAN_KIT_AUTO_PERMIT
 ```
 
-특정 규칙만 비활성화하려면 설정 파일에 빈 섹션을 작성합니다:
+특정 규칙만 비활성화하려면 설정 파일에 빈 섹션을 작성한다:
 
 ```conf
 # ~/.claude/hooks/lean-kit-permit.conf
@@ -242,7 +242,7 @@ export LEAN_KIT_DEBUG=1
 
 ## macOS 알림 설정
 
-알림이 표시되지 않으면 macOS 알림 설정을 확인하세요:
+알림이 표시되지 않으면 macOS 알림 설정을 확인하라:
 
 1. **시스템 설정** > **알림** > **Script Editor** (또는 **osascript**)
 2. **알림 허용**이 켜져 있는지 확인
@@ -262,21 +262,21 @@ export LEAN_KIT_DEBUG=1
 ./plugins/lean-kit/uninstall.sh
 ```
 
-> 설정 파일(`lean-kit-permit.conf`)은 사용자 수정 보존을 위해 자동 삭제되지 않습니다. 수동 삭제: `rm ~/.claude/hooks/lean-kit-permit.conf`
+> 설정 파일(`lean-kit-permit.conf`)은 사용자 수정 보존을 위해 자동 삭제되지 않는다. 수동 삭제: `rm ~/.claude/hooks/lean-kit-permit.conf`
 
 ### 플러그인 모드
 
-`--plugin-dir` 옵션을 제거하면 됩니다.
+`--plugin-dir` 옵션을 제거하면 된다.
 
 ## 제한사항
 
-- **macOS 전용** (알림): Linux/Windows에서는 자동으로 무시됩니다 (exit 0)
-- **GUI 세션 필요** (알림): SSH, CI 등 headless 환경에서는 자동으로 무시됩니다
-- **non-interactive 모드 미지원** (auto-permit): `claude -p` 모드에서는 `PermissionRequest` 훅이 작동하지 않습니다. 공식 문서에 따르면 이 경우 `PreToolUse` 훅을 사용해야 합니다.
-- **race condition 가능성** (auto-permit): 훅 응답이 1-2초 이상 걸리면 퍼미션 다이얼로그가 먼저 표시될 수 있습니다 ([#12176](https://github.com/anthropics/claude-code/issues/12176)). 스크립트는 수십 밀리초 내 응답하도록 최적화되어 있습니다.
-- **statusline은 `--plugin-dir` 모드에서 자동 활성화 불가**: `settings.json`의 `statusLine` 필드는 사용자 설정이므로 플러그인 모드에서 자동 등록할 수 없습니다. `/lean-kit:setup-statusline` 커맨드를 실행하세요.
+- **macOS 전용** (알림): Linux/Windows에서는 자동으로 무시된다 (exit 0)
+- **GUI 세션 필요** (알림): SSH, CI 등 headless 환경에서는 자동으로 무시된다
+- **non-interactive 모드 미지원** (auto-permit): `claude -p` 모드에서는 `PermissionRequest` 훅이 작동하지 않는다. 공식 문서에 따르면 이 경우 `PreToolUse` 훅을 사용해야 한다.
+- **race condition 가능성** (auto-permit): 훅 응답이 1-2초 이상 걸리면 퍼미션 다이얼로그가 먼저 표시될 수 있다 ([#12176](https://github.com/anthropics/claude-code/issues/12176)). 스크립트는 수십 밀리초 내 응답하도록 최적화되어 있다.
+- **statusline은 `--plugin-dir` 모드에서 자동 활성화 불가**: `settings.json`의 `statusLine` 필드는 사용자 설정이므로 플러그인 모드에서 자동 등록할 수 없다. `/lean-kit:setup-statusline` 커맨드를 실행하라.
 - **세션 재시작**: 직접 설치 후 Claude Code 재시작 필요
-- **jq 의존성**: 직접 설치(`install.sh`/`uninstall.sh`) 시 jq 필요. 플러그인 모드의 `notify.sh`는 jq 없이도 동작 (fallback 메시지 사용). `auto-permit.sh`는 jq 없으면 자동 비활성화 (사용자 질의로 폴백).
+- **jq 의존성**: 직접 설치(`install.sh`/`uninstall.sh`) 시 jq 필요. 플러그인 모드의 `notify.sh`는 jq 없이도 동작한다 (fallback 메시지 사용). `auto-permit.sh`는 jq 없으면 자동 비활성화된다 (사용자 질의로 폴백).
 
 ## 구조
 
