@@ -13,7 +13,6 @@ Claude CLI 세션 데이터를 수집·분석하여 한국어 일일 활동 리�
 ```
 /lean-kit:daily-report              # 어제 날짜 리포트 생성
 /lean-kit:daily-report 2026-02-25   # 특정 날짜 지정
-일일 리포트 생성해줘                   # 키워드 트리거 (UserPromptSubmit 훅)
 ```
 
 ## 리포트 구성
