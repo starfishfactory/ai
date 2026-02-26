@@ -84,6 +84,11 @@ const mappings = [
     keywords: ['셋업', 'setup', '설치', '플러그인 확인', 'plugin check'],
     skill: '/lean-kit:setup',
     description: 'Plugin setup & diagnostics'
+  },
+  {
+    keywords: ['리포트', 'report', '일일리포트', '데일리', '사용량', '활동'],
+    skill: '/lean-kit:daily-report',
+    description: 'Daily CLI activity report'
   }
 ];
 
