@@ -1,7 +1,9 @@
 ---
+name: verify-report
 description: Run cross-validation + quality verification on existing MSA report (Lead performs directly)
+context: fork
 allowed-tools: Read, Grep, Glob, Bash, Write, AskUserQuestion
-argument-hint: <report path>
+argument-hint: "<report path>"
 ---
 
 # Standalone Report Verification: $ARGUMENTS

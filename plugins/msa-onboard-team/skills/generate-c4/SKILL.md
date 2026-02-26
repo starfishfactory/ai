@@ -1,7 +1,9 @@
 ---
+name: generate-c4
 description: Generate C4 model Mermaid diagrams from analysis results (standalone)
+context: fork
 allowed-tools: Read, Grep, Glob, Bash, Write, AskUserQuestion
-argument-hint: <project path>
+argument-hint: "<project path>"
 ---
 
 # C4 Diagram Generation: $ARGUMENTS

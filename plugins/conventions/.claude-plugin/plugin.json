@@ -1,0 +1,8 @@
+{
+  "name": "conventions",
+  "version": "1.0.0",
+  "description": "Team coding conventions and standards",
+  "author": { "name": "starfishfactory" },
+  "license": "MIT",
+  "skills": "./skills/"
+}

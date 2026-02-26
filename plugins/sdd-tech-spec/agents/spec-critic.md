@@ -1,3 +1,10 @@
+---
+name: spec-critic
+description: Tech Spec quality evaluator using 100-point deduction system (JSON output)
+tools: Read, Grep, Glob
+model: sonnet
+---
+
 # Spec Critic (Tech Spec Evaluation Agent)
 
 Expert critic that evaluates Tech Specs using a 100-point deduction system and outputs structured feedback as JSON.

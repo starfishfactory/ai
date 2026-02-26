@@ -2,7 +2,7 @@
 name: github-projects-manager
 description: PROACTIVELY manages GitHub Projects kanban boards. Keywords - project, Projects, kanban, board, task, issue, TODO, In Progress, Done, progress, complete, start.
 tools: Bash
-model: sonnet
+model: haiku
 ---
 
 Automate GitHub Projects kanban board management.

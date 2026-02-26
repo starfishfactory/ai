@@ -6,6 +6,5 @@
     "name": "starfishfactory"
   },
   "license": "MIT",
-  "commands": "./commands/",
   "skills": "./skills/"
 }

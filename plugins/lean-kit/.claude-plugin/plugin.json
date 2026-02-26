@@ -1,9 +1,9 @@
 {
   "name": "lean-kit",
   "version": "1.4.0",
-  "description": "Lightweight essential utilities - macOS notifications + permission auto-approval + 1-line compact statusline",
+  "description": "Lightweight essential utilities - notifications + auto-permit + statusline + daily activity reports",
   "author": { "name": "starfishfactory" },
   "license": "MIT",
-  "keywords": ["notification", "macos", "osascript", "productivity", "permission", "auto-permit", "statusline"],
-  "commands": "./commands/"
+  "keywords": ["notification", "macos", "osascript", "productivity", "permission", "auto-permit", "statusline", "report", "daily-report"],
+  "skills": "./skills/"
 }

@@ -59,12 +59,23 @@ export LEAN_KIT_AUTO_PERMIT=1
 - **마켓플레이스**: `/lean-kit:setup-statusline` 슬래시 커맨드 실행 (플랜 감지 + 요소 커스터마이즈)
 - **직접 설치**: `install.sh`가 자동으로 `settings.json`에 등록
 
+### 4. Daily Report - 일일 활동 리포트
+
+Claude CLI 세션 데이터를 수집·분석하여 한국어 일일 활동 리포트를 자동 생성합니다.
+
+- Node.js 스크립트로 JSONL 세션 데이터 파싱 (LLM 토큰 소비 0)
+- Generator-Critic 루프로 정확도 검증
+- 9개 섹션: 개요, 일감 상세, 메타데이터, 비용 분석, 세션 흐름, 키워드, 도구 사용, 트렌드, 개선 제안
+
+> 자세한 사용법은 [daily-report README](skills/daily-report/README.md)를 참고하세요.
+
 ### 슬래시 커맨드
 
 | 커맨드 | 설명 |
 |--------|------|
 | `/lean-kit:guide` | 전체 기능 안내 및 활성화 상태 확인 |
 | `/lean-kit:setup-statusline` | statusline 설치 |
+| `/lean-kit:daily-report` | 일일 활동 리포트 생성 ([상세 가이드](skills/daily-report/README.md)) |
 
 ## 설치
 
