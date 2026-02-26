@@ -32,6 +32,11 @@
       "name": "conventions",
       "source": "./plugins/conventions",
       "description": "Team coding conventions and standards"
+    },
+    {
+      "name": "market-analyst",
+      "source": "./plugins/market-analyst",
+      "description": "Academic methodology-based market analysis (Porter, PESTEL, SWOT, TAM/SAM/SOM)"
     }
   ]
 }

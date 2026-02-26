@@ -1,8 +1,8 @@
 # msa-onboard-team
 
-MSA 환경을 **Agent Teams**로 병렬 분석하여 C4 모델 기반 리포트를 생성하는 Claude Code 플러그인입니다.
+MSA 환경을 **Agent Teams**로 병렬 분석하여 C4 모델 기반 리포트를 생성하는 Claude Code 플러그인이다.
 
-교차 검증과 리포트 품질 검증을 통해 분석 결과의 신뢰도를 높입니다.
+교차 검증과 리포트 품질 검증을 통해 분석 결과의 신뢰도를 높인다.
 
 ## 주요 기능
 
@@ -61,7 +61,7 @@ MSA 환경을 **Agent Teams**로 병렬 분석하여 C4 모델 기반 리포트�
 
 ### Agent Teams 실험적 기능 활성화 (필수)
 
-미활성화 시 Agent Teams가 동작하지 않습니다.
+미활성화 시 Agent Teams가 동작하지 않는다.
 
 **방법 1: settings.json**
 ```json
@@ -87,23 +87,16 @@ sudo apt install tmux # Linux
 ```
 
 - iTerm2: `it2` CLI 설치 + Settings → General → Magic → Enable Python API
-- In-process mode는 모든 터미널에서 동작 (tmux 불필요)
+- In-process mode는 모든 터미널에서 동작한다 (tmux 불필요).
 - **미지원**: VS Code 통합 터미널, Windows Terminal, Ghostty (split pane 모드)
 
-> tmux 레이아웃 파괴 방지를 위해 **새 tmux 세션**에서 실행을 권장합니다.
+> tmux 레이아웃 파괴 방지를 위해 **새 tmux 세션**에서 실행을 권장한다.
 
-## 사용법
-
-### 메인 커맨드 (Agent Teams 병렬 분석)
-
-```
-/msa-onboard-team:msa-onboard /path/to/project
-```
-
-### 추가 커맨드
+## 커맨드
 
 | 커맨드 | 설명 |
 |--------|------|
+| `/msa-onboard-team:msa-onboard <프로젝트 경로>` | Agent Teams 병렬 분석 + C4 리포트 생성 (메인) |
 | `/msa-onboard-team:verify-report <리포트 경로>` | 기존 리포트에 대해 교차 검증 + 품질 검증 |
 | `/msa-onboard-team:discover-services <프로젝트 경로>` | 서비스 식별만 단독 실행 |
 | `/msa-onboard-team:generate-c4 <프로젝트 경로>` | C4 다이어그램만 단독 생성 |
@@ -130,9 +123,9 @@ sudo apt install tmux # Linux
 
 ## 검증 기준
 
-### 교차 검증 (Phase 2) — Generator-Critic 루프 (최대 3회)
+### 교차 검증 (Phase 2)
 
-Critic(Lead) ↔ Generator(Teammates) 루프. 팀 유지 상태에서 수정/재검증 반복.
+Generator-Critic 루프 (최대 3회). Critic(Lead) ↔ Generator(Teammates) 루프로, 팀 유지 상태에서 수정/재검증을 반복한다.
 
 | 점수 | 판정 | 처리 |
 |------|------|------|
@@ -141,9 +134,9 @@ Critic(Lead) ↔ Generator(Teammates) 루프. 팀 유지 상태에서 수정/재
 
 루프 종료 후: PASS → Phase 3 / 3회 후 WARN(60-79) → 경고와 함께 Phase 3 / 3회 후 FAIL(0-59) → 사용자 선택
 
-### 리포트 검증 (Phase 4) — Generator-Critic Self-Reflection 루프 (최대 3회)
+### 리포트 검증 (Phase 4)
 
-Generator(Lead) ↔ Critic(Lead) Self-Reflection. Phase 2에서 팀 정리 완료.
+Generator-Critic Self-Reflection 루프 (최대 3회). Generator(Lead) ↔ Critic(Lead) Self-Reflection으로, Phase 2에서 팀 정리가 완료된 상태이다.
 
 | 점수 | 판정 | 처리 |
 |------|------|------|
@@ -160,9 +153,50 @@ Generator(Lead) ↔ Critic(Lead) Self-Reflection. Phase 2에서 팀 정리 완�
 | Opus teammates | 더 증가. 공홈 권고는 "Use Sonnet for teammates" |
 | 유휴 토큰 | teammate 완료 후 미정리 시 유휴 토큰 소비 |
 
-> 엔터프라이즈 플랜에서 Opus 4.6 사용 시 비용이 크게 증가합니다. 팀 정리 시점: Phase 1 완료 직후가 아닌 **Phase 2 Generator-Critic 루프 완료 후**에 정리합니다. 루프에서 Teammate가 피드백 기반 수정을 수행하기 위해 팀을 유지해야 하기 때문입니다.
+> 엔터프라이즈 플랜에서 Opus 4.6 사용 시 비용이 크게 증가한다. 팀 정리 시점: Phase 1 완료 직후가 아닌 **Phase 2 Generator-Critic 루프 완료 후**에 정리한다. 루프에서 Teammate가 피드백 기반 수정을 수행하기 위해 팀을 유지해야 하기 때문이다.
 
-## 공식 제한사항
+## 설치
+
+### 마켓플레이스 (권장)
+
+```shell
+/plugin marketplace add starfishfactory/ai
+/plugin install msa-onboard-team@starfishfactory-ai
+```
+
+### 플러그인 모드
+
+```bash
+claude --plugin-dir ./plugins/msa-onboard-team
+```
+
+## 업데이트
+
+### 마켓플레이스
+
+```shell
+/plugin marketplace update starfishfactory-ai
+```
+
+### 플러그인 모드
+
+```bash
+git pull origin main
+```
+
+## 제거
+
+### 마켓플레이스
+
+```shell
+/plugin uninstall msa-onboard-team@starfishfactory-ai
+```
+
+### 플러그인 모드
+
+`--plugin-dir` 옵션을 제거하면 된다.
+
+## 제한사항
 
 1. `/resume`으로 teammate 복원 불가
 2. teammate 작업 완료 표시 누락 가능 → 수동 확인 후 진행
@@ -173,26 +207,20 @@ Generator(Lead) ↔ Critic(Lead) Self-Reflection. Phase 2에서 팀 정리 완�
 7. teammate 권한은 spawn 시 Lead 권한 상속
 8. Split pane은 tmux/iTerm2 필요
 
-## Agent Teams 훅
+## 구조
 
-| 훅 | exit code 2 동작 |
-|---|---|
-| `TeammateIdle` | 피드백 보내고 teammate 작업 계속 |
-| `TaskCompleted` | 완료 거부 + 피드백 전달 |
-
-## 지원하는 기술 스택
-
-| 영역 | 지원 |
-|------|------|
-| 언어 | Java, Kotlin, TypeScript, JavaScript, Python, Go, Rust |
-| 프레임워크 | Spring Boot, Express, NestJS, FastAPI, Django, Flask, gin, echo |
-| 인프라 | Docker Compose, Kubernetes, Helm |
-| CI/CD | GitHub Actions, GitLab CI, Jenkins |
-| 메시지 큐 | Kafka, RabbitMQ, Redis Pub/Sub |
-| 데이터베이스 | PostgreSQL, MySQL, MongoDB, Redis |
-
-## 유지보수 주의사항
-
-- Spawn prompt는 `commands/msa-onboard.md`에 인라인으로 포함되어 있습니다
-- 분석 로직 변경 시 spawn prompt도 함께 수정해야 합니다
-- `skills/msa-onboard/` 하위 참조 파일 변경 시 커맨드 동작에 영향을 줄 수 있습니다
+```
+plugins/msa-onboard-team/
+├── .claude-plugin/
+│   └── plugin.json
+├── skills/
+│   ├── discover-services/SKILL.md
+│   ├── generate-c4/SKILL.md
+│   ├── msa-analysis/SKILL.md
+│   ├── msa-onboard/
+│   │   ├── SKILL.md
+│   │   └── references/
+│   └── verify-report/SKILL.md
+├── docs/
+└── README.md
+```
