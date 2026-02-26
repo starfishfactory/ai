@@ -39,7 +39,7 @@ SDD(Specification-Driven Development) 방법론 기반 Tech Spec 작성 플러�
    └─────────────────┘              └─────────────────┘
 ```
 
-## 워크플로우 (`write-spec`)
+## 워크플로우 (write-spec)
 
 ```
 Phase 0: 컨텍스트 수집
@@ -87,9 +87,6 @@ Phase 3: 최종 출력
 ## 사용 예시
 
 ```bash
-# 플러그인 로드
-claude --plugin-dir ./plugins/sdd-tech-spec
-
 # 신규 Spec 작성
 > /sdd-tech-spec:write-spec 사용자 인증 시스템 설계
 
@@ -100,22 +97,72 @@ claude --plugin-dir ./plugins/sdd-tech-spec
 > /sdd-tech-spec:refine-spec ./docs/specs/auth-system.md
 ```
 
-## 디렉토리 구조
+## 설치
+
+### 마켓플레이스 (권장)
+
+클론 없이 Claude Code 안에서 바로 설치한다.
+
+```shell
+/plugin marketplace add starfishfactory/ai
+/plugin install sdd-tech-spec@starfishfactory-ai
+```
+
+### 플러그인 모드
+
+repo를 클론한 후 로컬 경로를 지정한다.
+
+```bash
+claude --plugin-dir ./plugins/sdd-tech-spec
+```
+
+## 업데이트
+
+### 마켓플레이스
+
+마켓플레이스 갱신 후 플러그인을 업데이트한다:
+
+```shell
+/plugin marketplace update starfishfactory-ai
+```
+
+> 자동 업데이트를 활성화하면 마켓플레이스 갱신과 플러그인 업데이트가 Claude Code 시작 시 자동으로 수행된다:
+> `/plugin` 실행 → **Marketplaces** 탭 → `starfishfactory-ai` 선택 → **Enable auto-update**
+
+### 플러그인 모드
+
+로컬 저장소를 pull하고 Claude Code를 재시작하면 된다.
+
+```bash
+git pull origin main
+```
+
+## 제거
+
+### 마켓플레이스
+
+```shell
+/plugin uninstall sdd-tech-spec@starfishfactory-ai
+```
+
+### 플러그인 모드
+
+`--plugin-dir` 옵션을 제거하면 된다.
+
+## 구조
 
 ```
 plugins/sdd-tech-spec/
 ├── .claude-plugin/
 │   └── plugin.json
-├── commands/
-│   ├── write-spec.md          # 메인: Generator-Critic 루프
-│   ├── review-spec.md         # 읽기 전용 리뷰
-│   └── refine-spec.md         # 1회 개선
 ├── agents/
 │   ├── spec-generator.md      # Tech Spec 작성 에이전트
 │   └── spec-critic.md         # Tech Spec 비평 에이전트
 ├── skills/
-│   ├── sdd-framework/
-│   │   └── SKILL.md           # SDD 방법론 + 유형별 가이드
+│   ├── write-spec/SKILL.md    # 메인: Generator-Critic 루프
+│   ├── review-spec/SKILL.md   # 읽기 전용 리뷰
+│   ├── refine-spec/SKILL.md   # 1회 개선
+│   ├── sdd-framework/SKILL.md # SDD 방법론 + 유형별 가이드
 │   ├── tech-spec-template/
 │   │   └── SKILL.md           # GFM 출력 템플릿
 │   ├── quality-criteria/
