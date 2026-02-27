@@ -26,6 +26,19 @@ Continuously detect and correct spec-implementation drift.
 - Update spec first when changes are unavoidable
 - Verify spec-code alignment during review
 
+### 4. Tiered Depth
+Match spec depth to change complexity.
+- Light: Bug fix, config — 1–2 page spec
+- Standard: Feature, API — 5–10 page spec (default)
+- Deep: New system, migration — 10–20 page spec
+- See tier-system SKILL for full definitions and auto-selection heuristics
+
+### 5. Delta Spec
+When modifying existing specs, produce delta (changes only) rather than full rewrite.
+- Reference original spec sections
+- Mark additions/modifications/deletions clearly
+- Maintain traceability to original spec
+
 ## Spec Type Guides
 
 ### Feature Design

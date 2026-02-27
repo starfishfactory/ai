@@ -15,14 +15,20 @@ Expert critic that evaluates Tech Specs using a 100-point deduction system and o
 - Output evaluation results as structured JSON
 
 ## Referenced Skills
-- **quality-criteria**: Evaluation criteria + deduction tables + feedback JSON output format
+- **quality-criteria**: Evaluation criteria + deduction tables + tier-specific adjustments + feedback JSON output format
 - **sdd-framework**: SDD methodology principles and spec type guides (for per-type required criteria)
+- **tier-system**: Tier definitions for evaluation parameter selection
 
 ## Evaluation Process
 
-### Step 1: Identify Spec Type
+### Step 1: Identify Spec Type and Tier
 - Check `spec-type` field in YAML frontmatter
+- Check `tier` field in YAML frontmatter (default: standard)
 - Load per-type required/optional section criteria from sdd-framework SKILL
+- Load tier-specific adjustments from quality-criteria SKILL:
+  - **Light**: Relaxed minimums (Goals 2, Non-Goals 1, Risks 1), Mermaid/alternatives optional, PASS >= 70
+  - **Standard**: Default criteria, PASS >= 80
+  - **Deep**: Stricter minimums (Goals 5, Non-Goals 3, Risks 5, Mermaid 3+, all sections required), PASS >= 85
 - If `spec-type` is missing, treat as "other" and evaluate all sections equally
 
 ### Step 2: Iterate Deductions Per Category
@@ -66,9 +72,10 @@ Subtract category deductions from 100. Ensure per-category deduction total does 
 
 ### Step 4: Verdict
 
-- >= 80: `"verdict": "PASS"`
-- 60-79: `"verdict": "REVISE"`
-- < 60: `"verdict": "FAIL"`
+Apply tier-specific PASS threshold:
+- **Light**: >= 70 = PASS, 50-69 = REVISE, < 50 = FAIL
+- **Standard**: >= 80 = PASS, 60-79 = REVISE, < 60 = FAIL
+- **Deep**: >= 85 = PASS, 65-84 = REVISE, < 65 = FAIL
 
 ### Step 5: Write Feedback
 

@@ -16,13 +16,11 @@ Back up the original as `.bak` file and overwrite with the improved version.
 Read the file at `$ARGUMENTS` path using Read.
 If the file does not exist, output an error message and exit.
 
-## Step 2: Detect Spec Type
+## Step 2: Detect Spec Type and Tier
 
-Check the `spec-type` field in YAML frontmatter:
-- `feature-design`: Feature Design
-- `system-architecture`: System Architecture
-- `api-spec`: API Spec
-- Missing or other value: Treat as "other"
+Check YAML frontmatter fields:
+- `spec-type`: feature-design / system-architecture / api-spec / other (missing = "other")
+- `tier`: light / standard / deep (missing = "standard")
 
 ## Step 3: Load Skills and Agent Prompts
 
@@ -31,6 +29,7 @@ Read the following files:
 - `agents/spec-generator.md`: Generator agent prompt
 - `skills/quality-criteria/SKILL.md`: Evaluation criteria and deduction tables
 - `skills/sdd-framework/SKILL.md`: SDD methodology and type guides
+- `skills/tier-system/SKILL.md`: Tier definitions and evaluation adjustments
 - `skills/tech-spec-template/SKILL.md`: Output template
 - `skills/spec-examples/SKILL.md`: Writing pattern examples
 
@@ -38,7 +37,7 @@ Read the following files:
 
 Invoke spec-critic via Task tool:
 - **Prompt**: Include `agents/spec-critic.md` content
-- **Input**: Full spec content, spec type, quality-criteria SKILL, sdd-framework SKILL
+- **Input**: Full spec content, spec type, tier, quality-criteria SKILL, sdd-framework SKILL, tier-system SKILL
 - **subagent_type**: `general-purpose`
 - **Output**: Obtain feedback JSON
 
