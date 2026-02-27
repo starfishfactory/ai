@@ -15,13 +15,11 @@ No file modifications or creations; output evaluation results only.
 Read the file at `$ARGUMENTS` path using Read.
 If the file does not exist, output an error message and exit.
 
-## Step 2: Detect Spec Type
+## Step 2: Detect Spec Type and Tier
 
-Check the `spec-type` field in YAML frontmatter:
-- `feature-design`: Feature Design
-- `system-architecture`: System Architecture
-- `api-spec`: API Spec
-- Missing or other value: Treat as "other"
+Check YAML frontmatter fields:
+- `spec-type`: feature-design / system-architecture / api-spec / other (missing = "other")
+- `tier`: light / standard / deep (missing = "standard")
 
 ## Step 3: Load Skills and Agent Prompts
 
@@ -29,6 +27,7 @@ Read the following files:
 - `agents/spec-critic.md`: Critic agent prompt
 - `skills/quality-criteria/SKILL.md`: Evaluation criteria and deduction tables
 - `skills/sdd-framework/SKILL.md`: SDD methodology and type guides
+- `skills/tier-system/SKILL.md`: Tier definitions and evaluation adjustments
 
 ## Step 4: Invoke Critic
 
@@ -36,9 +35,10 @@ Invoke spec-critic via Task tool:
 - **Prompt**: Include `agents/spec-critic.md` content
 - **Input**:
   - Full spec file content
-  - Spec type
+  - Spec type, tier
   - quality-criteria SKILL evaluation criteria
   - sdd-framework SKILL type guides
+  - tier-system SKILL tier definitions
 - **subagent_type**: `general-purpose`
 - **Request**: Return evaluation results in quality-criteria SKILL JSON output format
 
@@ -56,6 +56,7 @@ Do not modify or create any files.
 
 File: {file path}
 Type: {spec type}
+Tier: {tier}
 Score: {total}/100 ({verdict})
 
 Category Scores:

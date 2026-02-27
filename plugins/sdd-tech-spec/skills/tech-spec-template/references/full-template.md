@@ -11,11 +11,13 @@ status: draft
 tags: [{related tags}]
 created: {YYYY-MM-DD}
 spec-type: {feature-design | system-architecture | api-spec}
+tier: {light | standard | deep}
 ---
 ```
 
 - `status`: Progresses draft > review > approved
 - `spec-type`: Matches type classification from sdd-framework SKILL
+- `tier`: Spec complexity tier from tier-system SKILL
 
 ## Section Structure
 

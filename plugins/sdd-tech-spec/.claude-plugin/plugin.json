@@ -1,9 +1,9 @@
 {
   "name": "sdd-tech-spec",
-  "version": "1.0.0",
-  "description": "Write Tech Specs using SDD methodology (Generator-Critic loop)",
+  "version": "2.0.0",
+  "description": "Full SDD pipeline: Discuss → Write Spec → Decompose Tasks → Detect Drift (Generator-Critic loop, tier system)",
   "author": { "name": "starfishfactory" },
   "license": "MIT",
-  "keywords": ["sdd", "tech-spec", "specification-driven-development"],
+  "keywords": ["sdd", "tech-spec", "specification-driven-development", "task-decomposition", "drift-detection"],
   "skills": "./skills/"
 }

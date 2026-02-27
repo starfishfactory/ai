@@ -56,6 +56,8 @@ user-invocable: false
 
 ## Verdict Criteria
 
+Default thresholds (Standard tier). See Tier-Specific Adjustments below for Light/Deep overrides.
+
 | Score | Verdict | Action |
 |------|------|------|
 | >= 80 | **PASS** | End loop, proceed to final output |
@@ -139,6 +141,35 @@ Critic agent MUST output evaluation results in this JSON schema:
   - `severity`: "major" (critical defect) | "minor" (minor defect)
   - `issue`: Problem description
   - `suggestion`: Specific improvement suggestion
+
+## Tier-Specific Adjustments
+
+### Light Tier (PASS >= 70)
+
+| Adjustment | Change |
+|-----------|--------|
+| Goals minimum | 2 (not 3) → no deduction at 2 |
+| Non-Goals minimum | 1 (not 2) → no deduction at 1 |
+| Risks minimum | 1 (not 3) → no type diversity required |
+| Alternative review | Not required → no deduction if absent |
+| Mermaid diagrams | Optional → no deduction if absent |
+| NFR numeric targets | Deduct only if NFR section exists but lacks targets |
+
+### Standard Tier (PASS >= 80)
+
+Default criteria. No adjustments. All deduction tables apply as-is.
+
+### Deep Tier (PASS >= 85)
+
+| Adjustment | Change |
+|-----------|--------|
+| Goals minimum | 5 (not 3) → -4 if < 5 |
+| Non-Goals minimum | 3 (not 2) → -3 if < 3 |
+| Mermaid minimum | 3 (not 1) → -3 per missing below 3 |
+| Alternatives minimum | 3 (not 2) → -3 if < 3 |
+| Risks minimum | 5 with quantitative matrix → -5 if < 5 |
+| All 10 sections | Required → -5 per missing section |
+| Risk matrix | Must include probability % and impact severity scale |
 
 ## Generator's Unresolved Items
 
